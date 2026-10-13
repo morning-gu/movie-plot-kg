@@ -79,6 +79,24 @@ def build(movie: str = typer.Option(..., "--movie"),  # typer 0.27 无默认参�
     typer.echo(f"完成: 嵌入 {n} 个实体。图谱就绪。")
 
 
+@app.command()
+def ask(question: str):
+    """单轮问答: 规划 -> 检索 -> 回答(固定 2 次 LLM 调用)。"""
+    from movie_kg.qa.answerer import answer
+    from movie_kg.qa.planner import plan_retrieval
+    from movie_kg.qa.retriever import retrieve
+
+    llm = _make_llm(load_models_config())
+    plan = plan_retrieval(llm, question)
+    driver = _make_driver(load_neo4j_config())
+    with driver.session() as session:
+        evidence = retrieve(session, llm, plan)
+    driver.close()
+    result = answer(llm, question, evidence)
+    typer.echo(result.answer)
+    typer.echo(f"引用: {', '.join(result.cited_ids) if result.cited_ids else '(无)'}")
+
+
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;
 # 控制台脚本 kg = movie_kg.cli:main 同样按可调用对象工作(Typer 可调用)。
 main = app
