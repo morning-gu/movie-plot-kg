@@ -42,6 +42,8 @@ def load_qa_set(path: str | Path) -> list[QAItem]:
 
 def run_qa(session, llm, items: list[QAItem],
            mode: Literal["full", "vector-only"]) -> list[QAResult]:
+    if mode not in ("full", "vector-only"):
+        raise ValueError(f"mode 必须为 full 或 vector-only: {mode!r}")
     results: list[QAResult] = []
     for item in items:
         plan = plan_retrieval(llm, item.question)

@@ -34,6 +34,13 @@ def test_run_qa_full_vs_vector_only():
     assert not any("RELATED_TO" in q or "PRECEDES" in q for q, _ in session.queries)
 
 
+def test_run_qa_rejects_bad_mode():
+    import pytest
+    with pytest.raises(ValueError, match="mode"):
+        run_qa(MockSession(), ScriptedLLM(), load_qa_set(_make_set()),
+               mode="vecor-only")
+
+
 def _make_set(tmp=None):
     import tempfile
     from pathlib import Path
