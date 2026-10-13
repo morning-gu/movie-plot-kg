@@ -60,3 +60,14 @@ def test_phase_a_from_scratch(tmp_path):
     run_phase_a(ScriptedLLM(A1, A2, A1, A2), movie, store)
     result = run_phase_a(ScriptedLLM(A1, A2, A1, A2), movie, store, from_scratch=True)
     assert result.skipped == 0 and result.completed == ["scene_001", "scene_002"]
+
+
+def test_rerun_retries_failed_scene(tmp_path):
+    d = make_movie_dir(tmp_path)
+    movie = load_movie(d)
+    store = CheckpointStore(d)
+    run_phase_a(ScriptedLLM(LLMError("x"), A1, A2), movie, store)
+    result = run_phase_a(ScriptedLLM(A1, A2), movie, store)
+    assert result.completed == ["scene_001"]
+    assert result.skipped == 1
+    assert store.load("scene_001").status == "ok"

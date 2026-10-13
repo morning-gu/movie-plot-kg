@@ -41,9 +41,11 @@ def run_phase_a(llm, movie: MovieData, store: CheckpointStore,
             continue
         if from_scratch:
             store.path(scene.meta.scene_id).unlink(missing_ok=True)
-        elif store.has(scene.meta.scene_id):
-            result.skipped += 1
-            continue
+        else:
+            ckpt = store.load(scene.meta.scene_id)
+            if ckpt is not None and ckpt.status == "ok":
+                result.skipped += 1
+                continue
         try:
             frames = sample_frames(scene.video_path, scene.meta.keyframes,
                                    max_frames=max_frames)
