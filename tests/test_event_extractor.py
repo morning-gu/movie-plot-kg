@@ -30,6 +30,9 @@ def test_extract_parses_and_aligns(tmp_path):
     assert model  # 使用 vision 模型(由 llm 替身记录)
     user_content = messages[-1]["content"]
     assert any(p.get("type") == "image_url" for p in user_content)
+    system = messages[0]["content"]
+    assert "00:00:01 张三(愤怒/拍桌): 你到底想怎样?" in system
+    assert "我只是来谈生意的" in system
 
 
 def test_extract_propagates_llm_error(tmp_path):

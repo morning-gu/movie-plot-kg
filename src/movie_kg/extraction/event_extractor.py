@@ -14,13 +14,21 @@ def _roster_text(scene: SceneData) -> str:
         for c in scene.meta.characters)
 
 
+def _dialogue_text(scene: SceneData) -> str:
+    lines = []
+    for d in scene.meta.dialogues:
+        cue = f"({d.emotion}/{d.action})" if d.emotion or d.action else ""
+        lines.append(f"{d.ts} {d.char}{cue}: {d.text}")
+    return "\n".join(lines) if lines else "(无台词)"
+
+
 def extract_scene_events(llm, frames: list[Frame], scene: SceneData) -> list:
     """A1: 帧 + 台词 + 先验 -> 结构化事件(LLMError 向上抛)。"""
     system = render(load_prompt("event_extraction"),
                     ROSTER=_roster_text(scene),
                     LOCATION=scene.meta.location,
                     TIME=scene.meta.virtual_time,
-                    SRT=scene.srt_text.strip() or "(无台词)")
+                    DIALOGUES=_dialogue_text(scene))
     content: list[dict] = [{"type": "text", "text": "请分析以下帧序列与台词,输出 JSON。"}]
     for f in frames:
         b64 = base64.b64encode(f.jpeg).decode("ascii")

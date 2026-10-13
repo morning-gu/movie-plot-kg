@@ -16,6 +16,22 @@ class Dialogue(BaseModel):
     action: str | None = None
 
 
+class KeyframeMeta(BaseModel):
+    frame_id: str
+    ts: str
+    frame_type: str | None = None
+    description: str | None = None
+
+
+class ShotMeta(BaseModel):
+    shot_id: str
+    start_ts: str
+    end_ts: str
+    shot_type: str | None = None
+    description: str | None = None
+    keyframes: list[KeyframeMeta] = []
+
+
 class SceneMeta(BaseModel):
     scene_id: str
     movie_id: str
@@ -25,19 +41,17 @@ class SceneMeta(BaseModel):
     dialogues: list[Dialogue]
     location: str
     virtual_time: str
+    description: str = ""
     props: list[str] = []
-    keyframes: list[str] = []
+    shots: list[ShotMeta] = []
 
-
-class SrtEntry(BaseModel):
-    start: str
-    end: str
-    text: str
+    def flat_keyframes(self) -> list[KeyframeMeta]:
+        """按 shot 顺序展平全部标注帧(采样与证据校验的基准列表)。"""
+        return [k for sh in self.shots for k in sh.keyframes]
 
 
 class SceneData(BaseModel):
     meta: SceneMeta
-    srt_text: str
     video_path: Path
 
     model_config = {"arbitrary_types_allowed": True}

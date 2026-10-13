@@ -3,7 +3,7 @@ from movie_kg.prompts import load_prompt, render
 
 def test_load_prompt_reads_file():
     text = load_prompt("event_extraction")
-    assert "剧情分析专家" in text and "<<SRT>>" in text
+    assert "剧情分析专家" in text and "<<DIALOGUES>>" in text
 
 
 def test_render_replaces_tokens():

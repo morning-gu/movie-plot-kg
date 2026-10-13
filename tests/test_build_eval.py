@@ -32,7 +32,7 @@ def test_character_prf_excludes_unaligned():
 def _movie():
     from movie_kg.models.scene import MovieData, SceneData
     return MovieData(movie_id="m1", title="t",
-                     scenes=[SceneData(meta=META, srt_text="", video_path="v.mp4")])
+                     scenes=[SceneData(meta=META, video_path="v.mp4")])
 
 
 def test_aggregate_prf():

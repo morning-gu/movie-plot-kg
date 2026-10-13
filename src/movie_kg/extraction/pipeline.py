@@ -4,6 +4,7 @@ from movie_kg.extraction.checkpoints import CheckpointStore
 from movie_kg.extraction.event_extractor import extract_scene_events
 from movie_kg.extraction.relation_extractor import extract_scene_relations
 from movie_kg.ingestion.frame_sampler import sample_frames
+from movie_kg.ingestion.timefmt import parse_ts
 from movie_kg.llm import LLMError
 from movie_kg.models.extraction import SceneExtraction
 from movie_kg.models.scene import MovieData
@@ -47,7 +48,8 @@ def run_phase_a(llm, movie: MovieData, store: CheckpointStore,
                 result.skipped += 1
                 continue
         try:
-            frames = sample_frames(scene.video_path, scene.meta.keyframes,
+            frames = sample_frames(scene.video_path, scene.meta.flat_keyframes(),
+                                   scene_start=parse_ts(scene.meta.start_ts),
                                    max_frames=max_frames)
             events = extract_scene_events(llm, frames, scene)
             relations = extract_scene_relations(
