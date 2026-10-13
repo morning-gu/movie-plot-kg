@@ -104,7 +104,9 @@ def eval_build(movie: str = typer.Option(..., "--movie")):
     import csv
 
     from movie_kg.eval.build_eval import (aggregate_prf, character_prf,
-                                          sample_relations, write_build_report)
+                                          merge_labels, sample_relations,
+                                          score_relation_samples,
+                                          write_build_report)
     from movie_kg.extraction.checkpoints import CheckpointStore
     from movie_kg.ingestion.data_loader import load_movie
 
@@ -125,13 +127,26 @@ def eval_build(movie: str = typer.Option(..., "--movie")):
     finally:
         if driver is not None:
             driver.close()
-    with open("eval/relation_samples.csv", "w", newline="", encoding="utf-8") as f:
+    samples_path = Path("eval/relation_samples.csv")
+    existing: list[dict] = []
+    if samples_path.exists():
+        with open(samples_path, newline="", encoding="utf-8") as f:
+            existing = list(csv.DictReader(f))
+    samples = merge_labels(existing, samples)
+    with open(samples_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["type", "start", "end", "props", "label"])
         w.writeheader()
         w.writerows(samples)
-    write_build_report("eval/build_report.md", rows, agg)
-    typer.echo(f"角色识别 F1={agg.get('f1')};抽样清单 -> eval/relation_samples.csv"
-               f"(人工填 label 列后重新运行可算正确率)")
+    relation_scores = None
+    if any(s["label"] for s in samples):
+        relation_scores = score_relation_samples(samples)
+    write_build_report("eval/build_report.md", rows, agg, relation_scores)
+    if relation_scores is not None:
+        typer.echo(f"角色识别 F1={agg.get('f1')};已合并人工标注并计算关系正确率 "
+                   f"-> eval/build_report.md")
+    else:
+        typer.echo(f"角色识别 F1={agg.get('f1')};抽样清单 -> eval/relation_samples.csv"
+                   f"(人工填 label 列后重新运行可算正确率)")
 
 
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;

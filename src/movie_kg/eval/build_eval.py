@@ -58,9 +58,9 @@ def sample_relations(session, n_per_type: int = 30, seed: int = 42) -> list[dict
     for rtype in RELATION_TYPES:
         if not isinstance(n_per_type, int) or n_per_type < 0:
             raise ValueError("n_per_type 必须为非负整数")
-        recs = session.run(
+        recs = list(session.run(
             f"MATCH (a)-[r:{rtype}]->(b) RETURN a.id AS start, b.id AS end, "
-            "properties(r) AS props")
+            "properties(r) AS props"))
         for rec in rng.sample(recs, min(n_per_type, len(recs))):
             rows.append({"type": rtype, "start": rec["start"], "end": rec["end"],
                          "props": rec["props"], "label": ""})
@@ -73,6 +73,19 @@ def score_relation_samples(rows: list[dict]) -> dict[str, float]:
         by_type.setdefault(r["type"], []).append(r.get("label", ""))
     return {t: round(sum(1 for lb in ls if lb == "correct") / len(ls), 4)
             for t, ls in by_type.items() if ls}
+
+
+def merge_labels(existing: list[dict], sampled: list[dict]) -> list[dict]:
+    """将已有人工标注按 (type, start, end) 键合并进新抽样行;未匹配行保持空 label。"""
+    labeled = {(r["type"], r["start"], r["end"]): r.get("label", "")
+               for r in existing}
+    merged = []
+    for r in sampled:
+        row = dict(r)
+        row["label"] = labeled.get((r["type"], r["start"], r["end"]),
+                                   r.get("label", ""))
+        merged.append(row)
+    return merged
 
 
 def write_build_report(path, prf_rows: list[ScenePRF], agg: dict,

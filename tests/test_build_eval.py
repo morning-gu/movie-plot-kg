@@ -1,5 +1,6 @@
 from movie_kg.eval.build_eval import (
-    aggregate_prf, character_prf, sample_relations, score_relation_samples)
+    aggregate_prf, character_prf, merge_labels, sample_relations,
+    score_relation_samples)
 from movie_kg.models.extraction import Participant, SceneEvent, SceneExtraction
 from movie_kg.models.scene import CharacterMeta, SceneMeta
 from tests.fakes import MockSession
@@ -54,3 +55,15 @@ def test_score_relation_samples():
             {"type": "PRECEDES", "label": "correct"}]
     scores = score_relation_samples(rows)
     assert scores["CAUSES"] == 0.5 and scores["PRECEDES"] == 1.0
+
+
+def test_merge_labels_carries_over_by_key():
+    existing = [{"type": "CAUSES", "start": "a", "end": "b", "label": "correct"},
+                {"type": "CAUSES", "start": "x", "end": "y", "label": "incorrect"}]
+    sampled = [{"type": "CAUSES", "start": "a", "end": "b", "props": {}, "label": ""},
+               {"type": "CAUSES", "start": "c", "end": "d", "props": {}, "label": ""}]
+    merged = merge_labels(existing, sampled)
+    assert len(merged) == 2                     # 未再抽样的旧行不进入结果
+    assert merged[0]["label"] == "correct"      # 匹配 (type,start,end): label 带入
+    assert merged[1]["label"] == ""             # 无匹配: 保持空
+    assert all(m["label"] != "incorrect" for m in merged)  # 旧行 label 被忽略
