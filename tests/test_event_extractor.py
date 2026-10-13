@@ -3,7 +3,7 @@ import pytest
 from movie_kg.extraction.event_extractor import extract_scene_events
 from movie_kg.ingestion.frame_sampler import Frame
 from movie_kg.llm import LLMError
-from movie_kg.models.scene import MovieData
+from movie_kg.models.scene import KeyframeMeta, MovieData
 from tests.fixtures import make_movie_dir
 from movie_kg.ingestion.data_loader import load_movie
 
@@ -41,3 +41,48 @@ def test_extract_propagates_llm_error(tmp_path):
     movie = _movie(tmp_path)
     with pytest.raises(LLMError):
         extract_scene_events(llm, [Frame(ts=0.0, jpeg=b"x")], movie.scenes[0])
+
+
+def test_prompt_contains_grounding_priors(tmp_path):
+    from tests.fakes import ScriptedLLM
+    llm = ScriptedLLM(A1)
+    movie = _movie(tmp_path)
+    frames = [Frame(ts=1.0, jpeg=b"\xff\xd8fake",
+                     keyframe=KeyframeMeta(frame_id="frame_001", ts="00:00:01",
+                                           frame_type="特写",
+                                           description="按在枪上"))]
+    extract_scene_events(llm, frames, movie.scenes[0])
+    system = llm.calls[0][1][0]["content"]
+    assert "场景描述: 张三与李四在仓库对峙。" in system
+    assert "道具: 枪" in system
+    assert "shot_001 [00:00:00–00:00:01] 中景: 两人隔桌对坐" in system
+    assert "00:00:01 张三(愤怒/拍桌): 你到底想怎样?" in system
+    user = llm.calls[0][1][-1]["content"]
+    texts = [p["text"] for p in user if p.get("type") == "text"]
+    assert texts[0] == "请分析以下帧序列与台词,输出 JSON。"
+    assert "帧 frame_001 (00:00:01 特写): 按在枪上" in texts
+    types = [p["type"] for p in user]
+    assert types.index("text") < types.index("image_url")  # 图文交错
+
+
+def test_fill_frame_marked(tmp_path):
+    from tests.fakes import ScriptedLLM
+    llm = ScriptedLLM(A1)
+    movie = _movie(tmp_path)
+    extract_scene_events(llm, [Frame(ts=0.5, jpeg=b"x")], movie.scenes[0])
+    texts = [p["text"] for p in llm.calls[0][1][-1]["content"]
+             if p.get("type") == "text"]
+    assert "[补充帧 00:00:00]" in texts
+
+
+def test_dialogue_single_field_cue_renders_without_none(tmp_path):
+    from tests.fakes import ScriptedLLM
+    from movie_kg.models.scene import Dialogue
+    llm = ScriptedLLM(A1)
+    movie = _movie(tmp_path)
+    scene = movie.scenes[0]
+    scene.meta.dialogues[0] = Dialogue(char="张三", text="……", ts="00:00:01",
+                                       emotion="愤怒")
+    extract_scene_events(llm, [Frame(ts=0.5, jpeg=b"x")], scene)
+    system = llm.calls[0][1][0]["content"]
+    assert "张三(愤怒): ……" in system
