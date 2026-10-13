@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 
 from movie_kg.extraction.parse import align_name, levenshtein, parse_a1, parse_a2
@@ -68,3 +70,17 @@ def test_parse_a2_rejects_index_out_of_range():
         "is_new": True, "change_description": None, "evidence_event_index": 5}]}
     with pytest.raises(ValueError):
         parse_a2(raw, events, ROSTER)
+
+
+def test_parse_a1_warns_and_skips_nested_subevents(caplog):
+    raw = _a1_raw()
+    raw["events"][0]["subevents"][0]["subevents"] = [{
+        "event_type": "dialogue", "topic": "nested",
+        "description": "嵌套子事件", "participating_characters": []}]
+    with caplog.at_level(logging.WARNING, logger="movie_kg.extraction.parse"):
+        events = parse_a1(raw, META)
+    assert [e.id for e in events] == ["evt_m1_003_01", "evt_m1_003_02"]
+    assert [e.topic for e in events] == ["对峙", "拔枪"]
+    assert all(e.topic != "nested" for e in events)
+    assert "scene_003" in caplog.text
+    assert "拔枪" in caplog.text

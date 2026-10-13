@@ -1,7 +1,11 @@
+import logging
+
 from movie_kg.models.extraction import (A1Output, A2Output, ExtractedEvent,
                                         Participant, ResolvedRelation,
                                         SceneEvent)
 from movie_kg.models.scene import CharacterMeta, SceneMeta
+
+logger = logging.getLogger(__name__)
 
 
 def levenshtein(a: str, b: str) -> int:
@@ -60,6 +64,10 @@ def parse_a1(raw: dict, meta: SceneMeta) -> list[SceneEvent]:
         main = make(ev, None)
         events.append(main)
         for sub in ev.subevents:
+            if sub.subevents:
+                logger.warning(
+                    "场景 %s: 子事件「%s」存在 %d 个嵌套子事件,超出单层限制,已跳过",
+                    meta.scene_id, sub.topic, len(sub.subevents))
             events.append(make(sub, main.id))
     return events
 
