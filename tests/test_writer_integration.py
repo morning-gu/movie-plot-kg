@@ -34,7 +34,8 @@ def test_roundtrip_write_and_read(session):
     w.ensure_movie("m1", "测试影片")
     w.ensure_scene(META)
     w.write_extraction(_ext(), META)
-    w.apply_vt_order([OrderedVt(name="第一天傍晚", timeline_index=0, description="d")])
+    w.apply_vt_order([OrderedVt(name="第一天傍晚", timeline_index=0, description="d")],
+                     "m1")
     rec = session.run("MATCH (e:Event {id: 'evt_m1_001_01'}) RETURN e").single()
     assert rec is not None and rec["e"]["global_order"] == 1001
     rec = session.run(

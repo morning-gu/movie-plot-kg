@@ -138,12 +138,12 @@ class GraphWriter:
                 "SET rel.relation_type = $rtype, rel.valid = true",
                 a=a, b=b, sid=r.start_event_id, rtype=r.relation_type)
 
-    def apply_vt_order(self, ordered: list[OrderedVt]) -> None:
+    def apply_vt_order(self, ordered: list[OrderedVt], movie_id: str) -> None:
         for o in ordered:
             self.session.run(
-                "MATCH (vt:VirtualTime {name: $name}) SET vt.timeline_index = $idx, "
-                "vt.description = $desc", name=o.name, idx=o.timeline_index,
-                desc=o.description)
+                "MATCH (vt:VirtualTime {id: $id}) SET vt.timeline_index = $idx, "
+                "vt.description = $desc", id=vt_id(movie_id, o.name),
+                idx=o.timeline_index, desc=o.description)
 
     def write_causal_links(self, links: list[CausalLink]) -> None:
         for l in links:

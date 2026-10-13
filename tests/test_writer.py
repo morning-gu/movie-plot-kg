@@ -1,5 +1,5 @@
 from movie_kg.extraction.global_passes import AliasPlan, MergeGroup
-from movie_kg.graph.writer import GraphWriter, char_id
+from movie_kg.graph.writer import GraphWriter, char_id, vt_id
 from movie_kg.models.extraction import Participant, ResolvedRelation, SceneEvent
 from movie_kg.models.scene import SceneMeta
 from tests.fakes import MockSession
@@ -98,9 +98,11 @@ def test_apply_vt_order_sets_index_and_description():
     s = MockSession()
     from movie_kg.extraction.global_passes import OrderedVt
     _writer(s).apply_vt_order([OrderedVt(name="第一天傍晚", timeline_index=0,
-                                         description="开始之夜")])
+                                         description="开始之夜")], "m1")
     q, p = s.queries[-1]
     assert "timeline_index" in q and "description" in q
+    assert "MATCH (vt:VirtualTime {id: $id})" in q and "{name:" not in q
+    assert p["id"] == vt_id("m1", "第一天傍晚")
     assert p["idx"] == 0 and p["desc"] == "开始之夜"
 
 
