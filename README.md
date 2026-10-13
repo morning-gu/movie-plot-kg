@@ -22,6 +22,8 @@ data/movies/<movie_id>/
                                  #   绝对时间,shot_id/frame_id 全局唯一)
 ```
 
+**从 v0.2.x 升级**:元数据需改用 v0.3.0 结构(台词完整转写内嵌 dialogues、新增 shots 镜头与结构化 keyframes,见 docs/DESIGN.md 3.2;旧版顶层 `keyframes` 时间戳数组不再被读取,subtitles/ 目录不再需要)。已存在的 checkpoints/ 若由旧版产出,重跑时会被静默跳过 —— 请删除该目录或使用 `kg build --from-scratch` 全量重建。
+
 ## 使用
 
 ```bash

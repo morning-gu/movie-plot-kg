@@ -57,6 +57,9 @@ def test_prompt_contains_grounding_priors(tmp_path):
     assert "道具: 枪" in system
     assert "shot_001 [00:00:00–00:00:01] 中景: 两人隔桌对坐" in system
     assert "00:00:01 张三(愤怒/拍桌): 你到底想怎样?" in system
+    assert "张三(老张)" in system                     # ROSTER 含别名渲染
+    assert "码头仓库" in system and "第一天傍晚" in system  # LOCATION / TIME
+    assert "<<" not in system                          # 全部占位符已替换
     user = llm.calls[0][1][-1]["content"]
     texts = [p["text"] for p in user if p.get("type") == "text"]
     assert texts[0] == "请分析以下帧序列与台词,输出 JSON。"
