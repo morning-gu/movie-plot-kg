@@ -1,0 +1,4 @@
+uri: bolt://localhost:7687
+user: neo4j
+password_env: NEO4J_PASSWORD
+database: neo4j

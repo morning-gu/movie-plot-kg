@@ -1,0 +1,6 @@
+base_url: https://api.siliconflow.cn/v1
+api_key_env: LLM_API_KEY
+vision_model: Qwen/Qwen3-VL-32B-Instruct
+text_model: Qwen/Qwen3-32B
+embedding_model: Qwen/Qwen3-Embedding-0.6B
+embedding_dims: 1024
