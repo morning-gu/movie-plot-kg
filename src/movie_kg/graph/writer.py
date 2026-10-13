@@ -40,9 +40,10 @@ class GraphWriter:
         self.session.run(
             "MERGE (s:Scene {id: $id}) SET s.seq = $seq, s.start_ts = $start, "
             "s.end_ts = $end, s.annotated_location = $loc, s.annotated_time = $vt, "
-            "s.movie_id = $movie",
+            "s.description = $desc, s.movie_id = $movie",
             id=meta.scene_id, seq=seq, start=meta.start_ts, end=meta.end_ts,
-            loc=meta.location, vt=meta.virtual_time, movie=meta.movie_id)
+            loc=meta.location, vt=meta.virtual_time, desc=meta.description,
+            movie=meta.movie_id)
         self.session.run(
             "MATCH (s:Scene {id: $sid}), (m:Movie {id: $mid}) "
             "MERGE (s)-[:BELONGS_TO]->(m)", sid=meta.scene_id, mid=meta.movie_id)
@@ -64,10 +65,11 @@ class GraphWriter:
             self.session.run(
                 "MERGE (e:Event {id: $id}) SET e.event_type = $type, e.topic = $topic, "
                 "e.description = $desc, e.scene_id = $sid, e.order = $order, "
-                "e.global_order = $global_order, e.is_subevent = $sub, e.movie_id = $movie_id",
+                "e.global_order = $global_order, e.is_subevent = $sub, "
+                "e.evidence_frame_ids = $evf, e.movie_id = $movie_id",
                 id=ev.id, type=ev.event_type, topic=ev.topic, desc=ev.description,
                 sid=ev.scene_id, order=ev.order, global_order=go, sub=ev.is_subevent,
-                movie_id=ev.movie_id)
+                evf=ev.evidence_frame_ids, movie_id=ev.movie_id)
             self.session.run(
                 "MATCH (e:Event {id: $eid}), (s:Scene {id: $sid}) "
                 "MERGE (e)-[:SCENE_OF]->(s)", eid=ev.id, sid=ev.scene_id)

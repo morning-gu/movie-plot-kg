@@ -7,7 +7,8 @@ from tests.fakes import MockSession
 META = SceneMeta(scene_id="scene_001", movie_id="m1", start_ts="00:00:00",
                  end_ts="00:02:00",
                  characters=[{"name": "张三", "aliases": []}],
-                 dialogues=[], location="码头仓库", virtual_time="第一天傍晚")
+                 dialogues=[], location="码头仓库", virtual_time="第一天傍晚",
+                 description="码头对峙")
 EVENTS = [
     SceneEvent(id="evt_m1_001_01", event_type="conflict", topic="对峙",
                description="张三对峙", scene_id="scene_001", movie_id="m1",
@@ -134,3 +135,21 @@ def test_causal_links_written():
     _writer(s).write_causal_links(
         [CausalLink(cause_id="evt_m1_001_01", effect_id="evt_m1_001_02", reason="r")])
     assert any("CAUSES" in q for q, _ in s.queries)
+
+
+def test_scene_description_written():
+    s = MockSession()
+    _writer(s)  # _writer 内部调用 ensure_scene(META)
+    q, p = next((q, p) for q, p in s.queries if "MERGE (s:Scene" in q)
+    assert "s.description = $desc" in q and p["desc"] == "码头对峙"
+
+
+def test_event_evidence_written():
+    s = MockSession()
+    from movie_kg.models.extraction import SceneExtraction
+    ev = EVENTS[0].model_copy(update={"evidence_frame_ids": ["frame_001"]})
+    ext = SceneExtraction(scene_id="scene_001", movie_id="m1", status="ok",
+                          events=[ev])
+    _writer(s).write_extraction(ext, META)
+    q, p = next((q, p) for q, p in s.queries if "MERGE (e:Event" in q)
+    assert "e.evidence_frame_ids = $evf" in q and p["evf"] == ["frame_001"]

@@ -27,3 +27,17 @@ def test_all_done_filters_failed(tmp_path):
     assert store.all_done() == ["scene_001", "scene_003"]
     assert store.all_failed() == ["scene_002"]
     assert store.has("scene_002")
+
+
+def test_load_old_checkpoint_without_evidence(tmp_path):
+    import json
+    from movie_kg.extraction.checkpoints import CheckpointStore
+    store = CheckpointStore(tmp_path)
+    old = {"scene_id": "scene_001", "movie_id": "m1", "status": "ok",
+           "events": [{"id": "evt_m1_001_01", "event_type": "action", "topic": "t",
+                       "description": "d", "scene_id": "scene_001", "movie_id": "m1",
+                       "order": 1}], "relations": []}
+    store.path("scene_001").write_text(json.dumps(old), encoding="utf-8")
+    ext = store.load("scene_001")
+    assert ext is not None and ext.status == "ok"
+    assert ext.events[0].evidence_frame_ids == []

@@ -84,3 +84,28 @@ def test_parse_a1_warns_and_skips_nested_subevents(caplog):
     assert all(e.topic != "nested" for e in events)
     assert "scene_003" in caplog.text
     assert "拔枪" in caplog.text
+
+
+SHOT_META = dict(scene_id="scene_003", movie_id="m1", start_ts="00:00:00",
+                 end_ts="00:02:00", characters=ROSTER, dialogues=[], location="x",
+                 virtual_time="y",
+                 shots=[{"shot_id": "s1", "start_ts": "00:00:00", "end_ts": "00:02:00",
+                         "keyframes": [{"frame_id": "frame_001", "ts": "00:00:01"},
+                                       {"frame_id": "frame_002", "ts": "00:00:02"}]}])
+
+
+def test_parse_a1_filters_invalid_evidence(caplog):
+    meta = SceneMeta.model_validate(SHOT_META)
+    raw = _a1_raw()
+    raw["events"][0]["evidence_frame_ids"] = ["frame_001", "frame_999"]
+    raw["events"][0]["subevents"][0]["evidence_frame_ids"] = ["frame_002"]
+    with caplog.at_level(logging.WARNING, logger="movie_kg.extraction.parse"):
+        events = parse_a1(raw, meta)
+    assert events[0].evidence_frame_ids == ["frame_001"]
+    assert events[1].evidence_frame_ids == ["frame_002"]
+    assert "frame_999" in caplog.text
+
+
+def test_parse_a1_without_evidence_defaults_empty():
+    events = parse_a1(_a1_raw(), META)
+    assert all(e.evidence_frame_ids == [] for e in events)

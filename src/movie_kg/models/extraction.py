@@ -14,6 +14,7 @@ class ExtractedEvent(BaseModel):
     event_type: Literal["dialogue", "conflict", "action", "turning_point", "discovery"]
     topic: str
     description: str
+    evidence_frame_ids: list[str] = []
     participating_characters: list[Participant] = []
     subevents: list["ExtractedEvent"] = []
 
@@ -45,6 +46,7 @@ class SceneEvent(BaseModel):
     order: int
     is_subevent: bool = False
     parent_id: str | None = None
+    evidence_frame_ids: list[str] = []
     participants: list[Participant] = []
 
 

@@ -45,17 +45,24 @@ def parse_a1(raw: dict, meta: SceneMeta) -> list[SceneEvent]:
     """A1 原始输出 -> 扁平化 SceneEvent 列表(ID 确定性分配,子事件紧随父事件)。"""
     out = A1Output.model_validate(raw)
     seq = int(meta.scene_id.rsplit("_", 1)[1])
+    valid_ids = {k.frame_id for k in meta.flat_keyframes()}
     events: list[SceneEvent] = []
     counter = 0
 
     def make(ev: ExtractedEvent, parent_id: str | None) -> SceneEvent:
         nonlocal counter
         counter += 1
+        invalid = [fid for fid in ev.evidence_frame_ids if fid not in valid_ids]
+        if invalid:
+            logger.warning("场景 %s: 事件「%s」证据帧引用无效,已剔除: %s",
+                           meta.scene_id, ev.topic, ", ".join(invalid))
+        evidence = [fid for fid in ev.evidence_frame_ids if fid in valid_ids]
         return SceneEvent(
             id=f"evt_{meta.movie_id}_{seq:03d}_{counter:02d}",
             event_type=ev.event_type, topic=ev.topic, description=ev.description,
             scene_id=meta.scene_id, movie_id=meta.movie_id, order=counter,
             is_subevent=parent_id is not None, parent_id=parent_id,
+            evidence_frame_ids=evidence,
             participants=[Participant.model_validate(
                 p.model_copy(update={"name": align_name(p.name, meta.characters)}))
                 for p in ev.participating_characters])
