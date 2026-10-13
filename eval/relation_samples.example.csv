@@ -1,0 +1,2 @@
+type,start,end,props,label
+CAUSES,evt_m1_001_01,evt_m1_001_02,"{'reason': '对峙升级'}",correct

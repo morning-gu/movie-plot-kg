@@ -97,6 +97,43 @@ def ask(question: str):
     typer.echo(f"引用: {', '.join(result.cited_ids) if result.cited_ids else '(无)'}")
 
 
+@eval_app.command("build")
+def eval_build(movie: str = typer.Option(..., "--movie")):
+    """构建端评估: 角色识别 P/R/F1 + 关系抽样清单。"""
+    from pathlib import Path
+    import csv
+
+    from movie_kg.eval.build_eval import (aggregate_prf, character_prf,
+                                          sample_relations, write_build_report)
+    from movie_kg.extraction.checkpoints import CheckpointStore
+    from movie_kg.ingestion.data_loader import load_movie
+
+    movie_dir = Path("data/movies") / movie
+    data = load_movie(movie_dir)
+    store = CheckpointStore(movie_dir)
+    extractions = [e for e in (store.load(s.meta.scene_id) for s in data.scenes)
+                   if e is not None]
+    rows = character_prf(data, extractions)
+    agg = aggregate_prf(rows)
+    Path("eval").mkdir(exist_ok=True)
+    samples = []
+    driver = None
+    try:
+        driver = _make_driver(load_neo4j_config())
+        with driver.session() as session:
+            samples = sample_relations(session)
+    finally:
+        if driver is not None:
+            driver.close()
+    with open("eval/relation_samples.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["type", "start", "end", "props", "label"])
+        w.writeheader()
+        w.writerows(samples)
+    write_build_report("eval/build_report.md", rows, agg)
+    typer.echo(f"角色识别 F1={agg.get('f1')};抽样清单 -> eval/relation_samples.csv"
+               f"(人工填 label 列后重新运行可算正确率)")
+
+
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;
 # 控制台脚本 kg = movie_kg.cli:main 同样按可调用对象工作(Typer 可调用)。
 main = app
