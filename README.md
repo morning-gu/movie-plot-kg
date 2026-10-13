@@ -1,7 +1,7 @@
 # movie-plot-kg
 
 基于 Qwen 系列大模型从电影数据构建剧情事件知识图谱,提供图增强检索问答与双端评估。
-设计文档: docs/DESIGN.md(v0.2.0)。
+设计文档: docs/DESIGN.md(v0.3.0)。
 
 ## 环境准备
 
@@ -16,9 +16,10 @@
 ```
 data/movies/<movie_id>/
   movie.json                     # {"movie_id": "m1", "title": "..."}
-  video/scene_001.mp4 ...        # 按场景切割
-  subtitles/scene_001.srt ...    # 每场景台词
-  scenes/scene_001.json ...      # 场景元数据(字段见 docs/DESIGN.md 3.3)
+  video/scene_001.mp4 ...        # 输入 1: 按场景切割(重编码精确切割)
+  scenes/scene_001.json ...      # 输入 2: 场景元数据(完整台词 + 场景/镜头/关键帧标注;
+                                 #   字段与约定见 docs/DESIGN.md 3.2,时间戳一律影片
+                                 #   绝对时间,shot_id/frame_id 全局唯一)
 ```
 
 ## 使用

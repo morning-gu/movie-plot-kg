@@ -5,9 +5,9 @@
 | 字段 | 内容 |
 |-------|-------|
 | 项目名称 | movie-plot-kg |
-| 版本 | v0.2.0 |
+| 版本 | v0.3.0 |
 | 创建日期 | 2026-10-12 |
-| 最后更新 | 2026-10-12 |
+| 最后更新 | 2026-10-13 |
 
 ---
 
@@ -60,7 +60,7 @@
 
 ### 1.3 核心能力
 
-- **视觉-文本双模态抽取**: 每场景采样 ≤16 帧 + SRT 台词 + 场景元数据先验,经 Qwen3-VL 抽取结构化事件
+- **视觉-文本双模态抽取**: 每场景采样 ≤16 帧(标注关键帧优先,图文成对)+ 元数据台词(含情绪/动作)+ 场景元数据先验(角色/地点/时间/场景描述/镜头时间轴),经 Qwen3-VL 抽取结构化事件,事件携带证据帧引用
 - **事件知识图谱**: 6 类实体(Movie / Scene / Event / Character / VirtualTime / Location)、9 类关系,含全局时间线排序与角色别名归一
 - **单库混合检索**: Neo4j 5.x 原生向量索引(语义召回)+ Cypher 图遍历(结构检索),无跨库同步
 - **模板化图增强问答**: LLM 只做检索规划与总结,图查询从参数化模板库中选择,每问题固定 2 次 LLM 调用
@@ -73,7 +73,8 @@
 | 场景(Scene) | 同一时间同一地点发生的事件集合,抽取与评估的基本单元 |
 | 事件(Event) | 场景内可独立描述的剧情行为单元;子事件亦为 Event |
 | 虚拟时间(Virtual Time) | 剧情世界内部的时间,以 timeline_index 排成全序 |
-| 帧采样 | 从场景视频中均匀抽取 ≤16 帧作为视觉输入,关键帧优先 |
+| 帧采样 | 从场景视频片段采样 ≤16 帧作为视觉输入: 标注关键帧优先,不足时均匀补足,超上限时在标注列表内均匀截断 |
+| 证据帧 | 被事件引用的标注关键帧,存于 Event.evidence_frame_ids;frame_id 由输入数据保证全局唯一 |
 | Checkpoint | 每场景抽取结果落盘(JSON),支持断点续跑 |
 | 检索规划 | 问答第一次 LLM 调用,输出查询改写、目标实体与图查询模板选择 |
 | 实体绑定 | 将 LLM 给出的名称提示解析为图中实体 ID 的过程 |
@@ -93,7 +94,7 @@ CLI 交互层:    kg build | kg ask | kg eval                    (typer)
 构建层:        Phase A 场景级抽取(A1 事件 / A2 角色-角色关系,checkpoint)
                Phase B 全局 pass(B1 时间线排序 / B2 别名归一 / B3 因果抽取)
                Phase C 写入与向量化(C1 图写入 / C2 embedding / C3 全局序号)
-数据输入层:    场景视频(MP4) + 场景划分 + 场景元数据(JSON) + 台词(SRT)
+数据输入层:    场景视频片段(MP4) + 场景元数据(JSON,含完整台词与镜头/关键帧标注)
 模型层:        Qwen3-VL(抽取) / Qwen3 系文本(规划、回答、全局 pass、评估判分)
                / Qwen3-Embedding(向量化) —— 全部经 OpenAI 兼容端点(SiliconFlow 类聚合平台)
 ```
@@ -101,9 +102,9 @@ CLI 交互层:    kg build | kg ask | kg eval                    (typer)
 ### 2.2 数据流
 
 ```
-场景视频 --帧采样(≤16)--> 帧 --┐
-SRT 台词 ------------------------┤--> A1/A2(Qwen3-VL)--> checkpoints/*.json
-场景元数据(先验) ----------------┘                          |
+场景视频片段 --帧采样(≤16,标注关键帧优先)--> 帧 --┐
+元数据台词(完整转写,含情绪/动作) ------------------┤--> A1/A2(Qwen3-VL)--> checkpoints/*.json
+标注先验(场景描述/镜头时间轴/关键帧配文) ------------┘                          |
                                                            v
               B1/B2/B3 全局 pass(时间线 / 别名 / 因果) <---+
                                 |
@@ -126,23 +127,22 @@ SRT 台词 ------------------------┤--> A1/A2(Qwen3-VL)--> checkpoints/*.json
 
 ```
 data/movies/<movie_id>/
-  video/scene_001.mp4 ...          # 按场景切割的视频片段
-  subtitles/scene_001.srt ...      # 每场景台词(必备)
-  scenes/scene_001.json ...        # 场景元数据(手工标注)
+  video/scene_001.mp4 ...          # 输入 1: 按场景切割的视频片段(重编码精确切割)
+  scenes/scene_001.json ...        # 输入 2: 场景元数据(手工标注)
   checkpoints/scene_001.json ...   # 构建期生成(非输入)
 ```
 
-### 3.1 输入 1: 场景视频(MP4)
+v0.3.0 起 SRT 不再是输入:台词以完整转写形式内嵌于场景元数据 dialogues(含情绪/动作标注),输入由 3 类减为 2 类。
 
-唯一视觉来源。构建时每场景**均匀采样 ≤16 帧**;若元数据提供关键帧时间点(keyframes),优先包含后用均匀采样补足。
+### 3.1 输入 1: 场景视频片段(MP4)
 
-**音频轨不输入模型** —— 音频信息经 SRT 台词进入系统,不引入 Whisper。系统为"视觉帧 + 文本"双模态(原 v0.1 宣称"融合音频"名不副实,已修正)。
+唯一视觉来源。构建时每场景采样 ≤16 帧:**标注关键帧优先**(元数据 shots[].keyframes),不足 max_frames 时均匀采样补足,超过上限时在标注列表内均匀截断;标注帧与配文成对进入多模态消息。
 
-### 3.2 输入 2: 场景划分
+**音频轨不输入模型** —— 音频信息经元数据台词进入系统,不引入 Whisper。系统为"视觉帧 + 文本"双模态(原 v0.1 宣称"融合音频"名不副实,已修正)。
 
-场景切分点列表,每场景含 scene_id、起止时间戳。场景间顺序即播放顺序。
+片段须与场景窗口精确对应(重编码切割):时长 ≈ `end_ts − start_ts`,校验容差 ±2s。
 
-### 3.3 输入 3: 场景元数据(手工标注,JSON)
+### 3.2 输入 2: 场景元数据(手工标注,JSON)
 
 每个场景一个 JSON 文件,pydantic schema 校验:
 
@@ -159,18 +159,38 @@ data/movies/<movie_id>/
   ],
   "location": "码头仓库",
   "virtual_time": "第一天傍晚",
+  "description": "张三与李四在码头仓库对峙,谈判破裂后拔枪相向。",
   "props": ["枪", "皮箱"],
-  "keyframes": ["00:03:30", "00:04:45"]
+  "shots": [
+    {"shot_id": "shot_001", "start_ts": "00:03:12", "end_ts": "00:03:40",
+     "shot_type": "中景", "description": "两人隔桌对坐,气氛紧绷",
+     "keyframes": [
+       {"frame_id": "frame_001", "ts": "00:03:30", "frame_type": "特写",
+        "description": "张三的手按在桌上的枪上"}
+     ]}
+  ]
 }
 ```
 
-必备字段:scene_id / movie_id / start_ts / end_ts / characters / dialogues / location / virtual_time;可选:aliases、emotion、action、props、keyframes。
+必备字段:scene_id / movie_id / start_ts / end_ts / characters / dialogues / location / virtual_time;可选:aliases、emotion、action、description、props、shots。shot 内必备 shot_id / start_ts / end_ts,可选 shot_type / description / keyframes;keyframe 内必备 frame_id / ts,可选 frame_type / description。
 
-**双重角色**: 抽取先验(角色名单用于名称对齐,标注地点/时间作为提示)+ 构建端评估 ground truth(见第 8 章)。
+**场景顺序**: scene_id 序号即播放顺序(原"场景划分"独立输入已并入元数据,场景起止即窗口)。
 
-### 3.4 输入校验
+**时间戳约定**: 元数据内一律影片绝对时间(HH:MM:SS)—— dialogue.ts、shot 起止、keyframe.ts 均须落在场景窗口 [start_ts, end_ts] 内;换算为片段内偏移是 loader 的职责,标注侧与 prompt 展示侧永远使用绝对时间。
 
-`kg build` 首先跑 schema 校验:文件齐全、时间戳单调且在影片范围内、dialogues.char 能对齐到 characters(含 aliases)、SRT 时间范围与场景区间一致。校验失败即报错退出,不进入抽取。
+**ID 约定**: shot_id / frame_id 由输入数据保证全局唯一(整部电影范围,校验跨场景查重);frame_type / shot_type 为自由文本,不做词表校验。
+
+**双重角色**: 抽取先验(角色名单用于名称对齐,标注地点/时间/场景描述/镜头时间轴/关键帧配文作为提示)+ 构建端评估 ground truth(见第 8 章;描述类字段仅作先验,不进评估指标)。
+
+### 3.3 输入校验
+
+`kg build` 首先跑 schema 校验,collect-all 一次报齐,校验失败即报错退出,不进入抽取:
+
+- 文件齐全(视频 + 场景 JSON)、movie_id 与目录一致
+- 场景窗口单调且互不重叠;dialogue.ts / keyframe.ts / shot 起止 ∈ 场景窗口
+- dialogues.char 能对齐到 characters(含 aliases)
+- shot 窗口互不重叠;shot_id / frame_id 跨场景全局唯一
+- 片段可打开且时长 ≈ end − start(容差 ±2s)
 
 ---
 
@@ -202,7 +222,7 @@ Neo4j label: `:Movie`
 | start_ts / end_ts | string | 是 | 起止时间戳 |
 | annotated_location | string | 否 | 标注地点(评估对照用) |
 | annotated_time | string | 否 | 标注虚拟时间 |
-| summary | string | 否 | 场景概要(事件 topic 汇总生成) |
+| description | string | 否 | 标注场景描述(元数据 description;v0.1 设想的生成式 summary 未实现,被标注描述取代) |
 
 Neo4j label: `:Scene`(v0.1 中 SCENE_OF 指向未定义的"辅助节点",已正式节点化)
 
@@ -218,6 +238,7 @@ Neo4j label: `:Scene`(v0.1 中 SCENE_OF 指向未定义的"辅助节点",已正�
 | order | int | 是 | 场景内序号 |
 | global_order | int | 是 | 全局序号(seq × 1000 + order),排序查询免递归 |
 | is_subevent | bool | 是 | 是否为子事件(默认 false) |
+| evidence_frame_ids | string[] | 否 | 证据帧引用(全局唯一 frame_id);A1 输出,无效引用剔除并告警,缺省为空数组 |
 
 时间与地点**不存节点属性,只建边**(OCCURS_AT / LOCATED_AT),避免双写漂移。
 
@@ -316,7 +337,7 @@ Neo4j label: `:Location`
 
 #### 4.2.7 明确排除: COREF(事件共指)
 
-理由: 单部电影、字幕驱动的场景化抽取中,同一事件的跨场景提及已通过场景元数据(角色/时间标注)间接对齐;显式共指链边际收益低,且标注与评估成本高。列为 future work。
+理由: 单部电影、台词驱动的场景化抽取中,同一事件的跨场景提及已通过场景元数据(角色/时间标注)间接对齐;显式共指链边际收益低,且标注与评估成本高。列为 future work。
 
 ---
 
@@ -335,8 +356,8 @@ kg build --movie m1 [--from-scratch] [--scenes 1-5]
 
 #### A1 事件抽取(每场景 1 次调用)
 
-输入: 采样帧(≤16,`image_url`)+ 本场景 SRT 台词全文 + 场景元数据先验(角色名单/标注地点/标注时间)
-输出: `events[]` —— 事件与子事件均为结构化对象;participants 带 emotion / role_description / items
+输入: 采样帧(≤16,标注关键帧优先;`image_url` 与配文按时间戳交错)+ 元数据台词全文(含情绪/动作)+ 场景元数据先验(角色名单/标注地点/标注时间/场景描述/道具/镜头时间轴)
+输出: `events[]` —— 事件与子事件均为结构化对象;participants 带 emotion / role_description / items;事件与子事件均带 evidence_frame_ids(证据帧引用)
 
 Prompt 模板(`config/prompts/event_extraction.md`):
 
@@ -344,12 +365,18 @@ Prompt 模板(`config/prompts/event_extraction.md`):
 你是影视剧剧情分析专家。分析以下场景的帧序列与台词,提取剧情事件。
 
 场景先验: 角色名单={...}, 标注地点={...}, 标注时间={...}
-台词(SRT): {...}
+场景描述: {...}
+道具: {...}
+台词: {...}
+镜头时间轴: {...}
 
 要求:
 - 事件按发生顺序排列;子事件同样输出完整结构,不输出纯文本描述
 - 角色名必须从角色名单中选择;无法确定时标记 "未识别:原名"
 - event_type ∈ dialogue / conflict / action / turning_point / discovery
+- 标注描述(场景/镜头/关键帧)仅为辅助线索,判断以画面与台词为准
+- 每个事件与子事件给出 evidence_frame_ids: 支撑该事件的关键帧 ID,
+  只能引用本场景出现过的 frame_id;无法确定时给空数组
 
 输出 JSON:
 {
@@ -357,12 +384,13 @@ Prompt 模板(`config/prompts/event_extraction.md`):
     "event_type": "...",
     "topic": "...",
     "description": "...",
+    "evidence_frame_ids": ["..."],
     "participating_characters": [
       {"name": "...", "emotion": "...", "role_description": "...", "items": ["..."]}
     ],
     "subevents": [
       {"event_type": "...", "topic": "...", "description": "...",
-       "participating_characters": ["...同上结构..."]}
+       "evidence_frame_ids": [], "participating_characters": ["...同上结构..."]}
     ]
   }]
 }
@@ -381,10 +409,11 @@ A1/A2 拆分解决了 v0.1 单 Prompt 输出过载的问题(事件+子事件+角
 - 重跑自动跳过已完成场景;`--from-scratch` 忽略全部 checkpoint
 - JSON 解析失败重试 3 次(temperature 0.1);仍失败标记该场景 `failed`,**不阻塞后续场景**,构建结束汇总 failed 清单
 - **角色名对齐**: 以元数据角色名单为字典做模糊匹配(编辑距离 ≤2 或包含关系);未匹配保留 `未识别:原名` 并在日志告警,不静默丢弃
+- **证据帧过滤**: evidence_frame_ids 仅保留本场景出现过的 frame_id,无效引用剔除并告警,不因引用错误废弃场景
 
 #### 成本控制
 
-`kg build --movie m1 --scenes 1-5` 先试跑校准每场景 token 消耗,据此外推全片成本后再全量构建。成本公式: 每场景 ≈ 帧数 × 每帧 token + 台词/先验文本 + prompt 模板;全片 = 场景数 × (A1 + A2)。
+`kg build --movie m1 --scenes 1-5` 先试跑校准每场景 token 消耗,据此外推全片成本后再全量构建。成本公式: 每场景 ≈ 帧数 × 每帧 token + 台词/场景描述/镜头时间轴/帧配文文本 + prompt 模板;全片 = 场景数 × (A1 + A2)。
 
 ### 5.3 Phase B: 全局 pass
 
@@ -517,6 +546,8 @@ v0.2 不实现。机制预留:LLM-1 的输入加入对话历史即可扩展(规�
 | 关系正确率 | 每类关系(PRECEDES / CAUSES / SUBEVENT_OF / PARTICIPATES_IN / RELATED_TO)各随机抽 30–50 条,人工判对错,报每类 accuracy | 抽样人评 |
 | 时间线一致性(可选) | timeline_index vs 人工排序,Kendall's tau | 半自动 |
 
+留口: `Event.evidence_frame_ids`(证据帧引用)已随构建入图,供人工核对事件幻觉时按帧回溯;本轮不作为量化指标。
+
 ### 8.2 问答端
 
 **QA 集**(`eval/qa_set.yaml`,手工编写): 50–100 题,5 类意图(factual / causal / relational / temporal / synthesis)每类 ≥10 题;每题含 question / gold_answer / gold_entity_ids / intent。
@@ -600,7 +631,7 @@ movie-plot-kg/
   src/movie_kg/
     config.py
     models/            # pydantic: entities, relations, scene, extraction
-    ingestion/         # data_loader(schema 校验), frame_sampler
+    ingestion/         # data_loader(schema 校验), frame_sampler, timefmt(时间戳)
     extraction/        # event_extractor(A1), relation_extractor(A2), global_passes(B1-B3)
     graph/             # schema(DDL), writer(C1/C3), query_templates(7 个)
     embeddings/        # embedder(C2)
@@ -693,7 +724,8 @@ pytest>=8.0            # dev
 |------|------|------|
 | v0.1.0 | 2026-10-12 | 初稿: GPT-4o + Neo4j/Qdrant 双库 + 5 步 QA + API 服务 |
 | v0.2.0 | 2026-10-12 | 范围收缩到核心闭环(CLI、单轮、砍 FastAPI/Celery/LangChain/Whisper);单库 Neo4j(原生向量索引)替代双库;模型栈切换为 Qwen 系列(SiliconFlow 端点);QA 5 步收敛为 2 次 LLM 调用 + 7 个参数化图查询模板(LLM 不再生成 Cypher);构建流程重构为 3 Phase(A 场景级双 Prompt + JSONL checkpoint,B 全局 pass:时间线/别名/因果,C 写入向量化);图谱模式修订(新增 Movie/Scene 实体与 movie_id、VirtualTime.timeline_index、PRECEDES 链式、结构化子事件、RELATED_TO 单边、COREF 明确排除);输入规范修订(音频删除、帧预算 ≤16、元数据 JSON Schema 定稿并兼作评估 ground truth);新增第 8 章评估方案(构建端 + 问答端 + 消融)与量化验收标准 |
-| v0.2.1 | 2026-10-14 | §7.2 勘误:检索规划示例参数键 event_hint→id(与模板参数契约一致) |
+| v0.2.1 | 2026-10-13 | §7.2 勘误:检索规划示例参数键 event_hint→id(与模板参数契约一致) |
+| v0.3.0 | 2026-10-13 | 输入简化与标注增富:SRT 不再作为输入(台词完整转写内嵌元数据 dialogues),输入 3 类减为 2 类;元数据新增 description、shots(镜头)与结构化 keyframes(frame_id/ts/frame_type/description),keyframes 由纯时间戳数组升级,props 转为抽取先验;时间戳统一为影片绝对时间(修正 keyframes 相对/绝对不一致的隐性缺陷);shot_id/frame_id 由输入保证全局唯一;A1 全面 grounding(台词含情绪/动作、场景描述/道具/镜头时间轴进先验,关键帧图文成对交错);A1 输出与 Event 节点新增 evidence_frame_ids 证据帧引用(无效引用剔除并告警);Scene 节点新增 description(取代未实现的生成式 summary);输入校验升级(dialogue/keyframe/shot 窗口、shot 重叠、跨场景 ID 查重、片段时长 ±2s) |
 
 ---
 
