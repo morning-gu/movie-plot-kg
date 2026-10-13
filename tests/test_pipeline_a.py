@@ -34,6 +34,21 @@ def test_phase_a_failure_does_not_block(tmp_path):
     assert store.load("scene_001").status == "failed"
 
 
+def test_phase_a_bad_evidence_index_fails_not_crashes(tmp_path):
+    # A2 的 evidence_event_index 越界(parse_a2 抛 ValueError)不得中断整个 Phase A
+    d = make_movie_dir(tmp_path)
+    movie = load_movie(d)
+    store = CheckpointStore(d)
+    bad_a2 = {"character_relations": [
+        {"char_a": "张三", "char_b": "李四", "relation_type": "enemy",
+         "is_new": True, "change_description": None, "evidence_event_index": 99}]}
+    llm = ScriptedLLM(A1, bad_a2, A1, A2)  # scene1 A1+越界 A2;scene2 正常
+    result = run_phase_a(llm, movie, store)
+    assert result.failed == ["scene_001"]
+    assert result.completed == ["scene_002"]
+    assert store.load("scene_001").status == "failed"
+
+
 def test_phase_a_skips_completed_on_rerun(tmp_path):
     d = make_movie_dir(tmp_path)
     movie = load_movie(d)

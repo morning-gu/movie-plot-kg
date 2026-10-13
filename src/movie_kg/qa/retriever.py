@@ -68,7 +68,9 @@ def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 5) -> list[Evidence
         params = {k: (bound.get(v, v) if isinstance(v, str) else v)
                   for k, v in gq.params.items()}
         try:
-            rows = execute_template(session, gq.template_id, params)
+            # list(...) 立即消费: 真 driver 的 Result 是惰性的,迭代错误必须
+            # 落在本 try 内,否则 DB 运行时错误会绕过授权的 catch 中断问答
+            rows = list(execute_template(session, gq.template_id, params))
         except Exception:
             continue  # 模板参数不合法(如绑定失败)时跳过,不中断问答
         for row in rows:

@@ -1,5 +1,5 @@
 from movie_kg.extraction.global_passes import AliasPlan, MergeGroup
-from movie_kg.graph.writer import GraphWriter, char_id, vt_id
+from movie_kg.graph.writer import GraphWriter, char_id, loc_id, vt_id
 from movie_kg.models.extraction import Participant, ResolvedRelation, SceneEvent
 from movie_kg.models.scene import SceneMeta
 from tests.fakes import MockSession
@@ -104,6 +104,28 @@ def test_apply_vt_order_sets_index_and_description():
     assert "MATCH (vt:VirtualTime {id: $id})" in q and "{name:" not in q
     assert p["id"] == vt_id("m1", "第一天傍晚")
     assert p["idx"] == 0 and p["desc"] == "开始之夜"
+
+
+def test_apply_alias_plan_writes_aliases_and_description():
+    # B2 结果必须写回图上,否则 bind_entities 的别名匹配失效、C2 嵌入裸名
+    s = MockSession()
+    plan = AliasPlan(
+        characters=[MergeGroup(canonical="张三", aliases=["老张"],
+                               description="码头头目")],
+        locations=[MergeGroup(canonical="码头仓库", aliases=["旧仓库"],
+                              description="仓库内部")])
+    GraphWriter(s).apply_alias_plan(plan, "m1")
+    char_calls = [(q, p) for q, p in s.queries if "Character" in q]
+    assert char_calls and "SET c.aliases" in char_calls[0][0] \
+        and "c.description" in char_calls[0][0]
+    cp = char_calls[0][1]
+    assert cp["id"] == char_id("m1", "张三")
+    assert cp["aliases"] == ["老张"] and cp["description"] == "码头头目"
+    loc_calls = [(q, p) for q, p in s.queries if "Location" in q]
+    assert loc_calls and "SET l.aliases" in loc_calls[0][0]
+    lp = loc_calls[0][1]
+    assert lp["id"] == loc_id("m1", "码头仓库")
+    assert lp["aliases"] == ["旧仓库"] and lp["description"] == "仓库内部"
 
 
 def test_causal_links_written():

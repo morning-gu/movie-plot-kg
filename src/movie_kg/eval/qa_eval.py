@@ -100,8 +100,9 @@ def summarize(results: list[QAResult]) -> dict:
     }
 
 
-def write_qa_report(path: str | Path, results: list[QAResult], summary: dict) -> None:
-    lines = ["# 问答端评估报告\n", "## 汇总\n",
+def write_qa_report(path: str | Path, results: list[QAResult], summary: dict,
+                    mode: str = "full") -> None:
+    lines = ["# 问答端评估报告\n", f"\n运行模式: {mode}\n", "## 汇总\n",
              md_table(["指标", "值"], [[k, v] for k, v in summary.items()
                                        if k != "per_intent"])]
     if summary.get("per_intent"):

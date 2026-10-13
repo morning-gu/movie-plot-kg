@@ -74,6 +74,7 @@ def build(movie: str = typer.Option(..., "--movie"),  # typer 0.27 无默认参�
             writer.write_relations(ext.relations, data.movie_id)
         writer.apply_vt_order(ordered_vts, data.movie_id)
         writer.write_causal_links(causal)
+        writer.apply_alias_plan(alias_plan, data.movie_id)
         n = embed_all(session, llm, data.movie_id)
     driver.close()
     typer.echo(f"完成: 嵌入 {n} 个实体。图谱就绪。")
@@ -123,14 +124,15 @@ def eval_build(movie: str = typer.Option(..., "--movie")):
     try:
         driver = _make_driver(load_neo4j_config())
         with driver.session() as session:
-            samples = sample_relations(session)
+            samples = sample_relations(session, data.movie_id)
     finally:
         if driver is not None:
             driver.close()
     samples_path = Path("eval/relation_samples.csv")
     existing: list[dict] = []
     if samples_path.exists():
-        with open(samples_path, newline="", encoding="utf-8") as f:
+        # utf-8-sig: 兼容人工用 Excel 编辑过的 CSV(带 BOM),首列键不残留
+        with open(samples_path, newline="", encoding="utf-8-sig") as f:
             existing = list(csv.DictReader(f))
     samples = merge_labels(existing, samples)
     with open(samples_path, "w", newline="", encoding="utf-8") as f:
@@ -165,9 +167,10 @@ def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
     driver.close()
     judged = judge_answers(llm, items, results)
     summary = summarize(judged)
-    write_qa_report("eval/qa_report.md", judged, summary)
+    report_path = f"eval/qa_report_{mode}.md"
+    write_qa_report(report_path, judged, summary, mode=mode)
     typer.echo(f"accuracy={summary['overall_accuracy']} "
-               f"hit_rate={summary['mean_hit_rate']} -> eval/qa_report.md")
+               f"hit_rate={summary['mean_hit_rate']} -> {report_path}")
 
 
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;

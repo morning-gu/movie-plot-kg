@@ -145,6 +145,22 @@ class GraphWriter:
                 "vt.description = $desc", id=vt_id(movie_id, o.name),
                 idx=o.timeline_index, desc=o.description)
 
+    def apply_alias_plan(self, plan: AliasPlan, movie_id: str) -> None:
+        """B2 别名/描述写回图(无条件 SET:分组即 B2 真值),
+        使 bind_entities 的别名匹配与 C2 描述嵌入生效。"""
+        for g in plan.characters:
+            self.session.run(
+                "MATCH (c:Character {id: $id}) SET c.aliases = $aliases, "
+                "c.description = $description",
+                id=char_id(movie_id, g.canonical), aliases=g.aliases,
+                description=g.description)
+        for g in plan.locations:
+            self.session.run(
+                "MATCH (l:Location {id: $id}) SET l.aliases = $aliases, "
+                "l.description = $description",
+                id=loc_id(movie_id, g.canonical), aliases=g.aliases,
+                description=g.description)
+
     def write_causal_links(self, links: list[CausalLink]) -> None:
         for l in links:
             self.session.run(

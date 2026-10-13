@@ -43,10 +43,12 @@ def test_aggregate_prf():
 
 def test_sample_relations_queries_each_type():
     session = MockSession(results=[[{"start": "a", "end": "b", "props": {}}] * 5] * 5)
-    rows = sample_relations(session, n_per_type=5)
+    rows = sample_relations(session, "m1", n_per_type=5)
     assert len(rows) == 25
     assert {r["type"] for r in rows} == {
         "PRECEDES", "CAUSES", "SUBEVENT_OF", "PARTICIPATES_IN", "RELATED_TO"}
+    # 抽样必须按 movie_id 圈定范围,不跨影片
+    assert all(p["movie"] == "m1" for _, p in session.queries)
 
 
 def test_score_relation_samples():

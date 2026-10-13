@@ -56,7 +56,9 @@ def run_phase_a(llm, movie: MovieData, store: CheckpointStore,
                                        movie_id=movie.movie_id, status="ok",
                                        events=events, relations=relations))
             result.completed.append(scene.meta.scene_id)
-        except LLMError:
+        except (LLMError, ValueError):
+            # ValueError: LLM 输出结构合法但语义越界(如 evidence_event_index 越界,
+            # parse_a2 抛出);同 LLMError 一样标记场景失败,不阻塞后续场景(§5.2)
             store.save(SceneExtraction(scene_id=scene.meta.scene_id,
                                        movie_id=movie.movie_id, status="failed"))
             result.failed.append(scene.meta.scene_id)

@@ -78,6 +78,17 @@ def test_judge_and_summarize():
     assert s["per_intent"]["factual"]["accuracy"] == 1.0
 
 
+def test_report_records_mode(tmp_path):
+    items = load_qa_set(_make_set())
+    session = MockSession(results=[[], [], [], []])
+    results = run_qa(session, ScriptedLLM(PLAN, ANSWER), items, mode="full")
+    judged = judge_answers(ScriptedLLM(JUDGE_OK), items, results)
+    out = tmp_path / "qa_report_vector-only.md"
+    write_qa_report(out, judged, summarize(judged), mode="vector-only")
+    text = out.read_text(encoding="utf-8")
+    assert "运行模式: vector-only" in text
+
+
 def test_report_written(tmp_path):
     items = load_qa_set(_make_set())
     session = MockSession(results=[[], [], [], []])

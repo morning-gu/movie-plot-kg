@@ -32,7 +32,7 @@ B3 = {"causal_links": [{"cause_id": "evt_m1_001_01", "effect_id": "evt_m1_001_02
 PLAN = {"intent": "causal", "rewritten_query": "导致敌对的事件链",
         "target_entities": [{"type": "Character", "name_hint": "张三"}],
         "graph_queries": [{"template_id": "causes_of",
-                           "params": {"event_hint": "对峙", "depth": 3}}]}
+                           "params": {"id": "对峙", "depth": 3}}]}
 ANSWER = {"answer": "对峙升级引发拔枪,两人转为敌对。",
           "cited_ids": ["evt_m1_001_01", "evt_m1_001_02"]}
 

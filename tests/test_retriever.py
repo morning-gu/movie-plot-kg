@@ -63,6 +63,27 @@ def test_retrieve_executes_bound_templates_and_dedupes():
     assert len(evidence) == 3
 
 
+def test_retrieve_substitutes_id_key_via_binding():
+    # causes_of 等模板要求 params 键为 id;绑定后 name_hint 必须替换为实体 ID
+    plan = RetrievalPlan(
+        intent="causal", rewritten_query="导致对峙的事件链",
+        target_entities=[TargetEntity(type="Event", name_hint="对峙")],
+        graph_queries=[GraphQueryPlan(
+            template_id="causes_of", params={"id": "对峙", "depth": 3})])
+    # 队列: 4 次向量召回 + 1 次绑定查询 + 1 次模板执行
+    session = MockSession(results=[
+        [], [], [], [],                       # 向量召回(4 索引)
+        [{"id": "evt_m1_001_01"}],            # 绑定: 对峙 -> 事件 ID
+        [{"path": {"id": "evt_m1_000_01", "topic": "争执", "description": "d",
+                   "event_type": "conflict"}}],   # 模板结果(causes_of 返回 path)
+    ])
+    evidence = retrieve(session, ScriptedLLM(), plan)
+    template_calls = [(q, p) for q, p in session.queries if "CAUSES" in q]
+    assert template_calls, "必须执行 causes_of 模板"
+    assert template_calls[-1][1]["id"] == "evt_m1_001_01"  # name_hint 已替换为 ID
+    assert any(e.source == "graph" for e in evidence)
+
+
 def test_retrieve_vector_only_when_no_graph_queries():
     plan = RetrievalPlan(intent="factual", rewritten_query="q",
                          target_entities=[], graph_queries=[])

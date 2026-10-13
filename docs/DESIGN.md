@@ -471,7 +471,7 @@ RETURN node, score
   "intent": "factual | causal | relational | temporal | synthesis",
   "rewritten_query": "向量检索查询文本",
   "target_entities": [{"type": "Character|Event|VirtualTime|Location", "name_hint": "张三"}],
-  "graph_queries": [{"template_id": "causes_of", "params": {"event_hint": "决裂", "depth": 3}}]
+  "graph_queries": [{"template_id": "causes_of", "params": {"id": "决裂", "depth": 3}}]
 }
 ```
 
@@ -693,7 +693,8 @@ pytest>=8.0            # dev
 |------|------|------|
 | v0.1.0 | 2026-10-12 | 初稿: GPT-4o + Neo4j/Qdrant 双库 + 5 步 QA + API 服务 |
 | v0.2.0 | 2026-10-12 | 范围收缩到核心闭环(CLI、单轮、砍 FastAPI/Celery/LangChain/Whisper);单库 Neo4j(原生向量索引)替代双库;模型栈切换为 Qwen 系列(SiliconFlow 端点);QA 5 步收敛为 2 次 LLM 调用 + 7 个参数化图查询模板(LLM 不再生成 Cypher);构建流程重构为 3 Phase(A 场景级双 Prompt + JSONL checkpoint,B 全局 pass:时间线/别名/因果,C 写入向量化);图谱模式修订(新增 Movie/Scene 实体与 movie_id、VirtualTime.timeline_index、PRECEDES 链式、结构化子事件、RELATED_TO 单边、COREF 明确排除);输入规范修订(音频删除、帧预算 ≤16、元数据 JSON Schema 定稿并兼作评估 ground truth);新增第 8 章评估方案(构建端 + 问答端 + 消融)与量化验收标准 |
+| v0.2.1 | 2026-10-14 | §7.2 勘误:检索规划示例参数键 event_hint→id(与模板参数契约一致) |
 
 ---
 
-*文档版本: v0.2.0 | 最后更新: 2026-10-12*
+*文档版本: v0.2.1 | 最后更新: 2026-10-14*

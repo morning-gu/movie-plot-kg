@@ -52,15 +52,17 @@ def aggregate_prf(rows: list[ScenePRF]) -> dict:
             "f1": round(sum(r.f1 for r in rows) / n, 4)}
 
 
-def sample_relations(session, n_per_type: int = 30, seed: int = 42) -> list[dict]:
+def sample_relations(session, movie_id: str, n_per_type: int = 30,
+                     seed: int = 42) -> list[dict]:
     rng = random.Random(seed)
     rows: list[dict] = []
     for rtype in RELATION_TYPES:
         if not isinstance(n_per_type, int) or n_per_type < 0:
             raise ValueError("n_per_type 必须为非负整数")
         recs = list(session.run(
-            f"MATCH (a)-[r:{rtype}]->(b) RETURN a.id AS start, b.id AS end, "
-            "properties(r) AS props"))
+            f"MATCH (a)-[r:{rtype}]->(b) WHERE a.movie_id = $movie "
+            "RETURN a.id AS start, b.id AS end, properties(r) AS props",
+            movie=movie_id))
         for rec in rng.sample(recs, min(n_per_type, len(recs))):
             rows.append({"type": rtype, "start": rec["start"], "end": rec["end"],
                          "props": rec["props"], "label": ""})
