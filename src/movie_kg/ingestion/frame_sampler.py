@@ -30,7 +30,7 @@ def sample_frames(video_path: Path, keyframes: list[str], max_frames: int = 16) 
                 deduped.append(ts)
         frames: list[Frame] = []
         for ts in deduped[:max_frames]:
-            container.seek(int(ts * 1_000_000), stream=stream)
+            container.seek(int(ts / stream.time_base), stream=stream)
             got = None
             for packet in container.demux(stream):
                 if got is not None:

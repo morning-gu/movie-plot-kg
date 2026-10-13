@@ -17,6 +17,7 @@ def test_keyframe_priority_included(tmp_path):
     frames = sample_frames(video, keyframes=["00:00:01"])
     assert 15 <= len(frames) <= 16  # 关键帧落在均匀网格上时允许少 1 帧
     assert any(abs(f.ts - 1.0) <= 0.5 for f in frames)
+    assert len({f.jpeg for f in frames}) > 1  # 采样点应解码出不同画面,而非同一帧
 
 
 def test_small_budget(tmp_path):
