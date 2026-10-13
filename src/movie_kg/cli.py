@@ -149,6 +149,27 @@ def eval_build(movie: str = typer.Option(..., "--movie")):
                    f"(人工填 label 列后重新运行可算正确率)")
 
 
+@eval_app.command("qa")
+def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
+            mode: str = typer.Option("full", "--mode",
+                                     help="full | vector-only(消融)")):
+    """问答端评估: 跑 QA 集 + LLM judge + 汇总(消融用 --mode vector-only)。"""
+    from movie_kg.eval.qa_eval import (judge_answers, load_qa_set, run_qa,
+                                       summarize, write_qa_report)
+
+    items = load_qa_set(qa_set)
+    llm = _make_llm(load_models_config())
+    driver = _make_driver(load_neo4j_config())
+    with driver.session() as session:
+        results = run_qa(session, llm, items, mode=mode)
+    driver.close()
+    judged = judge_answers(llm, items, results)
+    summary = summarize(judged)
+    write_qa_report("eval/qa_report.md", judged, summary)
+    typer.echo(f"accuracy={summary['overall_accuracy']} "
+               f"hit_rate={summary['mean_hit_rate']} -> eval/qa_report.md")
+
+
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;
 # 控制台脚本 kg = movie_kg.cli:main 同样按可调用对象工作(Typer 可调用)。
 main = app

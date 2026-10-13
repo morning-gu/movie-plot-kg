@@ -1,0 +1,11 @@
+items:
+  - id: q001
+    question: 张三在哪里发怒了?
+    gold_answer: 张三在码头仓库与李四对峙时发怒。
+    gold_entity_ids: [evt_m1_001_01]
+    intent: factual
+  - id: q002
+    question: 导致张三和李四决裂的事件链是什么?
+    gold_answer: 码头对峙升级,张三拔枪,两人关系转为敌对。
+    gold_entity_ids: [evt_m1_001_01, evt_m1_001_02]
+    intent: causal
