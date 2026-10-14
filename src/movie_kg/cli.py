@@ -5,6 +5,8 @@ from movie_kg.config import load_models_config, load_neo4j_config
 app = typer.Typer(help="movie-plot-kg: 剧情知识图谱构建 / 问答 / 评估")
 eval_app = typer.Typer(help="评估")
 app.add_typer(eval_app, name="eval")
+movienet_app = typer.Typer(help="MovieNet 数据接入(fetch / convert,DESIGN 3.4)")
+app.add_typer(movienet_app, name="movienet")
 
 
 def _make_llm(cfg):
@@ -171,6 +173,21 @@ def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
     write_qa_report(report_path, judged, summary, mode=mode)
     typer.echo(f"accuracy={summary['overall_accuracy']} "
                f"hit_rate={summary['mean_hit_rate']} -> {report_path}")
+
+
+@movienet_app.command()
+def fetch(movie: str = typer.Option(..., "--movie", help="IMDb tt 号,如 tt0113243"),
+          src: str = typer.Option("data/raw/movienet", "--src")):
+    """下载基础包(一次性)+ 该片关键帧 tar,并抽取四类源文件。"""
+    from pathlib import Path
+
+    from movie_kg.ingestion.movienet import fetch as mn
+    src_path = Path(src)
+    pkg = mn.fetch_base(src_path)
+    typer.echo(f"基础包就绪: {pkg}")
+    mn.extract_movie_files(pkg, movie, src_path)
+    kf = mn.fetch_keyframes(movie, src_path)
+    typer.echo(f"关键帧就绪: {kf}")
 
 
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;
