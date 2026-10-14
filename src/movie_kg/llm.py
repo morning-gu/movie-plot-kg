@@ -22,15 +22,17 @@ class LLMClient:
                   temperature: float = 0.1, max_tokens: int = 4096,
                   max_retries: int = 3) -> BaseModel:
         import openai
+        transient = (openai.APITimeoutError, openai.APIConnectionError,
+                     openai.InternalServerError, openai.RateLimitError)
         last_err: Exception | None = None
         for _ in range(max_retries):
             try:
                 resp = self._client.chat.completions.create(
                     model=model, messages=messages, temperature=temperature,
                     max_tokens=max_tokens, response_format={"type": "json_object"})
-            except (openai.APITimeoutError, openai.APIConnectionError) as e:
-                # 网络抖动/挂起:按次重试;耗尽后 LLMError → 场景级失败,
-                # 不掀翻整个构建(§5.2 失败策略)
+            except transient as e:
+                # 瞬态故障(网络抖动/挂起、5xx 过载、429 限流):按次重试;
+                # 耗尽后 LLMError → 场景级失败,不掀翻整个构建(§5.2 失败策略)
                 last_err = e
                 continue
             self._add_usage(resp)

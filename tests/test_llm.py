@@ -61,3 +61,24 @@ def test_timeout_converted_to_llmerror_after_retries():
         llm.chat_json(model="t", messages=[], schema=Out, max_retries=3)
     assert len(calls) == 3
     assert "LLM 调用失败" in str(e.value)
+
+
+def test_server_overload_converted_to_llmerror_after_retries():
+    # 5xx 过载(SiliconFlow 实测 503 System is too busy)同样按瞬态重试
+    import openai
+    from types import SimpleNamespace
+
+    calls = []
+    resp = SimpleNamespace(request=SimpleNamespace(method="POST", url="u"),
+                           status_code=503, headers={})
+
+    def create(**kwargs):
+        calls.append(1)
+        raise openai.InternalServerError("busy", response=resp, body=None)
+
+    client = SimpleNamespace(chat=SimpleNamespace(
+        completions=SimpleNamespace(create=create)))
+    llm = LLMClient(CFG, client=client)
+    with pytest.raises(LLMError):
+        llm.chat_json(model="t", messages=[], schema=Out, max_retries=3)
+    assert len(calls) == 3
