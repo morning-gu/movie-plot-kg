@@ -190,6 +190,20 @@ def fetch(movie: str = typer.Option(..., "--movie", help="IMDb tt 号,如 tt0113
     typer.echo(f"关键帧就绪: {kf}")
 
 
+@movienet_app.command()
+def convert(movie: str = typer.Option(..., "--movie"),
+            src: str = typer.Option("data/raw/movienet", "--src"),
+            out: str = typer.Option(None, "--out",
+                                    help="缺省为 data/movies/<movie>")):
+    """MovieNet → v0.4.0 输入(九 stage,自校验 + convert_report)。"""
+    from pathlib import Path
+
+    from movie_kg.ingestion.movienet import convert as mnconvert
+    out_path = Path(out) if out else Path("data/movies") / movie
+    result = mnconvert.convert(movie, Path(src), out_path)
+    typer.echo(f"转换完成: {result}(报告见 {result / 'convert_report.md'})")
+
+
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;
 # 控制台脚本 kg = movie_kg.cli:main 同样按可调用对象工作(Typer 可调用)。
 main = app
