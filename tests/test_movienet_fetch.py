@@ -41,20 +41,21 @@ def _zbytes(mapping: dict[str, bytes]) -> bytes:
 
 def _make_base_pkg(path, with_meta=True, script_movie="tt0000001",
                    subtitle_movie="tt0000001"):
+    # 成员名带 "./" 前缀——对齐真实 MovieNet.tar.gz 的形状(tar czf 产物)
     zips = {
-        "files/annotation.v1.zip": _zbytes(
+        "./files/annotation.v1.zip": _zbytes(
             {"annotation/annotation/tt0000001.json":
              json.dumps({"imdb_id": "tt0000001"})}),
-        "files/subtitle1K.v1.zip": _zbytes(
+        "./files/subtitle1K.v1.zip": _zbytes(
             {f"subtitle/subtitle/{subtitle_movie}.srt":
              "1\n00:00:00,500 --> 00:00:02,000\nhi\n"}),
-        "files/script1K.v1.zip": _zbytes(
+        "./files/script1K.v1.zip": _zbytes(
             {f"script/script/{script_movie}.script":
              "INT. OFFICE\n\n   ALICE\n hi\n"}),
-        "files/poster4M.meta.v1.json": b"{}",
+        "./files/poster4M.meta.v1.json": b"{}",
     }
     if with_meta:
-        zips["files/meta.v1.zip"] = _zbytes(
+        zips["./files/meta.v1.zip"] = _zbytes(
             {"meta/tt0000001.json": json.dumps({"title": "Mini"})})
     with tarfile.open(path, "w:gz") as tf:
         for member, data in zips.items():

@@ -245,10 +245,11 @@ def extract_movie_files(pkg: Path, movie: str, src: Path) -> None:
     wanted = {member: (d, fmt.format(m=movie)) for member, (d, fmt)
               in _ZIP_MEMBERS.items()}
     with tarfile.open(pkg, "r:gz") as tf:
-        for member in tf:  # 顺序扫描一次
-            if member.name not in wanted:
+        for member in tf:  # 顺序扫描一次(实际包内成员带 "./" 前缀,归一后匹配)
+            name = member.name.removeprefix("./")
+            if name not in wanted:
                 continue
-            dest_dir, dest_name = wanted[member.name]
+            dest_dir, dest_name = wanted[name]
             dest = src / dest_dir / dest_name
             if dest.exists():
                 continue
