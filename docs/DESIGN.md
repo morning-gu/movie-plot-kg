@@ -5,9 +5,9 @@
 | 字段 | 内容 |
 |-------|-------|
 | 项目名称 | movie-plot-kg |
-| 版本 | v0.3.0 |
+| 版本 | v0.4.0 |
 | 创建日期 | 2026-10-12 |
-| 最后更新 | 2026-10-13 |
+| 最后更新 | 2026-10-14 |
 
 ---
 
@@ -34,7 +34,7 @@
 
 ### 1.1 目标
 
-构建一个基于大模型的系统,从单部中文电影的结构化数据中自动构建剧情事件知识图谱,并提供基于图谱的检索问答能力。系统覆盖:场景级事件抽取、全局关系建模、Neo4j 单库存储(图 + 向量)、模板化图增强问答,以及构建端与问答端的双重量化评估。
+构建一个基于大模型的系统,从单部电影的结构化数据中自动构建剧情事件知识图谱,并提供基于图谱的检索问答能力。系统覆盖:场景级事件抽取、全局关系建模、Neo4j 单库存储(图 + 向量)、模板化图增强问答,以及构建端与问答端的双重量化评估。
 
 本项目为研究性项目,验证两个命题:
 
@@ -60,7 +60,8 @@
 
 ### 1.3 核心能力
 
-- **视觉-文本双模态抽取**: 每场景采样 ≤16 帧(标注关键帧优先,图文成对)+ 元数据台词(含情绪/动作)+ 场景元数据先验(角色/地点/时间/场景描述/镜头时间轴),经 Qwen3-VL 抽取结构化事件,事件携带证据帧引用
+- **视觉-文本双模态抽取**: 每场景从关键帧目录选择 ≤16 帧(图文成对)+ 元数据台词(含情绪/动作)+ 场景元数据先验(角色/地点/时间/场景描述/镜头时间轴),经 Qwen3-VL 抽取结构化事件,事件携带证据帧引用
+- **MovieNet 免片源接入**: `kg movienet fetch/convert` 离线转换器,将 MovieNet(movie1K)已发布的标注/字幕/剧本/关键帧转换为 v0.4.0 输入(见 3.4)
 - **事件知识图谱**: 6 类实体(Movie / Scene / Event / Character / VirtualTime / Location)、9 类关系,含全局时间线排序与角色别名归一
 - **单库混合检索**: Neo4j 5.x 原生向量索引(语义召回)+ Cypher 图遍历(结构检索),无跨库同步
 - **模板化图增强问答**: LLM 只做检索规划与总结,图查询从参数化模板库中选择,每问题固定 2 次 LLM 调用
@@ -73,8 +74,9 @@
 | 场景(Scene) | 同一时间同一地点发生的事件集合,抽取与评估的基本单元 |
 | 事件(Event) | 场景内可独立描述的剧情行为单元;子事件亦为 Event |
 | 虚拟时间(Virtual Time) | 剧情世界内部的时间,以 timeline_index 排成全序 |
-| 帧采样 | 从场景视频片段采样 ≤16 帧作为视觉输入: 标注关键帧优先,不足时均匀补足,超上限时在标注列表内均匀截断 |
-| 证据帧 | 被事件引用的标注关键帧,存于 Event.evidence_frame_ids;frame_id 由输入数据保证全局唯一 |
+| 帧选择 | 从场景关键帧目录选择 ≤16 帧作为视觉输入: 按时间戳排序,超上限时在列表内均匀截断(v0.4.0 起替代视频采样,无补帧) |
+| 证据帧 | 被事件引用的关键帧,存于 Event.evidence_frame_ids;frame_id 由输入数据保证全局唯一,帧文件名 = `{frame_id}.jpg` |
+| MovieNet 转换器 | 将 MovieNet 标注/字幕/剧本/关键帧转换为 v0.4.0 输入的离线工具(`kg movienet fetch/convert`),见 3.4 |
 | Checkpoint | 每场景抽取结果落盘(JSON),支持断点续跑 |
 | 检索规划 | 问答第一次 LLM 调用,输出查询改写、目标实体与图查询模板选择 |
 | 实体绑定 | 将 LLM 给出的名称提示解析为图中实体 ID 的过程 |
@@ -94,7 +96,8 @@ CLI 交互层:    kg build | kg ask | kg eval                    (typer)
 构建层:        Phase A 场景级抽取(A1 事件 / A2 角色-角色关系,checkpoint)
                Phase B 全局 pass(B1 时间线排序 / B2 别名归一 / B3 因果抽取)
                Phase C 写入与向量化(C1 图写入 / C2 embedding / C3 全局序号)
-数据输入层:    场景视频片段(MP4) + 场景元数据(JSON,含完整台词与镜头/关键帧标注)
+数据输入层:    场景关键帧目录(JPEG)+ 场景元数据(JSON,含完整台词与镜头/关键帧标注);
+               MovieNet 数据经离线转换器接入(kg movienet fetch/convert)
 模型层:        Qwen3-VL(抽取) / Qwen3 系文本(规划、回答、全局 pass、评估判分)
                / Qwen3-Embedding(向量化) —— 全部经 OpenAI 兼容端点(SiliconFlow 类聚合平台)
 ```
@@ -102,7 +105,7 @@ CLI 交互层:    kg build | kg ask | kg eval                    (typer)
 ### 2.2 数据流
 
 ```
-场景视频片段 --帧采样(≤16,标注关键帧优先)--> 帧 --┐
+关键帧目录 --帧选择(≤16,超限均匀截断)--> 帧 --┐
 元数据台词(完整转写,含情绪/动作) ------------------┤--> A1/A2(Qwen3-VL)--> checkpoints/*.json
 标注先验(场景描述/镜头时间轴/关键帧配文) ------------┘                          |
                                                            v
@@ -127,20 +130,23 @@ CLI 交互层:    kg build | kg ask | kg eval                    (typer)
 
 ```
 data/movies/<movie_id>/
-  video/scene_001.mp4 ...          # 输入 1: 按场景切割的视频片段(重编码精确切割)
-  scenes/scene_001.json ...        # 输入 2: 场景元数据(手工标注)
+  frames/s0001i0.jpg ...           # 输入 1: 场景关键帧目录(文件名 = frame_id)
+  scenes/scene_001.json ...        # 输入 2: 场景元数据(手工标注或 MovieNet 转换产出)
   checkpoints/scene_001.json ...   # 构建期生成(非输入)
+  convert_report.md                # MovieNet 转换器产出(如有)
 ```
 
-v0.3.0 起 SRT 不再是输入:台词以完整转写形式内嵌于场景元数据 dialogues(含情绪/动作标注),输入由 3 类减为 2 类。
+v0.3.0 起 SRT 不再是输入:台词以完整转写形式内嵌于场景元数据 dialogues(含情绪/动作标注)。v0.4.0 起视频片段不再是输入:唯一视觉来源为关键帧目录,MovieNet 数据经 3.4 转换器免片源接入。
 
-### 3.1 输入 1: 场景视频片段(MP4)
+### 3.1 输入 1: 场景关键帧目录(JPEG)
 
-唯一视觉来源。构建时每场景采样 ≤16 帧:**标注关键帧优先**(元数据 shots[].keyframes),不足 max_frames 时均匀采样补足,超过上限时在标注列表内均匀截断;标注帧与配文成对进入多模态消息。
+唯一视觉来源。`frames/` 下每帧一个 JPEG 文件,文件名 = `{frame_id}.jpg`,与元数据 keyframes 的 frame_id 一一对应;loader 按 ID 解析路径,无时间戳寻址,无视频解码。
+
+每场景视觉预算 ≤16 帧:元数据声明的关键帧(shot 内嵌 + 顶层)按 ts 排序,超上限时在列表内均匀截断(保留首尾);**无补帧** —— 关键帧数量即该场景视觉信息上界(v0.3.0 的"标注优先 + 均匀采样补足"随视频输入一并移除)。
 
 **音频轨不输入模型** —— 音频信息经元数据台词进入系统,不引入 Whisper。系统为"视觉帧 + 文本"双模态(原 v0.1 宣称"融合音频"名不副实,已修正)。
 
-片段须与场景窗口精确对应(重编码切割):时长 ≈ `end_ts − start_ts`,校验容差 ±2s。
+MovieNet 每镜头 3 帧 240P 关键帧是此输入的来源之一(经 3.4 转换器落地);自有片源亦可经任意离线抽帧工具产出同构目录。
 
 ### 3.2 输入 2: 场景元数据(手工标注,JSON)
 
@@ -168,17 +174,20 @@ v0.3.0 起 SRT 不再是输入:台词以完整转写形式内嵌于场景元数�
        {"frame_id": "frame_001", "ts": "00:03:30", "frame_type": "特写",
         "description": "张三的手按在桌上的枪上"}
      ]}
+  ],
+  "keyframes": [
+    {"frame_id": "frame_101", "ts": "00:05:10"}
   ]
 }
 ```
 
-必备字段:scene_id / movie_id / start_ts / end_ts / characters / dialogues / location / virtual_time;可选:aliases、emotion、action、description、props、shots。shot 内必备 shot_id / start_ts / end_ts,可选 shot_type / description / keyframes;keyframe 内必备 frame_id / ts,可选 frame_type / description。
+必备字段:scene_id / movie_id / start_ts / end_ts / characters / dialogues / location / virtual_time;可选:aliases、emotion、action、description、props、shots、**keyframes(顶层,v0.4.0 新增:无镜头归属的帧)**。shot 内必备 shot_id / start_ts / end_ts,可选 shot_type / description / keyframes;keyframe 内必备 frame_id / ts,可选 frame_type / description。有效关键帧 = 顶层 keyframes + 各 shot 内 keyframes 的拼接(`flat_keyframes`),两处 frame_id 不得重复(全局唯一校验覆盖)——v0.3.0 标注(仅 shot 内嵌)天然兼容。
 
 **场景顺序**: scene_id 序号即播放顺序(原"场景划分"独立输入已并入元数据,场景起止即窗口)。
 
-**时间戳约定**: 元数据内一律影片绝对时间(HH:MM:SS)—— dialogue.ts、shot 起止、keyframe.ts 均须落在场景窗口 [start_ts, end_ts] 内;换算为片段内偏移是 loader 的职责,标注侧与 prompt 展示侧永远使用绝对时间。
+**时间戳约定**: 元数据内一律影片绝对时间(HH:MM:SS)—— dialogue.ts、shot 起止、keyframe.ts 均须落在场景窗口 [start_ts, end_ts] 内;标注侧与 prompt 展示侧永远使用绝对时间,帧文件按 frame_id 直接读取,无偏移换算(v0.3.0 的"片段内偏移换算"随视频输入移除)。MovieNet 转换数据中 keyframe.ts 为近似锚定(见 3.4),场景窗口与 dialogue.ts 为精确值。
 
-**ID 约定**: shot_id / frame_id 由输入数据保证全局唯一(整部电影范围,校验跨场景查重);frame_type / shot_type 为自由文本,不做词表校验。
+**ID 约定**: shot_id / frame_id 由输入数据保证全局唯一(整部电影范围,校验跨场景查重);帧文件名 = `frames/{frame_id}.jpg`;frame_type / shot_type 为自由文本,不做词表校验。
 
 **双重角色**: 抽取先验(角色名单用于名称对齐,标注地点/时间/场景描述/镜头时间轴/关键帧配文作为提示)+ 构建端评估 ground truth(见第 8 章;描述类字段仅作先验,不进评估指标)。
 
@@ -186,11 +195,40 @@ v0.3.0 起 SRT 不再是输入:台词以完整转写形式内嵌于场景元数�
 
 `kg build` 首先跑 schema 校验,collect-all 一次报齐,校验失败即报错退出,不进入抽取:
 
-- 文件齐全(视频 + 场景 JSON)、movie_id 与目录一致
+- 文件齐全(movie.json + 场景 JSON + frames/ 目录)、movie_id 与目录一致
 - 场景窗口单调且互不重叠;dialogue.ts / keyframe.ts / shot 起止 ∈ 场景窗口
 - dialogues.char 能对齐到 characters(含 aliases)
 - shot 窗口互不重叠;shot_id / frame_id 跨场景全局唯一
-- 片段可打开且时长 ≈ end − start(容差 ±2s)
+- 每个被引用的 frame_id 在 frames/ 下存在对应文件且非空(v0.4.0 以此替代 v0.3.0 的"片段可打开 + 时长 ±2s"视频校验)
+
+### 3.4 MovieNet 数据接入(离线转换器)
+
+目的:免自备片源,将 MovieNet(movie1K,OpenDataLab 公开发布)的已发布数据转换为 v0.4.0 输入。首批试点 3 部(tt0113243 Hackers / tt0117500 The Rock / tt0105236 Reservoir Dogs);"全字段免补"交集共 83 部(11,435 场景:scene 边界 ∩ 角色 ID ∩ place ∩ story ∩ 字幕,且全部有剧本,可用剧本对齐说话人)。
+
+```
+kg movienet fetch   --movie tt0113243 --src data/raw/movienet/
+kg movienet convert --movie tt0113243 --src data/raw/movienet/ --out data/movies/tt0113243
+```
+
+**fetch**(匿名直链,内置断点续传与重试):基础包 `MovieNet.tar.gz`(887MB,一次性)→ 选择性抽取该片 annotation / subtitle / script / meta 四文件(跳过无用的 poster4M);关键帧包为"逐片 tar 打包的 zip",先读中央目录(110KB)建索引缓存,再 HTTP Range 按片下载(44–530MB/部)。
+
+**convert** 九个 stage(纯函数,逐个可测):
+
+| # | Stage | 规则 |
+|---|---|---|
+| 1 | fps 标定 | story 条目 Δframe/Δduration 取中位;离散度 >0.5% 或无 story → 报错退出 |
+| 2 | 场景窗口 | scene[].frame / fps → HH:MM:SS;按帧序重编号 scene_001..N |
+| 3 | 角色名单 | cast 实例 pid(IMDb nm-id)→ meta.cast 角色名;shot_idx ∈ 场景 shot 区间汇总;非主演("others")剔除 |
+| 4 | 台词 | SRT(影片绝对时间,毫秒截断)按场景窗口切片 → 剧本模糊对齐(difflib 相似度 ≥0.6,试点校准)→ 说话人归 roster(全等 → 名/姓包含两级);剧本未对上或说话人不在 roster → 丢弃,分别计数 |
+| 5 | 地点 | place_tag 多值 join(" / ");未标注 → "" |
+| 6 | 描述 | story 段落赋给 shot 区间重叠最大的场景(粗粒度先验) |
+| 7 | 关键帧 | 关键帧 tar 内 shot_XXXX_img_Y.jpg → `frames/s{shot}i{img}.jpg`;ts = story 段内镜头线性插值(无段覆盖时按场景窗口位置),**插值结果 clamp 到场景窗口内**(近似值必须满足 §3.3 窗口校验) |
+| 8 | 空字段 | virtual_time = ""、props = []、shots = [](MovieNet 无镜头边界数据,不伪造 shot 时间轴) |
+| 9 | 自校验+报告 | 跑 §3.3 全套校验;`convert_report.md`:fps 离散度、场景数、台词匹配/两类丢弃计数、角色数、place 与 description 覆盖率、每场景帧数分布 |
+
+**精确性声明**:场景窗口与 dialogue.ts 为精确值(fps 标定 + SRT 绝对时间);keyframe.ts 为近似锚定(story 段插值,±数秒),证据绑定依赖 frame_id,不受 ts 精度影响。已验证锚点:Body Heat fps = 23.978(五段一致),SRT ↔ MovieNet 内部秒同轴(±3s),scene shot 区间与关键帧包完全一致(607 shots × 3 帧)。
+
+**已知局限**(进评估解读):关键帧密度 = 每镜头 3 帧 240P(短场景视觉证据少);story 段不铺满全片(未覆盖场景 description 为空);角色名单受"IMDb 前 10 主演"标注限制;place 场景覆盖率约 92%(A 档中位,余量由空值呈现)。
 
 ---
 
@@ -356,7 +394,7 @@ kg build --movie m1 [--from-scratch] [--scenes 1-5]
 
 #### A1 事件抽取(每场景 1 次调用)
 
-输入: 采样帧(≤16,标注关键帧优先;`image_url` 与配文按时间戳交错)+ 元数据台词全文(含情绪/动作)+ 场景元数据先验(角色名单/标注地点/标注时间/场景描述/道具/镜头时间轴)
+输入: 选择帧(≤16,按时间戳排序,超限均匀截断;`image_url` 与配文按时间戳交错)+ 元数据台词全文(含情绪/动作)+ 场景元数据先验(角色名单/标注地点/标注时间/场景描述/道具/镜头时间轴)
 输出: `events[]` —— 事件与子事件均为结构化对象;participants 带 emotion / role_description / items;事件与子事件均带 evidence_frame_ids(证据帧引用)
 
 Prompt 模板(`config/prompts/event_extraction.md`):
@@ -413,7 +451,7 @@ A1/A2 拆分解决了 v0.1 单 Prompt 输出过载的问题(事件+子事件+角
 
 #### 成本控制
 
-`kg build --movie m1 --scenes 1-5` 先试跑校准每场景 token 消耗,据此外推全片成本后再全量构建。成本公式: 每场景 ≈ 帧数 × 每帧 token + 台词/场景描述/镜头时间轴/帧配文文本 + prompt 模板;全片 = 场景数 × (A1 + A2)。
+`kg build --movie m1 --scenes 1-5` 先试跑校准每场景 token 消耗,据此外推全片成本后再全量构建。成本公式: 每场景 ≈ 帧数 × 每帧 token + 台词/场景描述/镜头时间轴/帧配文文本 + prompt 模板,帧数 = min(场景关键帧数, 16);全片 = 场景数 × (A1 + A2)。
 
 ### 5.3 Phase B: 全局 pass
 
@@ -582,14 +620,14 @@ kg eval qa --qa-set eval/qa_set.yaml \
 | 开发语言 | Python 3.11+ | |
 | LLM 编排 | openai SDK + pydantic | 结构化输出;不引入 LangChain |
 | CLI | typer | `kg build / ask / eval`;不引入 FastAPI |
-| 视频处理 | ffmpeg + Pillow / PyAV | 帧采样;不引入 Whisper |
+| 图像处理 | Pillow | 关键帧 JPEG 读取;v0.4.0 移除 PyAV/ffmpeg 视频依赖,HTTP 取数用标准库 urllib |
 | 任务处理 | 同步执行 + JSONL checkpoint | 不引入 Celery / Redis |
 
 ### MLLM 调用规格
 
 | 参数 | 值 | 说明 |
 |------|------|------|
-| 帧采样 | 每场景 ≤16 帧 | 均匀采样,关键帧标注优先包含 |
+| 帧选择 | 每场景 ≤16 帧 | 关键帧目录按 ts 排序,超上限均匀截断 |
 | temperature | 0.1 | 低温度保证抽取一致性 |
 | max_tokens | 4096 | A1/A2 拆分后单次输出减半,不再紧张 |
 | 重试 | 3 次 | JSON 校验失败自动重试 |
@@ -631,7 +669,8 @@ movie-plot-kg/
   src/movie_kg/
     config.py
     models/            # pydantic: entities, relations, scene, extraction
-    ingestion/         # data_loader(schema 校验), frame_sampler, timefmt(时间戳)
+    ingestion/         # data_loader(schema 校验), frame_sampler(帧选择), timefmt(时间戳),
+                       # movienet/(fetch 取数 + convert 转换,见 DESIGN 3.4)
     extraction/        # event_extractor(A1), relation_extractor(A2), global_passes(B1-B3)
     graph/             # schema(DDL), writer(C1/C3), query_templates(7 个)
     embeddings/        # embedder(C2)
@@ -685,11 +724,12 @@ openai>=1.30.0         # SiliconFlow 等 OpenAI 兼容端点
 pydantic>=2.7.0
 typer>=0.12.0
 pillow>=10.0.0
-av>=12.0.0             # 帧提取(或以 ffmpeg 子进程替代)
 pyyaml>=6.0
 python-dotenv>=1.0.0
 pytest>=8.0            # dev
 ```
+
+注: v0.4.0 移除 `av`(PyAV)——帧提取与时长探测随视频输入一并删除,关键帧直接读文件。
 
 ---
 
@@ -726,7 +766,8 @@ pytest>=8.0            # dev
 | v0.2.0 | 2026-10-12 | 范围收缩到核心闭环(CLI、单轮、砍 FastAPI/Celery/LangChain/Whisper);单库 Neo4j(原生向量索引)替代双库;模型栈切换为 Qwen 系列(SiliconFlow 端点);QA 5 步收敛为 2 次 LLM 调用 + 7 个参数化图查询模板(LLM 不再生成 Cypher);构建流程重构为 3 Phase(A 场景级双 Prompt + JSONL checkpoint,B 全局 pass:时间线/别名/因果,C 写入向量化);图谱模式修订(新增 Movie/Scene 实体与 movie_id、VirtualTime.timeline_index、PRECEDES 链式、结构化子事件、RELATED_TO 单边、COREF 明确排除);输入规范修订(音频删除、帧预算 ≤16、元数据 JSON Schema 定稿并兼作评估 ground truth);新增第 8 章评估方案(构建端 + 问答端 + 消融)与量化验收标准 |
 | v0.2.1 | 2026-10-13 | §7.2 勘误:检索规划示例参数键 event_hint→id(与模板参数契约一致) |
 | v0.3.0 | 2026-10-13 | 输入简化与标注增富:SRT 不再作为输入(台词完整转写内嵌元数据 dialogues),输入 3 类减为 2 类;元数据新增 description、shots(镜头)与结构化 keyframes(frame_id/ts/frame_type/description),keyframes 由纯时间戳数组升级,props 转为抽取先验;时间戳统一为影片绝对时间(修正 keyframes 相对/绝对不一致的隐性缺陷);shot_id/frame_id 由输入保证全局唯一;A1 全面 grounding(台词含情绪/动作、场景描述/道具/镜头时间轴进先验,关键帧图文成对交错);A1 输出与 Event 节点新增 evidence_frame_ids 证据帧引用(无效引用剔除并告警);Scene 节点新增 description(取代未实现的生成式 summary);输入校验升级(dialogue/keyframe/shot 窗口、shot 重叠、跨场景 ID 查重、片段时长 ±2s) |
+| v0.4.0 | 2026-10-14 | 视频输入移除 + MovieNet 免片源接入:输入 1 由场景视频片段(重编码切割、±2s 时长校验)改为场景关键帧目录(`frames/{frame_id}.jpg`);帧采样改为帧选择(超限均匀截断,删除均匀补帧与绝对→相对偏移换算),移除 PyAV 依赖;元数据 schema 新增顶层 keyframes(无镜头归属的帧,flat_keyframes 双源拼接,v0.3.0 标注兼容);输入校验以"帧文件存在且非空"替代视频校验;新增 MovieNet 离线转换器 `kg movienet fetch/convert`(§3.4:fps 由 story 帧率对标定,SRT 台词经剧本模糊对齐归属说话人、两级未匹配丢弃并计数,关键帧 ts 为 story 段插值近似锚定,convert_report 质量报告);首批试点 3 部(Hackers / The Rock / Reservoir Dogs) |
 
 ---
 
-*文档版本: v0.3.0 | 最后更新: 2026-10-13*
+*文档版本: v0.4.0 | 最后更新: 2026-10-14*
