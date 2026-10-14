@@ -1,7 +1,7 @@
 # movie-plot-kg
 
 基于 Qwen 系列大模型从电影数据构建剧情事件知识图谱,提供图增强检索问答与双端评估。
-设计文档: docs/DESIGN.md(v0.3.0)。
+设计文档: docs/DESIGN.md(v0.4.0)。
 
 ## 环境准备
 
@@ -16,13 +16,22 @@
 ```
 data/movies/<movie_id>/
   movie.json                     # {"movie_id": "m1", "title": "..."}
-  video/scene_001.mp4 ...        # 输入 1: 按场景切割(重编码精确切割)
-  scenes/scene_001.json ...      # 输入 2: 场景元数据(完整台词 + 场景/镜头/关键帧标注;
+  frames/frame_001.jpg ...       # 输入 1: 关键帧目录(文件名 = frame_id)
+  scenes/scene_001.json ...      # 输入 2: 场景元数据(完整台词 + 镜头/关键帧标注;
                                  #   字段与约定见 docs/DESIGN.md 3.2,时间戳一律影片
-                                 #   绝对时间,shot_id/frame_id 全局唯一)
+                                 #   绝对时间,shot_id/frame_id 全局唯一,顶层 keyframes
+                                 #   为无镜头归属的帧)
 ```
 
-**从 v0.2.x 升级**:元数据需改用 v0.3.0 结构(台词完整转写内嵌 dialogues、新增 shots 镜头与结构化 keyframes,见 docs/DESIGN.md 3.2;旧版顶层 `keyframes` 时间戳数组不再被读取,subtitles/ 目录不再需要)。已存在的 checkpoints/ 若由旧版产出,重跑时会被静默跳过 —— 请删除该目录或使用 `kg build --from-scratch` 全量重建。
+**MovieNet 免片源接入**(v0.4.0,详见 docs/DESIGN.md 3.4):
+
+```bash
+kg movienet fetch   --movie tt0113243 --src data/raw/movienet
+kg movienet convert --movie tt0113243 --src data/raw/movienet
+kg build --movie tt0113243 --scenes 1-5   # 校准成本后全量
+```
+
+**从 v0.3.x 升级**:视频输入已移除,`video/` 目录不再读取——请将标注关键帧抽为 `frames/{frame_id}.jpg`(可顶层 `keyframes` 声明无镜头归属的帧)。视觉输入形态已变,旧 `checkpoints/` 建议删除或 `kg build --from-scratch` 全量重建。
 
 ## 使用
 
