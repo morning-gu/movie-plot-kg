@@ -52,10 +52,17 @@ def _range_get(url: str, start: int, end: int) -> bytes:
 
 
 def _remote_size(url: str) -> int:
-    """1 字节 Range 探测总长(Content-Range: bytes 0-0/TOTAL)。"""
-    with _open(url, headers={"Range": "bytes=0-0"}) as resp:
-        cr = resp.headers.get("Content-Range", "")
-        return int(cr.rsplit("/", 1)[1])
+    """1 字节 Range 探测总长(Content-Range: bytes 0-0/TOTAL),带重试。"""
+    last: Exception | None = None
+    for _ in range(RETRIES):
+        try:
+            with _open(url, headers={"Range": "bytes=0-0"}) as resp:
+                cr = resp.headers.get("Content-Range", "")
+                return int(cr.rsplit("/", 1)[1])
+        except Exception as e:  # noqa: BLE001
+            last = e
+            time.sleep(PAUSE)
+    raise RuntimeError(f"探测远端大小失败: {last}")
 
 
 def download_file(path: str, target: Path, chunk_mb: int = 8) -> None:
@@ -78,16 +85,26 @@ def download_file(path: str, target: Path, chunk_mb: int = 8) -> None:
 
 
 def fetch_base(src: Path) -> Path:
-    """下载基础包(887MB,一次性),sha256 校验。"""
+    """下载基础包(887MB,一次性),sha256 校验后原子落盘。
+
+    只写 .part 临时文件,校验通过才改名——中断留下的是 .part(下次续传),
+    而非"看似完整"的半成品;已存在的 target 必然出自校验通过的改名,可信。
+    """
     import hashlib
     target = src / PKG_NAME
     if target.exists() and target.stat().st_size > 0:
         return target
-    download_file(f"raw/{PKG_NAME}", target)
-    h = hashlib.sha256(target.read_bytes()).hexdigest()
-    if h != PKG_SHA256:
-        target.unlink(missing_ok=True)
-        raise RuntimeError(f"{PKG_NAME} sha256 不符(远端可能已更新): {h}")
+    src.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(target.name + ".part")
+    download_file(f"raw/{PKG_NAME}", tmp)
+    h = hashlib.sha256()
+    with open(tmp, "rb") as f:  # 分块读取,不整包进内存
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    if h.hexdigest() != PKG_SHA256:
+        tmp.unlink(missing_ok=True)
+        raise RuntimeError(f"{PKG_NAME} sha256 不符(远端可能已更新): {h.hexdigest()}")
+    tmp.replace(target)
     return target
 
 
@@ -178,11 +195,10 @@ def fetch_keyframes(movie: str, src: Path) -> Path:
             out.write(d.decompress(chunk))
             got += len(chunk)
         out.write(d.flush())
-    if tmp.stat().st_size != e["usize"]:
+    size = tmp.stat().st_size
+    if size != e["usize"]:
         tmp.unlink(missing_ok=True)
-        raise RuntimeError(
-            f"{movie}: 解压后大小 {tmp.stat().st_size if tmp.exists() else 0}"
-            f" != {e['usize']}")
+        raise RuntimeError(f"{movie}: 解压后大小 {size} != {e['usize']}")
     tmp.replace(target)
     return target
 
