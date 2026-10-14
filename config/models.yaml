@@ -1,6 +1,6 @@
-base_url: https://api.siliconflow.cn/v1
+base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
 api_key_env: LLM_API_KEY
-vision_model: Qwen/Qwen3-VL-32B-Instruct
-text_model: Qwen/Qwen3-32B
-embedding_model: Qwen/Qwen3-Embedding-0.6B
+vision_model: qwen3.7-plus
+text_model: qwen3.7-plus
+embedding_model: qwen3.7-text-embedding-flash
 embedding_dims: 1024
