@@ -44,6 +44,16 @@ def test_empty_frame_file_reports_error(tmp_path):
     assert any("帧文件为空" in msg for msg in e.value.errors)
 
 
+def test_make_movie_dir_unique_frame_ids_across_scenes(tmp_path):
+    # n_scenes=3 曾让 scene_003 复用 frame_101 → frame_id 重复是
+    # loader 拒绝项的潜在雷;现在顶层帧 id 按场景唯一且帧文件齐全
+    movie_dir = make_movie_dir(tmp_path, n_scenes=3)
+    movie = load_movie(movie_dir)          # loader 全套校验(含帧查重)通过
+    assert [k.frame_id for s in movie.scenes for k in s.meta.keyframes] \
+        == ["frame_101", "frame_102"]
+    assert (movie_dir / "frames" / "frame_102.jpg").stat().st_size > 0
+
+
 def test_dialogue_char_not_in_roster(tmp_path):
     movie_dir = make_movie_dir(tmp_path)
     _edit_scene(movie_dir, "scene_001",

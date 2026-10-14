@@ -39,14 +39,31 @@ def _resolve(path: str) -> str:
     raise RuntimeError(f"解析下载地址失败({path}): {last}")
 
 
-def _range_get(url: str, start: int, end: int) -> bytes:
+class _RangeIgnored(RuntimeError):
+    """服务端忽略 Range(返回 200 整包):续传/重试都会错位,立即失败。"""
+
+
+def _check_range(resp) -> None:
+    if resp.status != 206:
+        raise _RangeIgnored(f"服务端忽略 Range 请求(HTTP {resp.status})")
+
+
+def _range_get(url: str, start: int, end: int, path: str | None = None) -> bytes:
     last: Exception | None = None
     for _ in range(RETRIES):
         try:
             with _open(url, headers={"Range": f"bytes={start}-{end}"}) as resp:
+                _check_range(resp)
                 return resp.read()
+        except _RangeIgnored:
+            raise                        # 服务端行为不随重试改变
         except Exception as e:  # noqa: BLE001
             last = e
+            if path is not None:         # 直链可能过期(403):重解析后重试
+                try:
+                    url = _resolve(path)
+                except Exception:        # noqa: BLE001 - 重解析失败沿用旧直链
+                    pass
             time.sleep(PAUSE)
     raise RuntimeError(f"Range 下载失败({start}-{end}): {last}")
 
@@ -57,8 +74,11 @@ def _remote_size(url: str) -> int:
     for _ in range(RETRIES):
         try:
             with _open(url, headers={"Range": "bytes=0-0"}) as resp:
+                _check_range(resp)
                 cr = resp.headers.get("Content-Range", "")
                 return int(cr.rsplit("/", 1)[1])
+        except _RangeIgnored:
+            raise
         except Exception as e:  # noqa: BLE001
             last = e
             time.sleep(PAUSE)
@@ -75,7 +95,7 @@ def download_file(path: str, target: Path, chunk_mb: int = 8) -> None:
         raise RuntimeError(f"{target} 比远端大({got}>{expected}),请删除后重试")
     while got < expected:
         end = min(got + (chunk_mb << 20), expected) - 1
-        data = _range_get(url, got, end)
+        data = _range_get(url, got, end, path=f"raw/{PKG_NAME}")
         if not data:
             url = _resolve(path)  # 直链可能过期
             continue
@@ -159,7 +179,10 @@ def read_zip_index(cache: Path) -> dict[str, dict]:
     entries = parse_central_dir(_range_get(url, cd_off, cd_off + cd_size - 1))
     if not entries:
         raise RuntimeError("关键帧包索引为空")
-    cache.write_text(json.dumps(entries), encoding="utf-8")
+    # 缓存原子落盘(.part → replace):中断不会留下半截索引 JSON
+    tmp = cache.with_name(cache.name + ".part")
+    tmp.write_text(json.dumps(entries), encoding="utf-8")
+    tmp.replace(cache)
     return entries
 
 
@@ -188,7 +211,8 @@ def fetch_keyframes(movie: str, src: Path) -> Path:
     with open(tmp, "wb") as out:
         while got < e["csize"]:
             end = min(got + (8 << 20), e["csize"]) - 1
-            chunk = _range_get(url, data_off + got, data_off + end)
+            chunk = _range_get(url, data_off + got, data_off + end,
+                               path=f"raw/{KF_ZIP_NAME}")
             if not chunk:
                 url = _resolve(f"raw/{KF_ZIP_NAME}")
                 continue
@@ -209,21 +233,23 @@ _ZIP_MEMBERS = {  # 基础包内 zip → (解出的目录, 文件名格式)
     "files/script1K.v1.zip": ("script", "{m}.script"),
     "files/meta.v1.zip": ("meta", "{m}.json"),
 }
-_REQUIRED = {"annotation", "subtitle", "meta"}
+_REQUIRED = {"annotation", "subtitle", "meta"}  # 落地文件必须存在的三类
 
 
 def extract_movie_files(pkg: Path, movie: str, src: Path) -> None:
-    """从基础包选择性抽取该片四类源文件(跳过 poster4M;已存在不覆盖)。"""
+    """从基础包选择性抽取该片四类源文件(跳过 poster4M;已存在不覆盖)。
+
+    缺源判定以落地文件存在性为准:zip 在而片内文件不在(479/815 部无剧本
+    的常态)才是真实的缺源;必需三类缺一报错,剧本缺失仅告警。
+    """
     wanted = {member: (d, fmt.format(m=movie)) for member, (d, fmt)
               in _ZIP_MEMBERS.items()}
-    found: set[str] = set()
     with tarfile.open(pkg, "r:gz") as tf:
         for member in tf:  # 顺序扫描一次
             if member.name not in wanted:
                 continue
             dest_dir, dest_name = wanted[member.name]
             dest = src / dest_dir / dest_name
-            found.add(dest_dir)
             if dest.exists():
                 continue
             fobj = tf.extractfile(member)
@@ -236,8 +262,10 @@ def extract_movie_files(pkg: Path, movie: str, src: Path) -> None:
                     continue
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 dest.write_bytes(zf.read(inner))
-    missing = _REQUIRED - found
-    if missing:
-        raise RuntimeError(f"基础包缺少 {sorted(missing)} 的源 zip")
-    if "script" not in found:
+    for dest_dir, dest_name in sorted(wanted.values()):  # 扫描后按文件校验
+        dest = src / dest_dir / dest_name
+        if dest.exists():
+            continue
+        if dest_dir in _REQUIRED:
+            raise RuntimeError(f"基础包缺少必需源文件: {dest}")
         print(f"警告: 基础包中无 {movie} 的剧本,台词将全部走「剧本未匹配」丢弃路径")

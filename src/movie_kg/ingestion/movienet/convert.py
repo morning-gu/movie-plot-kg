@@ -33,17 +33,49 @@ def calibrate_fps(story: list[dict]) -> float:
     return med
 
 
-def scene_windows(ann: dict, fps: float) -> list[dict]:
-    """stage 2: 场景窗口(秒)+ shot 区间,按帧序。"""
+def scene_windows(ann: dict, fps: float) -> tuple[list[dict], int]:
+    """stage 2: 场景窗口(秒)+ shot 区间,按帧序;返回 (窗口列表, 合并数)。
+
+    亚秒场景(整秒截断后起止同秒,fmt_ts 会产出 start==end 被 loader 拒绝)
+    并入相邻场景:有前一输出场景则向后并入(延展其终点与 shot 上界),
+    场景列表开头的亚秒场景挂起,待并入其后首个正常场景(起点与 shot 下界
+    取挂起者);连续亚秒逐个累积;全片亚秒(病态)时安全网放宽终点 1s。
+    """
     scenes = sorted(ann.get("scene") or [], key=lambda s: s["frame"][0])
     if not scenes:
         raise ConvertError("无场景标注")
-    return [{"seq": i + 1,
-             "start": s["frame"][0] / fps,
-             "end": s["frame"][1] / fps,
-             "shot_span": (s["shot"][0], s["shot"][1]),
-             "place_tag": s.get("place_tag")}
-            for i, s in enumerate(scenes)]
+    out: list[dict] = []
+    pending: dict | None = None
+    merged = 0
+    for s in scenes:
+        sc = {"start": s["frame"][0] / fps,
+              "end": s["frame"][1] / fps,
+              "shot_span": (s["shot"][0], s["shot"][1]),
+              "place_tag": s.get("place_tag")}
+        if int(sc["start"]) == int(sc["end"]):
+            merged += 1
+            target = out[-1] if out else pending
+            if target is None:                  # 首场景即亚秒:挂起
+                pending = sc
+            else:                               # 向后并入(last 或挂起者)
+                target["end"] = max(target["end"], sc["end"])
+                a, b = target["shot_span"]
+                target["shot_span"] = (a, max(b, sc["shot_span"][1]))
+                target["place_tag"] = target["place_tag"] or sc["place_tag"]
+        elif pending is not None:               # 挂起场景向前并入本场景
+            sc["start"] = pending["start"]
+            sc["shot_span"] = (pending["shot_span"][0], sc["shot_span"][1])
+            sc["place_tag"] = sc["place_tag"] or pending["place_tag"]
+            pending = None
+            out.append(sc)
+        else:
+            out.append(sc)
+    if pending is not None:                     # 安全网:全片亚秒(无后继)
+        pending["end"] = int(pending["start"]) + 1
+        out.append(pending)
+    for i, sc in enumerate(out):
+        sc["seq"] = i + 1
+    return out, merged
 
 
 def scene_characters(ann: dict, meta: dict, scenes: list[dict]) -> list[list[str]]:
@@ -169,22 +201,26 @@ def extract_keyframes(kf_tar: Path, out_dir: Path, wanted: set[str]) -> int:
 
 
 def write_report(out: Path, movie: str, fps: float, n_scenes: int,
-                 stats: dict, places: list[str], descs: list[str],
-                 kf_counts: list[int], n_files: int, validation: str) -> None:
+                 merged_count: int, n_chars: int, stats: dict,
+                 places: list[str], descs: list[str], kf_counts: list[int],
+                 n_files: int, validation: str) -> None:
     kept = stats["total"] - stats["no_script_match"] \
         - stats["speaker_not_in_roster"] - stats["outside_scenes"]
     lines = [
         f"# MovieNet 转换报告 — {movie}", "",
         f"- fps 标定: {fps:.4f}",
         f"- 场景数: {n_scenes}",
+        f"- 亚秒场景合并: {merged_count}",
+        f"- 角色数: {n_chars}",
         f"- 台词: 总数 {stats['total']}, 剧本未匹配 {stats['no_script_match']}, "
         f"说话人不在 roster {stats['speaker_not_in_roster']}, "
         f"场景窗口外 {stats['outside_scenes']}, 保留 {kept}"
         f"({kept / stats['total']:.0%})" if stats["total"] else "- 台词: 总数 0",
         f"- place 覆盖: {sum(1 for p in places if p)}/{n_scenes}",
         f"- description 覆盖: {sum(1 for d in descs if d)}/{n_scenes}",
-        f"- 关键帧: 落盘 {n_files} 个, 每场景中位 "
-        f"{statistics.median(kf_counts):.0f}" if kf_counts else "- 关键帧: 0",
+        f"- 关键帧: 落盘 {n_files} 个, 每场景中位 {statistics.median(kf_counts):.0f}, "
+        f"min {min(kf_counts)}, max {max(kf_counts)}"
+        if kf_counts else "- 关键帧: 0",
         f"- loader 校验: {validation}",
         "",
         "已知局限(DESIGN §3.4): keyframe.ts 为近似锚定(±数秒);"
@@ -194,20 +230,28 @@ def write_report(out: Path, movie: str, fps: float, n_scenes: int,
     (out / "convert_report.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+def _fetch_hint(movie: str) -> str:
+    return f"先运行 kg movienet fetch --movie {movie}"
+
+
 def convert(movie: str, src: Path, out: Path) -> Path:
     """九个 stage 全流程;自校验通过才返回输出目录。"""
-    ann = json.loads((src / "annotation" / f"{movie}.json")
-                     .read_text(encoding="utf-8"))
-    meta = json.loads((src / "meta" / f"{movie}.json")
-                      .read_text(encoding="utf-8"))
-    srt_text = (src / "subtitle" / f"{movie}.srt") \
-        .read_text(encoding="utf-8", errors="replace")
+    hint = _fetch_hint(movie)
+    try:
+        ann = json.loads((src / "annotation" / f"{movie}.json")
+                         .read_text(encoding="utf-8"))
+        meta = json.loads((src / "meta" / f"{movie}.json")
+                          .read_text(encoding="utf-8"))
+        srt_text = (src / "subtitle" / f"{movie}.srt") \
+            .read_text(encoding="utf-8", errors="replace")
+    except OSError as e:
+        raise ConvertError(f"源文件缺失或不可读: {e.filename}({hint})") from e
     script_path = src / "script" / f"{movie}.script"
     script_text = (script_path.read_text(encoding="utf-8", errors="replace")
                    if script_path.exists() else "")
 
     fps = calibrate_fps(ann.get("story") or [])               # stage 1
-    scenes = scene_windows(ann, fps)                           # stage 2
+    scenes, merged_count = scene_windows(ann, fps)            # stage 2
     cast_rosters = scene_characters(ann, meta, scenes)         # stage 3
     movie_roster = sorted({n for r in cast_rosters for n in r})
     per_dlg, dlg_stats = scene_dialogues(srt_text, script_text, scenes,
@@ -240,16 +284,21 @@ def convert(movie: str, src: Path, out: Path) -> Path:
         (out / "scenes" / f"scene_{sc['seq']:03d}.json").write_text(
             m.model_dump_json(exclude_none=True), encoding="utf-8")
     wanted = {k.frame_id for kfs in kf_lists for k in kfs}
-    n_files = extract_keyframes(src / "keyframes" / f"{movie}.tar",
-                                out / "frames", wanted)
+    try:
+        n_files = extract_keyframes(src / "keyframes" / f"{movie}.tar",
+                                    out / "frames", wanted)
+    except OSError as e:
+        raise ConvertError(f"关键帧包缺失或不可读: {e.filename}({hint})") from e
 
     validation = "通过"                                        # stage 9
     try:
         load_movie(out)
     except InputValidationError as e:
         validation = "失败: " + "; ".join(e.errors[:5])
-    write_report(out, movie, fps, len(scenes), dlg_stats, places, descs,
-                 [len(kfs) for kfs in kf_lists], n_files, validation)
+    n_chars = len({n for names in scene_chars for n in names})
+    write_report(out, movie, fps, len(scenes), merged_count, n_chars,
+                 dlg_stats, places, descs, [len(kfs) for kfs in kf_lists],
+                 n_files, validation)
     if validation != "通过":
         raise ConvertError(f"自校验失败,详见 {out / 'convert_report.md'}")
     return out

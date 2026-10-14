@@ -103,9 +103,47 @@ def test_calibrate_fps_median_and_tolerance():
         calibrate_fps(bad["story"])   # 24 与 ~21.8 离散度超 ±0.5%
 
 
+def test_scene_windows_merges_subsecond_scene_backward():
+    # 亚秒场景([84,90]@24fps → [3.5,3.75],整秒截断后 start==end,
+    # loader 会报「起止时间非法」)并入前一场景,整部影片不再被拒
+    ann = _ann()
+    ann["scene"] = [
+        {"id": "s0", "shot": [0, 1], "frame": [0, 84], "place_tag": None},
+        {"id": "s1", "shot": [2, 2], "frame": [84, 90], "place_tag": ["alley"]},
+        {"id": "s2", "shot": [3, 4], "frame": [90, 192], "place_tag": ["office"]},
+    ]
+    scenes, merged = scene_windows(ann, 24.0)
+    assert merged == 1
+    assert [sc["seq"] for sc in scenes] == [1, 2]   # 合并后重编号
+    m = scenes[0]
+    assert m["start"] == 0.0 and m["end"] == 3.75   # 终点延展到被并场景
+    assert m["shot_span"] == (0, 2)                 # shot 上界延展
+    assert m["place_tag"] == ["alley"]              # prev 无 place → 用被并者的
+    n = scenes[1]
+    assert n["start"] == 3.75 and n["end"] == 8.0
+    assert n["shot_span"] == (3, 4) and n["place_tag"] == ["office"]
+
+
+def test_scene_windows_merges_leading_subsecond_scene_forward():
+    # 开头连续亚秒场景:逐个累积挂起,向前并入其后首个正常场景
+    ann = _ann()
+    ann["scene"] = [
+        {"id": "s0", "shot": [0, 0], "frame": [0, 6], "place_tag": ["logo"]},
+        {"id": "s1", "shot": [1, 1], "frame": [6, 12], "place_tag": None},
+        {"id": "s2", "shot": [2, 3], "frame": [12, 96], "place_tag": None},
+    ]
+    scenes, merged = scene_windows(ann, 24.0)
+    assert merged == 2
+    assert [sc["seq"] for sc in scenes] == [1]
+    sc = scenes[0]
+    assert sc["start"] == 0.0 and sc["end"] == 4.0  # 起点/下界取挂起场景
+    assert sc["shot_span"] == (0, 3)                # 下界 0(挂起),上界 3(本景)
+    assert sc["place_tag"] == ["logo"]              # 本景无 place → 用挂起者的
+
+
 def test_dialogue_cue_at_scene_boundary():
     # Review Focus #3:cue 起点恰在边界 → 归后一场景,不重复计入
-    scenes = scene_windows(_ann(), 24.0)
+    scenes, _ = scene_windows(_ann(), 24.0)
     per, stats = scene_dialogues(SRT, SCRIPT, scenes, ["Matty Walker", "Ned Racine"])
     assert [len(d) for d in per] == [2, 2]
     assert per[1][0].text == "Boundary line."      # 2.0s 的 cue 在 scene_002
@@ -117,7 +155,7 @@ def test_keyframe_ts_clamped_into_window():
     ann = _ann(story_shots=((0, 3),), story_dur=((0.0, 4.0),))
     ann["scene"][0]["frame"] = [0, 84]    # scene_001 窗口 [0, 3.5]
     ann["scene"][1]["frame"] = [84, 96]   # scene_002 窗口 [3.5, 4]
-    scenes = scene_windows(ann, 24.0)
+    scenes, _ = scene_windows(ann, 24.0)
     kfs = keyframe_entries(ann, scenes)
     # story 覆盖 shots[0,3] dur[0,4]: 均匀插值 t(k)=k+0.5
     assert kfs[0][3].ts == "00:00:01"     # shot1: t=1.5 ∈ [0,3.5] 未越界
@@ -147,6 +185,17 @@ def test_convert_end_to_end(tmp_path):
     assert "fps 标定: 24.0000" in report
     assert "剧本未匹配 1" in report
     assert "loader 校验: 通过" in report
+    assert "亚秒场景合并: 0" in report              # e2e 场景均多秒,无合并
+    assert "角色数: 2" in report
+    assert "每场景中位 6, min 6, max 6" in report
+
+
+def test_convert_missing_srt_raises_convert_error(tmp_path):
+    # 源缺失 → ConvertError(带 fetch 提示),而非裸 FileNotFoundError
+    src = _make_src(tmp_path)
+    (src / "subtitle" / "tt0000001.srt").unlink()
+    with pytest.raises(ConvertError, match="fetch --movie tt0000001"):
+        convert("tt0000001", src, tmp_path / "out")
 
 
 def test_convert_rejects_when_validation_fails(tmp_path):

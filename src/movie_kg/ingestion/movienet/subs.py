@@ -15,7 +15,9 @@ class Cue:
 
 def parse_srt(text: str) -> list[Cue]:
     cues: list[Cue] = []
-    for block in text.strip().replace("\r\n", "\n").split("\n\n"):
+    # 分隔行可能含空格/制表符(真实抓取数据常见):\n\s*\n 严格宽于 "\n\n",
+    # 否则下一条 cue 会被静默吞进上一条的正文
+    for block in re.split(r"\n\s*\n", text.strip().replace("\r\n", "\n")):
         lines = [l for l in block.strip().split("\n") if l.strip()]
         m = None
         body: list[str] = []

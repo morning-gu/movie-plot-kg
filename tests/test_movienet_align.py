@@ -43,6 +43,17 @@ def test_parse_srt_skips_blocks_without_body():
     assert len(cues) == 1 and cues[0].text == "ok"
 
 
+def test_parse_srt_splits_on_whitespace_only_separator():
+    # 分隔行含空格/制表符(真实抓取数据常见):不得吞掉下一条 cue,
+    # 也不得把它的索引/时间戳污染进上一条正文
+    text = ("1\n00:00:00,500 --> 00:00:01,000\nfirst line\n   \n"
+            "2\n00:00:02,000 --> 00:00:03,000\nsecond line\n\t\n"
+            "3\n00:00:04,000 --> 00:00:05,000\nthird line\n")
+    cues = parse_srt(text)
+    assert [c.text for c in cues] == ["first line", "second line", "third line"]
+    assert abs(cues[1].start - 2.0) < 1e-9
+
+
 def test_parse_script_extracts_speaker_blocks():
     lines = parse_script(SCRIPT)
     assert [(l.speaker, l.text) for l in lines] == [

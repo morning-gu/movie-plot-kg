@@ -217,7 +217,7 @@ kg movienet convert --movie tt0113243 --src data/raw/movienet/ --out data/movies
 | # | Stage | 规则 |
 |---|---|---|
 | 1 | fps 标定 | story 条目 Δframe/Δduration 取中位;离散度 >0.5% 或无 story → 报错退出 |
-| 2 | 场景窗口 | scene[].frame / fps → HH:MM:SS;按帧序重编号 scene_001..N |
+| 2 | 场景窗口 | scene[].frame / fps → HH:MM:SS;按帧序重编号 scene_001..N;亚秒场景(整秒截断后起止同秒)并入相邻场景并计数进报告 |
 | 3 | 角色名单 | cast 实例 pid(IMDb nm-id)→ meta.cast 角色名;shot_idx ∈ 场景 shot 区间汇总;非主演("others")剔除 |
 | 4 | 台词 | SRT(影片绝对时间,毫秒截断)按场景窗口切片 → 剧本模糊对齐(difflib 相似度 ≥0.6,试点校准)→ 说话人归 roster(全等 → 名/姓包含两级);剧本未对上或说话人不在 roster → 丢弃,分别计数 |
 | 5 | 地点 | place_tag 多值 join(" / ");未标注 → "" |

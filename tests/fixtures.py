@@ -51,10 +51,12 @@ def make_movie_dir(tmp_path: Path, n_scenes: int = 2) -> Path:
                  "shot_type": "全景", "description": "仓库全貌",
                  "keyframes": []},
             ]
-        else:       # 其余场景用顶层 keyframes(v0.4.0 双源之一)
-            m["keyframes"] = [{"frame_id": "frame_101", "ts": dlg_ts}]
+        else:       # 其余场景用顶层 keyframes(v0.4.0 双源之一),帧 id 按场景唯一
+            m["keyframes"] = [{"frame_id": f"frame_{100 + i}", "ts": dlg_ts}]
         (movie_dir / "scenes" / f"{sid}.json").write_text(
             json.dumps(m, ensure_ascii=False), encoding="utf-8")
     make_frame(movie_dir / "frames" / "frame_001.jpg")
-    make_frame(movie_dir / "frames" / "frame_101.jpg", color=(30, 30, 200))
+    for i in range(1, n_scenes):  # 每个引用顶层帧的场景都落地对应帧文件
+        make_frame(movie_dir / "frames" / f"frame_{100 + i}.jpg",
+                   color=(30, 30, 200))
     return movie_dir
