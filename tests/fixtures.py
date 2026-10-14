@@ -1,29 +1,19 @@
+import json
 from pathlib import Path
 
-import av
 from PIL import Image
 
 
-def make_video(path: Path, seconds: int = 2, fps: int = 12) -> None:
-    """生成逐帧变色的合成视频,供帧采样与端到端测试使用。"""
-    container = av.open(str(path), "w")
-    stream = container.add_stream("mpeg4", rate=fps)
-    stream.width, stream.height, stream.pix_fmt = 64, 48, "yuv420p"
-    for i in range(seconds * fps):
-        img = Image.new("RGB", (64, 48), ((i * 7) % 256, (i * 13) % 256, (i * 29) % 256))
-        for packet in stream.encode(av.VideoFrame.from_image(img)):
-            container.mux(packet)
-    for packet in stream.encode():
-        container.mux(packet)
-    container.close()
+def make_frame(path: Path, color: tuple = (200, 30, 30)) -> None:
+    """写一个 4x4 纯色 JPEG(v0.4.0 视觉输入为帧文件,无视频合成)。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (4, 4), color).save(path, format="JPEG")
 
 
 def make_movie_dir(tmp_path: Path, n_scenes: int = 2) -> Path:
-    """构造完整的单部电影输入目录(视频/元数据),返回目录路径。"""
-    import json
-
+    """构造完整的单部电影输入目录(帧目录/元数据),返回目录路径。"""
     movie_dir = tmp_path / "data" / "movies" / "m1"
-    for sub in ("video", "scenes", "checkpoints"):
+    for sub in ("frames", "scenes", "checkpoints"):
         (movie_dir / sub).mkdir(parents=True, exist_ok=True)
     (movie_dir / "movie.json").write_text(
         json.dumps({"movie_id": "m1", "title": "测试影片"}), encoding="utf-8")
@@ -50,7 +40,7 @@ def make_movie_dir(tmp_path: Path, n_scenes: int = 2) -> Path:
                  start_ts=start, end_ts=end,
                  location="码头仓库" if i == 0 else "警局办公室",
                  virtual_time="第一天傍晚" if i == 0 else "第二天清晨")
-        if i == 0:  # 仅 scene_001 带镜头/标注帧;scene_002 测无标注兜底
+        if i == 0:  # scene_001 带镜头/shot 内嵌标注帧
             m["shots"] = [
                 {"shot_id": "shot_001", "start_ts": "00:00:00", "end_ts": "00:00:01",
                  "shot_type": "中景", "description": "两人隔桌对坐",
@@ -61,7 +51,10 @@ def make_movie_dir(tmp_path: Path, n_scenes: int = 2) -> Path:
                  "shot_type": "全景", "description": "仓库全貌",
                  "keyframes": []},
             ]
+        else:       # 其余场景用顶层 keyframes(v0.4.0 双源之一)
+            m["keyframes"] = [{"frame_id": "frame_101", "ts": dlg_ts}]
         (movie_dir / "scenes" / f"{sid}.json").write_text(
             json.dumps(m, ensure_ascii=False), encoding="utf-8")
-        make_video(movie_dir / "video" / f"{sid}.mp4", seconds=2)
+    make_frame(movie_dir / "frames" / "frame_001.jpg")
+    make_frame(movie_dir / "frames" / "frame_101.jpg", color=(30, 30, 200))
     return movie_dir

@@ -1,8 +1,5 @@
-import io
 from dataclasses import dataclass
 from pathlib import Path
-
-import av
 
 from movie_kg.ingestion.timefmt import parse_ts
 from movie_kg.models.scene import KeyframeMeta
@@ -12,7 +9,7 @@ from movie_kg.models.scene import KeyframeMeta
 class Frame:
     ts: float                             # 影片绝对时间(秒)
     jpeg: bytes
-    keyframe: KeyframeMeta | None = None  # 标注帧带元数据;均匀补足帧为 None
+    keyframe: KeyframeMeta | None = None  # 目录输入下恒为标注帧(None 保留给手工构造)
 
 
 def _even_subset(n: int, k: int) -> list[int]:
@@ -22,42 +19,12 @@ def _even_subset(n: int, k: int) -> list[int]:
     return sorted({round(i * (n - 1) / (k - 1)) for i in range(k)})
 
 
-def sample_frames(video_path: Path, keyframes: list[KeyframeMeta],
-                  scene_start: float, max_frames: int = 16) -> list[Frame]:
-    """标注关键帧优先(影片绝对时间经 scene_start 换算为片段内偏移),
-    不足时均匀补足,超上限时在标注列表内均匀截断;总数 ≤ max_frames。"""
-    with av.open(str(video_path)) as container:
-        stream = container.streams.video[0]
-        duration = (container.duration or 0) / 1_000_000.0
-        annotated = keyframes if len(keyframes) <= max_frames \
-            else [keyframes[i] for i in _even_subset(len(keyframes), max_frames)]
-        targets: list[tuple[float, KeyframeMeta | None]] = [
-            (min(max(parse_ts(k.ts) - scene_start, 0.0), duration), k)
-            for k in annotated]
-        fill = max_frames - len(targets)
-        if fill > 0 and duration > 0:
-            step = duration / (fill + 1)
-            targets += [(step * (i + 1), None) for i in range(fill)]
-        targets.sort(key=lambda t: (t[0], t[1] is None))  # 同点标注帧排前
-        picked: list[tuple[float, KeyframeMeta | None]] = []
-        for t in targets:
-            if not picked or t[0] - picked[-1][0] > 0.1:
-                picked.append(t)
-            elif t[1] is not None and picked[-1][1] is None:
-                picked[-1] = t  # 相邻重合时补足帧让位给标注帧
-        frames: list[Frame] = []
-        for rel, k in picked[:max_frames]:
-            container.seek(int(rel / stream.time_base), stream=stream)
-            got = None
-            for packet in container.demux(stream):
-                if got is not None:
-                    break
-                for decoded in packet.decode():
-                    got = decoded
-                    break
-            if got is not None:
-                buf = io.BytesIO()
-                got.to_image().save(buf, format="JPEG", quality=85)
-                frames.append(Frame(ts=scene_start + rel, jpeg=buf.getvalue(),
-                                    keyframe=k))
-        return frames
+def select_frames(items: list[tuple[Path, KeyframeMeta]],
+                  max_frames: int = 16) -> list[Frame]:
+    """从关键帧文件列表选择 ≤max_frames 帧:按 ts 排序,超上限均匀截断(保留首尾)。
+    v0.4.0 无视频采样与补帧——帧文件数即该场景视觉信息上界(DESIGN §3.1)。"""
+    ordered = sorted(items, key=lambda it: parse_ts(it[1].ts))
+    if len(ordered) > max_frames:
+        ordered = [ordered[i] for i in _even_subset(len(ordered), max_frames)]
+    return [Frame(ts=parse_ts(k.ts), jpeg=path.read_bytes(), keyframe=k)
+            for path, k in ordered]

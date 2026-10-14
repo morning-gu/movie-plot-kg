@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from movie_kg.eval.build_eval import (
     aggregate_prf, character_prf, merge_labels, sample_relations,
     score_relation_samples)
@@ -32,7 +34,7 @@ def test_character_prf_excludes_unaligned():
 def _movie():
     from movie_kg.models.scene import MovieData, SceneData
     return MovieData(movie_id="m1", title="t",
-                     scenes=[SceneData(meta=META, video_path="v.mp4")])
+                     scenes=[SceneData(meta=META, frames_dir=Path("frames"))])
 
 
 def test_aggregate_prf():

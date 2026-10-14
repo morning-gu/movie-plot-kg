@@ -44,17 +44,16 @@ class SceneMeta(BaseModel):
     description: str = ""
     props: list[str] = []
     shots: list[ShotMeta] = []
+    keyframes: list[KeyframeMeta] = []  # v0.4.0: 顶层(无镜头归属)帧,MovieNet 模式
 
     def flat_keyframes(self) -> list[KeyframeMeta]:
-        """按 shot 顺序展平全部标注帧(采样与证据校验的基准列表)。"""
-        return [k for sh in self.shots for k in sh.keyframes]
+        """shot 内嵌帧按序展开,再拼接顶层帧(采样与证据校验的基准列表)。"""
+        return [k for sh in self.shots for k in sh.keyframes] + list(self.keyframes)
 
 
 class SceneData(BaseModel):
     meta: SceneMeta
-    video_path: Path
-
-    model_config = {"arbitrary_types_allowed": True}
+    frames_dir: Path
 
 
 class MovieData(BaseModel):

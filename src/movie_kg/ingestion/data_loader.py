@@ -1,13 +1,8 @@
 import json
 from pathlib import Path
 
-import av
-import av.error
-
 from movie_kg.ingestion.timefmt import parse_ts
-from movie_kg.models.scene import MovieData, SceneData, SceneMeta
-
-_TOL = 2.0  # 片段时长与场景窗口的容差(秒,DESIGN §3.1)
+from movie_kg.models.scene import KeyframeMeta, MovieData, SceneData, SceneMeta
 
 
 class InputValidationError(Exception):
@@ -16,9 +11,14 @@ class InputValidationError(Exception):
         super().__init__("; ".join(errors))
 
 
-def _probe_duration(video: Path) -> float:
-    with av.open(str(video)) as container:
-        return (container.duration or 0) / 1_000_000.0
+def _check_keyframe(k: KeyframeMeta, scene_id: str, start: float, end: float,
+                    seen_frames: set[str], errors: list[str]) -> None:
+    """顶层与 shot 内嵌关键帧共用的查重 + 窗口校验(DESIGN §3.2/§3.3)。"""
+    if k.frame_id in seen_frames:
+        errors.append(f"{scene_id}: frame_id 重复({k.frame_id})")
+    seen_frames.add(k.frame_id)
+    if not (start <= parse_ts(k.ts) <= end):
+        errors.append(f"{scene_id}: 关键帧越界({k.frame_id}: {k.ts})")
 
 
 def load_movie(movie_dir: str | Path) -> MovieData:
@@ -27,6 +27,7 @@ def load_movie(movie_dir: str | Path) -> MovieData:
     movie_id = movie_dir.name
     info = json.loads((movie_dir / "movie.json").read_text(encoding="utf-8"))
     scene_files = sorted((movie_dir / "scenes").glob("scene_*.json"))
+    frames_dir = movie_dir / "frames"
     scenes: list[SceneData] = []
     prev_end = -1.0
     seen_shots: set[str] = set()
@@ -35,9 +36,6 @@ def load_movie(movie_dir: str | Path) -> MovieData:
         meta = SceneMeta.model_validate_json(sf.read_text(encoding="utf-8"))
         if meta.movie_id != movie_id:
             errors.append(f"{sf.name}: movie_id={meta.movie_id} 与目录 {movie_id} 不一致")
-        video = movie_dir / "video" / f"{meta.scene_id}.mp4"
-        if not video.exists():
-            errors.append(f"{meta.scene_id}: 缺少视频 {video.name}")
         start, end = parse_ts(meta.start_ts), parse_ts(meta.end_ts)
         if start >= end:
             errors.append(f"{meta.scene_id}: 起止时间非法({meta.start_ts} >= {meta.end_ts})")
@@ -60,27 +58,21 @@ def load_movie(movie_dir: str | Path) -> MovieData:
                 errors.append(
                     f"{meta.scene_id}: 镜头越界({sh.shot_id}: {sh.start_ts}-{sh.end_ts})")
             for k in sh.keyframes:
-                if k.frame_id in seen_frames:
-                    errors.append(f"{meta.scene_id}: frame_id 重复({k.frame_id})")
-                seen_frames.add(k.frame_id)
-                if not (start <= parse_ts(k.ts) <= end):
-                    errors.append(f"{meta.scene_id}: 关键帧越界({k.frame_id}: {k.ts})")
+                _check_keyframe(k, meta.scene_id, start, end, seen_frames, errors)
+        for k in meta.keyframes:  # v0.4.0 顶层帧,同规则
+            _check_keyframe(k, meta.scene_id, start, end, seen_frames, errors)
         intervals = sorted((parse_ts(sh.start_ts), parse_ts(sh.end_ts), sh.shot_id)
                            for sh in meta.shots)
         for (_, e0, _), (s1, _, id1) in zip(intervals, intervals[1:]):
             if s1 < e0:
                 errors.append(f"{meta.scene_id}: 镜头重叠({id1})")
-        if video.exists():
-            try:
-                dur = _probe_duration(video)
-            except av.error.FFmpegError:
-                errors.append(f"{meta.scene_id}: 视频无法打开({video.name})")
-            else:
-                if abs(dur - (end - start)) > _TOL:
-                    errors.append(
-                        f"{meta.scene_id}: 片段时长 {dur:.1f}s 与场景窗口 "
-                        f"{end - start:.1f}s 偏差超过 {_TOL:.0f}s")
-        scenes.append(SceneData(meta=meta, video_path=video))
+        for k in meta.flat_keyframes():
+            fp = frames_dir / f"{k.frame_id}.jpg"
+            if not fp.exists():
+                errors.append(f"{meta.scene_id}: 缺少帧文件({fp.name})")
+            elif fp.stat().st_size == 0:
+                errors.append(f"{meta.scene_id}: 帧文件为空({fp.name})")
+        scenes.append(SceneData(meta=meta, frames_dir=frames_dir))
     if errors:
         raise InputValidationError(errors)
     return MovieData(movie_id=movie_id, title=info.get("title", movie_id), scenes=scenes)
