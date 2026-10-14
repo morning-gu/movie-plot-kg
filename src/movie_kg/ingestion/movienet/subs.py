@@ -29,8 +29,21 @@ def parse_srt(text: str) -> list[Cue]:
         if m is None or not body:
             continue
         g = [int(x) for x in m.groups()]
-        cues.append(Cue(
-            start=g[0] * 3600 + g[1] * 60 + g[2] + g[3] / 1000,
-            end=g[4] * 3600 + g[5] * 60 + g[6] + g[7] / 1000,
-            text=" ".join(body)))
+        start = g[0] * 3600 + g[1] * 60 + g[2] + g[3] / 1000
+        end = g[4] * 3600 + g[5] * 60 + g[6] + g[7] / 1000
+        # SRT 双说话人惯例:"- " 开头的行各成一条 cue(时间戳相同),
+        # 否则合并文本与任一剧本台词的长度比对都无法过阈值
+        frags: list[list[str]] = [[]]
+        for line in body:
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                if frags[-1]:
+                    frags.append([])
+                frags[-1].append(stripped[2:])
+            else:
+                frags[-1].append(stripped)
+        for frag in frags:
+            text = " ".join(x for x in frag if x)
+            if text:
+                cues.append(Cue(start=start, end=end, text=text))
     return cues

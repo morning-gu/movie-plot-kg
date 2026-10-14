@@ -207,3 +207,17 @@ def test_convert_rejects_when_validation_fails(tmp_path):
     out = tmp_path / "out"
     with pytest.raises(ConvertError):
         convert("tt0000001", src, out)
+
+
+def test_boundary_shot_assigned_to_first_scene_only():
+    # MovieNet scene.shot 为闭区间:相邻场景共享边界镜头,frame_id 只出一次
+    ann = _ann()
+    ann["scene"][0]["shot"] = [0, 1]
+    ann["scene"][1]["shot"] = [1, 2]   # shot 1 共享
+    scenes, _ = scene_windows(ann, 24.0)
+    kfs = keyframe_entries(ann, scenes)
+    ids1 = {k.frame_id for k in kfs[0]}
+    ids2 = {k.frame_id for k in kfs[1]}
+    assert "s0001i0" in ids1 and "s0001i0" not in ids2
+    assert "s0002i0" in ids2
+    assert len(ids1) == 6 and len(ids2) == 3

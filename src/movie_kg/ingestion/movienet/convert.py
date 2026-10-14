@@ -160,10 +160,14 @@ def keyframe_entries(ann: dict, scenes: list[dict]) -> list[list[KeyframeMeta]]:
               st["duration"][0], st["duration"][1])
              for st in ann.get("story") or []]
     out = []
-    for sc in scenes:
+    seen_shots: set[int] = set()  # scene.shot 为闭区间,相邻场景共享边界镜头:
+    for sc in scenes:             # 每个镜头只归属首个出现的场景,frame_id 才全局唯一
         a, b = sc["shot_span"]
         entries = []
         for k in range(a, b + 1):
+            if k in seen_shots:
+                continue
+            seen_shots.add(k)
             t = None
             for sa, sb, da, db in spans:
                 if sa <= k <= sb and sb > sa:

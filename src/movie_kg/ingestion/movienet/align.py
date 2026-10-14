@@ -5,8 +5,9 @@ from dataclasses import dataclass
 
 from movie_kg.ingestion.movienet.subs import Cue
 
-# 角色行:深缩进(≥8 空格)+ 全大写短标签,可带 (CONT'D)/(V.O.) 等后缀
-_SPEAKER = re.compile(r"^\s{8,}([A-Z][A-Z0-9 .'&\-]{1,40})(\(.*?\))?\s*$")
+# 角色行:深缩进(≥8 空格,或 ≥3 制表符——The Rock 等剧本用 tab 缩进:说话人 5-6 tab、
+# 对白 2 tab)+ 全大写短标签,可带 (CONT'D)/(V.O.) 等后缀
+_SPEAKER = re.compile(r"^(?:\t{3,}| {8,})([A-Z][A-Z0-9 .'&\-]{1,40})(\(.*?\))?\s*$")
 _CONTD = re.compile(r"\(CONT'?D\)|\(V\.?O\.?\)|\(O\.?S\.?\)", re.IGNORECASE)
 
 
@@ -44,12 +45,20 @@ def _norm(s: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9 ]", " ", s.lower()).split())
 
 
+def _score(nc: str, ns: str) -> float:
+    """归一化文本相似度:包含关系(短/长)或 difflib ratio。"""
+    if nc in ns or ns in nc:
+        return min(len(nc), len(ns)) / max(len(nc), len(ns))
+    return difflib.SequenceMatcher(None, nc, ns).ratio()
+
+
 def align_cues(cues: list[Cue], script_lines: list[ScriptLine],
                threshold: float = 0.6, lookahead: int = 60) -> list[str | None]:
     """逐 cue 在剧本中找对齐台词,返回剧本说话人(未匹配 None)。
 
-    单调双指针:SRT 与剧本均按剧情顺序,只向前看 lookahead 行;
-    相似度 = 包含关系(短/长)或 difflib ratio,过阈值取最高分。"""
+    单调快路径:窗口 [j, j+lookahead) 内取最高分;窗口未命中时全局回退——
+    影片与剧本的顺序错位(非线性叙事/删改段落)会让单调指针失步,
+    全局找最优后重同步指针。"""
     speakers: list[str | None] = [None] * len(cues)
     j = 0
     for ci, cue in enumerate(cues):
@@ -61,12 +70,19 @@ def align_cues(cues: list[Cue], script_lines: list[ScriptLine],
             ns = _norm(script_lines[jj].text)
             if not ns:
                 continue
-            if nc in ns or ns in nc:
-                score = min(len(nc), len(ns)) / max(len(nc), len(ns))
-            else:
-                score = difflib.SequenceMatcher(None, nc, ns).ratio()
+            score = _score(nc, ns)
             if score >= threshold and (best is None or score > best[0]):
                 best = (score, jj)
+        if best is None:  # 全局回退:失步后全剧本找最优
+            for jj in range(len(script_lines)):
+                if j <= jj < j + lookahead:
+                    continue  # 窗口已扫过
+                ns = _norm(script_lines[jj].text)
+                if not ns:
+                    continue
+                score = _score(nc, ns)
+                if score >= threshold and (best is None or score > best[0]):
+                    best = (score, jj)
         if best is not None:
             speakers[ci] = script_lines[best[1]].speaker
             j = best[1] + 1

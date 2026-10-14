@@ -105,3 +105,36 @@ def test_resolve_speaker_two_levels():
     assert resolve_speaker("MATTY", roster) == "Matty Walker"   # 名词级包含
     assert resolve_speaker("ned racine", roster) == "Ned Racine"  # 全等(大小写不敏感)
     assert resolve_speaker("GHOST", roster) is None
+
+
+def test_parse_srt_splits_dash_speaker_cues():
+    # SRT 双说话人惯例:同一 cue 内 "- " 行各成一条(时间戳相同)
+    srt = ("1\n00:00:00,500 --> 00:00:01,200\n- Upstairs!\n- What's going on?\n\n"
+           "2\n00:00:02,000 --> 00:00:02,500\nJust one line.\n")
+    cues = parse_srt(srt)
+    assert [c.text for c in cues] == ["Upstairs!", "What's going on?",
+                                      "Just one line."]
+    assert cues[0].start == cues[1].start and cues[0].end == cues[1].end
+
+
+def test_parse_script_accepts_tab_indented_speakers():
+    # The Rock 实测形状:说话人 6 tab,对白 2 tab,括注 3 tab
+    text = ("\t\t\t\t\t\tCARLA \n"
+            "\t\tEvery little dream I dream about you\n"
+            "\t\t\t(New Jersey accent) \n"
+            "\t\tHey there.\n")
+    assert parse_script(text) == [ScriptLine(
+        speaker="CARLA",
+        text="Every little dream I dream about you Hey there.")]
+
+
+def test_align_cues_global_fallback_resyncs():
+    # 影片闪回:cue 的匹配在单调指针之前,窗口失步后全局回退命中
+    script = parse_script(
+        "                    AA\n          alpha\n\n"
+        "                    BB\n          bravo\n\n"
+        "                    CC\n          charlie\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\nalpha\n\n"
+                     "2\n00:00:00,300 --> 00:00:00,400\nbravo\n\n"
+                     "3\n00:00:00,500 --> 00:00:00,600\nalpha\n")
+    assert align_cues(cues, script, lookahead=1) == ["AA", "BB", "AA"]
