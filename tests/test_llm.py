@@ -41,3 +41,23 @@ def test_embed_order_and_count():
     llm = LLMClient(CFG, client=FakeOpenAI([]))
     vecs = llm.embed(["a", "b", "c"])
     assert len(vecs) == 3 and len(vecs[0]) == 2
+
+
+def test_timeout_converted_to_llmerror_after_retries():
+    # 网络挂起(APITimeoutError)必须转为场景级 LLMError,而不是掀翻构建
+    import openai
+    from types import SimpleNamespace
+
+    calls = []
+
+    def create(**kwargs):
+        calls.append(1)
+        raise openai.APITimeoutError(request=None)
+
+    client = SimpleNamespace(chat=SimpleNamespace(
+        completions=SimpleNamespace(create=create)))
+    llm = LLMClient(CFG, client=client)
+    with pytest.raises(LLMError) as e:
+        llm.chat_json(model="t", messages=[], schema=Out, max_retries=3)
+    assert len(calls) == 3
+    assert "LLM 调用失败" in str(e.value)
