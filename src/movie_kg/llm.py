@@ -19,7 +19,7 @@ class LLMClient:
         self.usage = {"prompt_tokens": 0, "completion_tokens": 0}
 
     def chat_json(self, *, model: str, messages: list[dict], schema: type[BaseModel],
-                  temperature: float = 0.1, max_tokens: int = 4096,
+                  temperature: float = 0.1, max_tokens: int = 8192,
                   max_retries: int = 3) -> BaseModel:
         import openai
         transient = (openai.APITimeoutError, openai.APIConnectionError,
