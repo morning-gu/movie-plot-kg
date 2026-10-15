@@ -1,6 +1,6 @@
 DESCRIBE_QUERY = (
     "MATCH (n) WHERE (n:Event OR n:Character OR n:VirtualTime OR n:Location) "
-    "AND n.movie_id = $movie AND n.embedding IS NULL RETURN n")
+    "AND n.movie_id = $movie AND n.embedding IS NULL RETURN n AS node")
 
 
 def describe_event(topic: str, description: str, event_type: str) -> str:
