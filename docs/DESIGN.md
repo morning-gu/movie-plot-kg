@@ -636,12 +636,8 @@ kg eval qa --qa-set eval/qa_set.yaml \
 ### 图数据库索引与约束
 
 ```cypher
-CREATE INDEX event_id IF NOT EXISTS FOR (e:Event) ON (e.id);
-CREATE INDEX character_id IF NOT EXISTS FOR (c:Character) ON (c.id);
+-- 各实体 id 由唯一约束自带后备索引,不另建普通 id 索引(同 schema 互斥,Neo4j 5 实测)
 CREATE INDEX character_name IF NOT EXISTS FOR (c:Character) ON (c.name);
-CREATE INDEX location_id IF NOT EXISTS FOR (l:Location) ON (l.id);
-CREATE INDEX virtualtime_id IF NOT EXISTS FOR (vt:VirtualTime) ON (vt.id);
-CREATE INDEX scene_id IF NOT EXISTS FOR (s:Scene) ON (s.id);
 CREATE INDEX event_scene_id IF NOT EXISTS FOR (e:Event) ON (e.scene_id);
 CREATE INDEX event_movie_id IF NOT EXISTS FOR (e:Event) ON (e.movie_id);
 -- character / virtualtime / location / scene 的 movie_id 索引同理
@@ -653,7 +649,7 @@ CREATE CONSTRAINT vt_unique IF NOT EXISTS FOR (vt:VirtualTime) REQUIRE vt.id IS 
 CREATE CONSTRAINT scene_unique IF NOT EXISTS FOR (s:Scene) REQUIRE s.id IS UNIQUE;
 
 CREATE VECTOR INDEX event_vec IF NOT EXISTS FOR (e:Event) ON (e.embedding)
-OPTIONS {indexConfig: {`vector.dimensions`: 1024, `vector.similarity`: 'cosine'}};
+OPTIONS {indexConfig: {`vector.dimensions`: 1024, `vector.similarity_function`: 'cosine'}};
 -- character_vec / virtualtime_vec / location_vec 结构同理
 ```
 
