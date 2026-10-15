@@ -75,3 +75,19 @@ def test_b3_drops_unknown_ids(tmp_path):
             {"cause_id": "evt_m1_999_01", "effect_id": "evt_m1_001_02", "reason": "x"}]}),
         pairs)
     assert len(links) == 1 and links[0].reason == "r"
+
+
+def test_b3_batches_large_pair_lists():
+    # 全片事件对超出单次 max_tokens:分批调用拼接结果(试点实证修复)
+    from movie_kg.extraction.global_passes import EventPair
+    pairs = [EventPair(cause_id=f"e{i}", cause_topic="a", effect_id=f"e{i+1}",
+                       effect_topic="b") for i in range(81)]
+    llm = ScriptedLLM(
+        {"causal_links": [{"cause_id": "e0", "effect_id": "e1", "reason": "r1"}]},
+        {"causal_links": [{"cause_id": "e80", "effect_id": "e81", "reason": "r2"}]},
+    )
+    links = pass_b3_causal(llm, pairs, batch_size=80)
+    assert [l.reason for l in links] == ["r1", "r2"]
+    assert len(llm.calls) == 2
+    assert "e0" in llm.calls[0][1][0]["content"]      # 第一批含 e0
+    assert "e80" in llm.calls[1][1][0]["content"]     # 第二批含 e80

@@ -190,15 +190,22 @@ def build_causal_pairs(movie: MovieData,
     return pairs
 
 
-def pass_b3_causal(llm, pairs: list[EventPair]) -> list[CausalLink]:
-    pairs_text = "\n".join(
-        f"- {p.cause_id}({p.cause_topic}) -> {p.effect_id}({p.effect_topic})"
-        for p in pairs)
-    system = render(load_prompt("causal_detection"), PAIRS=pairs_text)
-    raw = llm.chat_json(model=_text_model(llm),
-                        messages=[{"role": "system", "content": system},
-                                  {"role": "user", "content": "请输出因果 JSON。"}],
-                        schema=B3Output)
+def pass_b3_causal(llm, pairs: list[EventPair], batch_size: int = 80) -> list[CausalLink]:
+    """B3 分批判定因果:事件对逐对独立,分批调用避免全片输出超出 max_tokens
+    截断 JSON(RD 全片 ~250 对在 4096/8192 下均截断,试点实证)。"""
     valid = {(p.cause_id, p.effect_id) for p in pairs}
-    return [CausalLink(cause_id=l.cause_id, effect_id=l.effect_id, reason=l.reason)
-            for l in raw.causal_links if (l.cause_id, l.effect_id) in valid]
+    links: list[CausalLink] = []
+    for i in range(0, len(pairs), batch_size):
+        batch = pairs[i:i + batch_size]
+        pairs_text = "\n".join(
+            f"- {p.cause_id}({p.cause_topic}) -> {p.effect_id}({p.effect_topic})"
+            for p in batch)
+        system = render(load_prompt("causal_detection"), PAIRS=pairs_text)
+        raw = llm.chat_json(model=_text_model(llm),
+                            messages=[{"role": "system", "content": system},
+                                      {"role": "user", "content": "请输出因果 JSON。"}],
+                            schema=B3Output)
+        links += [CausalLink(cause_id=l.cause_id, effect_id=l.effect_id,
+                             reason=l.reason)
+                  for l in raw.causal_links if (l.cause_id, l.effect_id) in valid]
+    return links
