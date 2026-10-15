@@ -34,6 +34,7 @@ def build(movie: str = typer.Option(..., "--movie"),  # typer 0.27 无默认参�
     from movie_kg.graph.schema import apply_schema
     from movie_kg.graph.writer import GraphWriter
     from movie_kg.ingestion.data_loader import load_movie
+    from movie_kg.llm import LLMError
 
     movie_dir = Path("data/movies") / movie
     data = load_movie(movie_dir)
@@ -55,10 +56,17 @@ def build(movie: str = typer.Option(..., "--movie"),  # typer 0.27 无默认参�
         typer.echo("无可用抽取结果,退出")
         raise typer.Exit(1)
     typer.echo("Phase B: 时间线 / 别名 / 因果 ...")
-    ordered_vts = pass_b1_order_vts(llm, collect_vts(data))
-    chars, locs = collect_name_contexts(data, extractions)
-    alias_plan = pass_b2_merge_aliases(llm, chars, locs)
-    causal = pass_b3_causal(llm, build_causal_pairs(data, extractions))
+    for attempt in range(3):  # B pass 单发无外层重试,网络抖动兜底(试点实证)
+        try:
+            ordered_vts = pass_b1_order_vts(llm, collect_vts(data))
+            chars, locs = collect_name_contexts(data, extractions)
+            alias_plan = pass_b2_merge_aliases(llm, chars, locs)
+            causal = pass_b3_causal(llm, build_causal_pairs(data, extractions))
+            break
+        except LLMError:
+            if attempt == 2:
+                raise
+            typer.echo(f"Phase B 网络重试 {attempt + 1}/3 ...")
     typer.echo("Phase C: 写图 + 向量化 ...")
     driver = _make_driver(load_neo4j_config())
     with driver.session() as session:

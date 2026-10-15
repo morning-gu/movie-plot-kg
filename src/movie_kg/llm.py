@@ -43,8 +43,17 @@ class LLMClient:
         raise LLMError(f"LLM 调用失败({max_retries} 次重试后): {last_err}")
 
     def embed(self, texts: list[str]) -> list[list[float]]:
-        resp = self._client.embeddings.create(model=self.cfg.embedding_model, input=texts)
-        return [d.embedding for d in sorted(resp.data, key=lambda d: d.index)]
+        import openai
+        transient = (openai.APITimeoutError, openai.APIConnectionError,
+                     openai.InternalServerError, openai.RateLimitError)
+        for _ in range(3):
+            try:
+                resp = self._client.embeddings.create(
+                    model=self.cfg.embedding_model, input=texts)
+                return [d.embedding for d in sorted(resp.data, key=lambda d: d.index)]
+            except transient:  # 网络抖动/过载(试点实证),耗尽后抛 LLMError
+                continue
+        raise LLMError("embedding 调用失败(3 次重试后)")
 
     def _add_usage(self, resp) -> None:
         u = getattr(resp, "usage", None)

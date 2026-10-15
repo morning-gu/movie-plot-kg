@@ -82,3 +82,20 @@ def test_server_overload_converted_to_llmerror_after_retries():
     with pytest.raises(LLMError):
         llm.chat_json(model="t", messages=[], schema=Out, max_retries=3)
     assert len(calls) == 3
+
+
+def test_embed_retries_transient_then_raises():
+    import openai
+    from types import SimpleNamespace
+
+    calls = []
+
+    def create(**kwargs):
+        calls.append(1)
+        raise openai.APITimeoutError(request=None)
+
+    client = SimpleNamespace(embeddings=SimpleNamespace(create=create))
+    llm = LLMClient(CFG, client=client)
+    with pytest.raises(LLMError):
+        llm.embed(["a"])
+    assert len(calls) == 3
