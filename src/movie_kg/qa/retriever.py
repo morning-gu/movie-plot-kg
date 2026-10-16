@@ -76,9 +76,20 @@ def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 5) -> list[Evidence
     hits = vector_recall(session, llm, plan.rewritten_query, top_k)
     evidence: list[Evidence] = list(hits)
     bound = bind_entities(session, plan.target_entities, hits)
+
+    def _resolve(v):
+        # 参数值与 name_hint 不完全一致时(如缩写 "Mason"),按词级子集
+        # 匹配已绑定实体;对不上则原样传递(模板查询自然落空并跳过)
+        if not isinstance(v, str) or v in bound:
+            return bound.get(v, v)
+        vl = {w for w in v.lower().split() if w}
+        for hint, nid in bound.items():
+            if vl and vl <= {w for w in hint.lower().split() if w}:
+                return nid
+        return v
+
     for gq in plan.graph_queries[:2]:
-        params = {k: (bound.get(v, v) if isinstance(v, str) else v)
-                  for k, v in gq.params.items()}
+        params = {k: _resolve(v) for k, v in gq.params.items()}
         try:
             # list(...) 立即消费: 真 driver 的 Result 是惰性的,迭代错误必须
             # 落在本 try 内,否则 DB 运行时错误会绕过授权的 catch 中断问答

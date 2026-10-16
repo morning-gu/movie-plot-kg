@@ -143,3 +143,41 @@ def test_retrieve_extracts_neo4j_node_and_path_shapes():
     graph_ids = [e.node_id for e in evidence if e.source == "graph"]
     assert "char_m1_aaa" in graph_ids and "char_m1_bbb" in graph_ids  # Node 形状
     assert "evt_m1_001_01" in graph_ids                              # Path 形状(键 p)
+
+
+def test_retrieve_resolves_abbreviated_param_names():
+    # LLM 的 params 值可能与 name_hint 不完全一致(缩写 "Mason"):
+    # 词级子集解析到已绑定实体,而非裸名查库落空(试点实证)
+    from movie_kg.qa.retriever import Evidence
+    plan = RetrievalPlan(
+        intent="relational", rewritten_query="q",
+        target_entities=[TargetEntity(type="Character", name_hint="John Patrick Mason")],
+        graph_queries=[GraphQueryPlan(template_id="relation_between_chars",
+                                      params={"a": "Mason", "b": "x"})])
+    session = MockSession(results=[[], [], [], []])   # 4 个向量召回查询空结果
+    # 无任何绑定时参数原样传递,不崩
+    from movie_kg.qa import retriever as R
+    captured = {}
+    orig = R.execute_template
+    R.execute_template = lambda s, tid, params: (captured.update(params=params), iter([]))[1]
+    try:
+        R.retrieve(session, ScriptedLLM(), plan)
+    finally:
+        R.execute_template = orig
+    assert captured["params"]["a"] == "Mason" and captured["params"]["b"] == "x"
+
+    # 有绑定时缩写解析成功
+    plan2 = plan.model_copy(deep=True)
+    # 4 个向量查询空 + bind 精确查询命中 John Patrick Mason -> char_m1_mason
+    session3 = MockSession(results=[[], [], [], [], [{"id": "char_m1_mason"}]])
+    R2 = R
+    captured.clear()
+    orig = R2.execute_template
+    R2.execute_template = lambda s, tid, params: (captured.update(params=params), iter([]))[1]
+    try:
+        # target name_hint "John Patrick Mason" 精确命中 char_m1_mason,
+        # params 里写缩写 "Mason" -> 词级子集 -> 解析为 char_m1_mason
+        R2.retrieve(session3, ScriptedLLM(), plan2)
+    finally:
+        R2.execute_template = orig
+    assert captured["params"]["a"] == "char_m1_mason"
