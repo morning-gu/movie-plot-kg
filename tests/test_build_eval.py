@@ -71,3 +71,15 @@ def test_merge_labels_carries_over_by_key():
     assert merged[0]["label"] == "correct"      # 匹配 (type,start,end): label 带入
     assert merged[1]["label"] == ""             # 无匹配: 保持空
     assert all(m["label"] != "incorrect" for m in merged)  # 旧行 label 被忽略
+
+
+def test_character_prf_both_empty_scores_full():
+    # 双空场景(无角色标注且未抽取参与者)记满分而非 0——MovieNet 无对白场景
+    # 占 Hackers 29%/Rock 24%,记 0 会系统性压垮 F1(试点实证)
+    from movie_kg.models.scene import MovieData, SceneData
+    meta = META.model_copy(update={"characters": []})
+    movie = MovieData(movie_id="m1", title="t",
+                      scenes=[SceneData(meta=meta, frames_dir=Path("frames"))])
+    rows = character_prf(movie, [])            # 无抽取 -> pred 空
+    row = rows[0]
+    assert row.precision == 1.0 and row.recall == 1.0 and row.f1 == 1.0

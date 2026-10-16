@@ -34,8 +34,11 @@ def character_prf(movie: MovieData,
                         pred.add(p.name)
         precision = len(gold & pred) / len(pred) if pred else 0.0
         recall = len(gold & pred) / len(gold) if gold else 0.0
-        f1 = (2 * precision * recall / (precision + recall)
-              if precision + recall else 0.0)
+        if not gold and not pred:
+            precision = recall = f1 = 1.0  # 双空 = 无需识别且未幻觉,记满分
+        else:
+            f1 = (2 * precision * recall / (precision + recall)
+                  if precision + recall else 0.0)
         rows.append(ScenePRF(scene_id=scene.meta.scene_id, gold=sorted(gold),
                              pred=sorted(pred), precision=round(precision, 4),
                              recall=round(recall, 4), f1=round(f1, 4)))
