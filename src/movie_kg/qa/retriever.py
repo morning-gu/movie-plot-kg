@@ -39,22 +39,34 @@ def vector_recall(session, llm, query: str, top_k: int = 5) -> list[Evidence]:
 
 def bind_entities(session, targets: list[TargetEntity],
                   vector_hits: list[Evidence]) -> dict[str, str]:
-    """name_hint -> 节点 ID: name/aliases 精确匹配,失败回落向量最近同类命中。"""
+    """name_hint -> 节点 ID:精确(name/aliases)→ 词级包含 → 向量同类命中(名字须有词交集)。
+
+    盲取首个同类向量命中会把 "John Mason" 绑到语义相近的 Goodspeed 上(试点实证),
+    产出自环/错向证据;错绑比不绑更糟,各级都要求名字证据。"""
     bound: dict[str, str] = {}
     for t in targets:
-        found = None
-        recs = session.run(
+        recs = list(session.run(
             f"MATCH (n:{t.type}) WHERE n.name = $h OR $h IN n.aliases "
-            "RETURN n.id AS id LIMIT 1", h=t.name_hint)
-        # type 经 TargetEntity Literal 白名单校验,拼接入 Cypher 安全
-        for rec in recs:
-            found = rec["id"]
-            break
+            "RETURN n.id AS id LIMIT 1", h=t.name_hint))
+        found = recs[0]["id"] if recs else None
         if found is None:
+            # 词级包含:hint 的全部词都出现在候选名中(次序无关,
+            # "John Mason" -> "John Patrick Mason");唯一命中才绑
+            words = {w for w in t.name_hint.lower().replace(".", " ").split() if w}
+            cands = session.run(
+                f"MATCH (n:{t.type}) RETURN n.id AS id, n.name AS name")
+            hits = [c for c in cands if words and
+                    words <= {w for w in c["name"].lower().replace(".", " ").split() if w}]
+            if len(hits) == 1:
+                found = hits[0]["id"]
+        if found is None:
+            hint_words = set(t.name_hint.lower().split())
             for hit in vector_hits:
                 if hit.extra.get("label") == t.type:
-                    found = hit.node_id
-                    break
+                    name = hit.text.split(":", 1)[0].lower()
+                    if hint_words & set(name.split()):
+                        found = hit.node_id
+                        break
         if found is not None:
             bound[t.name_hint] = found
     return bound
@@ -74,17 +86,27 @@ def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 5) -> list[Evidence
         except Exception:
             continue  # 模板参数不合法(如绑定失败)时跳过,不中断问答
         for row in rows:
-            for key, value in row.items():
+            for value in row.values():
+                # 三种形状:普通 dict(Mock/测试)、Neo4j Node、Neo4j Path(键名任意)。
+                # 真 driver 返回 Node/Path 对象,isinstance(dict) 永假——图证据曾因此
+                # 全部被静默丢弃,full 模式退化为纯向量(试点实证)
                 if isinstance(value, dict) and "id" in value:
                     evidence.append(Evidence(source="graph", node_id=value["id"],
                                              text=_node_text(value),
                                              extra={"template": gq.template_id}))
-                elif key == "path" and value:
-                    for node in value.nodes if hasattr(value, "nodes") else []:
-                        evidence.append(Evidence(
-                            source="graph", node_id=node["id"],
-                            text=_node_text(dict(node)),
-                            extra={"template": gq.template_id}))
+                elif hasattr(value, "labels"):  # Neo4j Node
+                    d = dict(value)
+                    if d.get("id"):
+                        evidence.append(Evidence(source="graph", node_id=d["id"],
+                                                 text=_node_text(d),
+                                                 extra={"template": gq.template_id}))
+                elif hasattr(value, "nodes"):  # Neo4j Path
+                    for node in value.nodes:
+                        d = dict(node)
+                        if d.get("id"):
+                            evidence.append(Evidence(
+                                source="graph", node_id=d["id"], text=_node_text(d),
+                                extra={"template": gq.template_id}))
     seen: set[str] = set()
     deduped: list[Evidence] = []
     for e in evidence:
