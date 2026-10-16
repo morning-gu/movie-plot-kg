@@ -181,3 +181,14 @@ def test_retrieve_resolves_abbreviated_param_names():
     finally:
         R2.execute_template = orig
     assert captured["params"]["a"] == "char_m1_mason"
+
+
+def test_bind_entities_tolerates_null_name_candidates():
+    # Event 实体无 name 属性(返回 None):词级匹配不得崩溃,自然不绑定
+    session = MockSession(results=[
+        [],                                            # 精确无命中
+        [{"id": "evt_m1_001_01", "name": None}]])      # 候选 name 为 None
+    bound = bind_entities(session,
+                          [TargetEntity(type="Event", name_hint="决裂")],
+                          vector_hits=[])
+    assert bound == {}

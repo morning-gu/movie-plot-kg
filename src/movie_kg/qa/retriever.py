@@ -55,7 +55,8 @@ def bind_entities(session, targets: list[TargetEntity],
             words = {w for w in t.name_hint.lower().replace(".", " ").split() if w}
             cands = session.run(
                 f"MATCH (n:{t.type}) RETURN n.id AS id, n.name AS name")
-            hits = [c for c in cands if words and
+            # Event 节点无 name 属性(None),空名一律跳过
+            hits = [c for c in cands if words and c["name"] and
                     words <= {w for w in c["name"].lower().replace(".", " ").split() if w}]
             if len(hits) == 1:
                 found = hits[0]["id"]
