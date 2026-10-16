@@ -29,3 +29,22 @@ def test_plan_caps_graph_queries_at_two():
         {"template_id": "subevents_of", "params": {"id": "c"}}])
     plan = plan_retrieval(ScriptedLLM(raw), "q")
     assert len(plan.graph_queries) == 2
+
+
+def test_planner_filters_invalid_entity_types():
+    # LLM 偶发词表外类型(实测 "Song"):过滤而非崩溃;合法项保留
+    from types import SimpleNamespace
+    from movie_kg.config import ModelsConfig
+    from movie_kg.llm import LLMClient
+    from movie_kg.qa.planner import plan_retrieval
+    from tests.fakes import FakeOpenAI
+
+    cfg = ModelsConfig(base_url="https://x", api_key="sk", vision_model="v",
+                       text_model="t", embedding_model="e", embedding_dims=8)
+    raw = ('{"intent": "factual", "rewritten_query": "like a virgin 解读", '
+           '"target_entities": [{"type": "Song", "name_hint": "Like a Virgin"},'
+           ' {"type": "Character", "name_hint": "Mr. Brown"}], "graph_queries": []}')
+    llm = LLMClient(cfg, client=FakeOpenAI([raw]))
+    plan = plan_retrieval(llm, "Mr. Brown 对 Like a Virgin 的解读?")
+    assert [(t.type, t.name_hint) for t in plan.target_entities] == \
+        [("Character", "Mr. Brown")]

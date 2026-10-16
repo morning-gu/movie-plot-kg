@@ -4,52 +4,52 @@
 
 | 场景 | gold | pred | P | R | F1 |
 | --- | --- | --- | --- | --- | --- |
-| scene_001 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_002 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_003 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_004 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_001 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_002 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_003 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_004 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_005 | Lauren Murphy | Lauren Murphy | 1.0 | 1.0 | 1.0 |
 | scene_006 | Lauren Murphy |  | 0.0 | 0.0 | 0.0 |
-| scene_007 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_007 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_008 | Lauren Murphy | Lauren Murphy | 1.0 | 1.0 | 1.0 |
 | scene_009 | Lauren Murphy |  | 0.0 | 0.0 | 0.0 |
-| scene_010 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_011 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_010 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_011 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_012 | Dade,Lauren Murphy |  | 0.0 | 0.0 | 0.0 |
 | scene_013 | Dade,Lauren Murphy |  | 0.0 | 0.0 | 0.0 |
 | scene_014 | Dade | Dade | 1.0 | 1.0 | 1.0 |
 | scene_015 | Dade | Dade | 1.0 | 1.0 | 1.0 |
 | scene_016 | Dade | Dade | 1.0 | 1.0 | 1.0 |
-| scene_017 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_018 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_019 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_017 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_018 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_019 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_020 | Dade | Dade | 1.0 | 1.0 | 1.0 |
-| scene_021 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_022 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_023 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_024 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_021 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_022 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_023 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_024 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_025 | Dade | Dade | 1.0 | 1.0 | 1.0 |
 | scene_026 | Dade | Dade | 1.0 | 1.0 | 1.0 |
 | scene_027 | Dade,Lauren Murphy | Dade | 1.0 | 0.5 | 0.6667 |
 | scene_028 | Dade,Lauren Murphy | Dade,Lauren Murphy | 1.0 | 1.0 | 1.0 |
 | scene_029 | Dade,Lauren Murphy | Dade,Lauren Murphy | 1.0 | 1.0 | 1.0 |
-| scene_030 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_031 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_032 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_033 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_034 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_035 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_036 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_037 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_038 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_030 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_031 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_032 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_033 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_034 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_035 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_036 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_037 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_038 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_039 | Dade | Dade | 1.0 | 1.0 | 1.0 |
 | scene_040 | Dade | Dade | 1.0 | 1.0 | 1.0 |
 | scene_041 | Dade,Kate | Dade,Kate | 1.0 | 1.0 | 1.0 |
 | scene_042 | Dade,Kate | Dade,Kate | 1.0 | 1.0 | 1.0 |
-| scene_043 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_043 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_044 | Dade | Dade | 1.0 | 1.0 | 1.0 |
-| scene_045 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_046 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_045 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_046 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_047 | Dade,Kate,Phreak | Dade,Kate | 1.0 | 0.6667 | 0.8 |
 | scene_048 | Dade,Joey,Phreak | Dade,Joey,Phreak | 1.0 | 1.0 | 1.0 |
 | scene_049 | Dade | Dade | 1.0 | 1.0 | 1.0 |
@@ -75,44 +75,44 @@
 | scene_069 | Dade,Lauren Murphy | Dade,Lauren Murphy | 1.0 | 1.0 | 1.0 |
 | scene_070 | Cereal,Dade,Joey |  | 0.0 | 0.0 | 0.0 |
 | scene_071 | Cereal,Dade,Joey,Nikon,Phreak,Razor | Cereal,Dade,Joey,Phreak | 1.0 | 0.6667 | 0.8 |
-| scene_072 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_073 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_074 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_075 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_072 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_073 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_074 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_075 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_076 | Joey | Joey | 1.0 | 1.0 | 1.0 |
 | scene_077 | Joey,Kate | Joey,Kate | 1.0 | 1.0 | 1.0 |
-| scene_078 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_079 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_078 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_079 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_080 | The Plague | The Plague | 1.0 | 1.0 | 1.0 |
 | scene_081 | Dade,Joey | Dade,Joey | 1.0 | 1.0 | 1.0 |
 | scene_082 | Blade,Dade,Joey,The Plague | Blade,Dade,The Plague | 1.0 | 0.75 | 0.8571 |
 | scene_083 | Dade,Joey | Joey | 1.0 | 0.5 | 0.6667 |
 | scene_084 | Dade,Joey,Kate,The Plague | Dade,Joey,Kate | 1.0 | 0.75 | 0.8571 |
 | scene_085 | The Plague | The Plague | 1.0 | 1.0 | 1.0 |
-| scene_086 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_086 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_087 | Cereal |  | 0.0 | 0.0 | 0.0 |
 | scene_088 | Blade,Cereal,Dade,Joey,Nikon,Phreak,Razor | Blade,Cereal,Dade,Joey,Nikon,Phreak,Razor | 1.0 | 1.0 | 1.0 |
 | scene_089 | Joey,Kate | Joey,Kate | 1.0 | 1.0 | 1.0 |
 | scene_090 | Cereal,Joey,Kate | Cereal,Joey,Kate | 1.0 | 1.0 | 1.0 |
-| scene_091 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_091 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_092 | Dade | Dade | 1.0 | 1.0 | 1.0 |
-| scene_093 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_094 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_095 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_093 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_094 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_095 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_096 | Dade,The Plague | Dade,The Plague | 1.0 | 1.0 | 1.0 |
 | scene_097 | Kate,The Plague | Kate,The Plague | 1.0 | 1.0 | 1.0 |
 | scene_098 | Kate,The Plague | Kate,The Plague | 1.0 | 1.0 | 1.0 |
 | scene_099 | The Plague |  | 0.0 | 0.0 | 0.0 |
 | scene_100 | The Plague | The Plague | 1.0 | 1.0 | 1.0 |
-| scene_101 |  |  | 0.0 | 0.0 | 0.0 |
-| scene_102 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_101 |  |  | 1.0 | 1.0 | 1.0 |
+| scene_102 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_103 | Dade,Phreak | Dade,Phreak | 1.0 | 1.0 | 1.0 |
 | scene_104 | Cereal,Dade,Phreak,The Plague | Cereal,Dade,Phreak,The Plague | 1.0 | 1.0 | 1.0 |
 | scene_105 | Dade,Kate,The Plague | Dade,Kate,The Plague | 1.0 | 1.0 | 1.0 |
 | scene_106 | Dade |  | 0.0 | 0.0 | 0.0 |
 | scene_107 | Dade,Nikon,The Plague | Dade,Nikon,The Plague | 1.0 | 1.0 | 1.0 |
 | scene_108 | Dade,The Plague | The Plague | 1.0 | 0.5 | 0.6667 |
-| scene_109 |  |  | 0.0 | 0.0 | 0.0 |
+| scene_109 |  |  | 1.0 | 1.0 | 1.0 |
 | scene_110 | Blade,Cereal,Dade,Nikon,The Plague | Dade,Nikon,The Plague | 1.0 | 0.6 | 0.75 |
 | scene_111 | Phreak |  | 0.0 | 0.0 | 0.0 |
 | scene_112 | Cereal,Dade,Kate,Nikon,Phreak | Cereal,Dade,Nikon,Phreak | 1.0 | 0.8 | 0.8889 |
@@ -151,9 +151,9 @@
 | 指标 | 值 |
 | --- | --- |
 | scenes | 140 |
-| precision | 0.6286 |
-| recall | 0.5548 |
-| f1 | 0.5808 |
+| precision | 0.9143 |
+| recall | 0.8406 |
+| f1 | 0.8665 |
 
 
 ## 失败场景

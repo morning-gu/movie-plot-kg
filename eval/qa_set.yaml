@@ -1,0 +1,321 @@
+items:
+  # ============ Reservoir Dogs (tt0105236) ============
+  # --- factual ---
+  - id: rd_f1
+    question: Mr. Brown 对 Madonna 的 Like a Virgin 这首歌的解读是什么?
+    gold_answer: Mr. Brown 认为 Like a Virgin 是关于一个女孩遇到一个给她灵感的男人的歌。
+    gold_entity_ids: [evt_tt0105236_001_01, char_tt0105236_f93b1425]
+    intent: factual
+  - id: rd_f2
+    question: 抢劫发生后 Mr. White 对 Mr. Orange 的伤势做出了什么判断?
+    gold_answer: Mr. White 判断 Mr. Orange 没有死只是昏迷,并强调要送他去医院救命。
+    gold_entity_ids: [evt_tt0105236_008_02]
+    intent: factual
+  - id: rd_f3
+    question: Mr. White 向 Mr. Orange 泄露了什么个人信息?
+    gold_answer: Mr. White 告诉了 Mr. Orange 自己的名字(姓氏)和出身地。
+    gold_entity_ids: [evt_tt0105236_008_04]
+    intent: factual
+  - id: rd_f4
+    question: 仓库里 Mr. White 和 Mr. Pink 怀疑组织里存在什么问题?
+    gold_answer: 他们怀疑团伙里出了内鬼(告密者)。
+    gold_entity_ids: [evt_tt0105236_008_07]
+    intent: factual
+  # --- causal ---
+  - id: rd_c1
+    question: 是什么原因导致 Mr. White 和 Mr. Blonde 发生对峙?
+    gold_answer: Mr. Blonde 在抢劫中疯狂开枪制造了麻烦,Mr. White 因此指责并与其对峙。
+    gold_entity_ids: [evt_tt0105236_008_08]
+    intent: causal
+  - id: rd_c2
+    question: 餐厅里关于小费的争论是怎么结束的?
+    gold_answer: Mr. Pink 与 Mr. Orange 就小费争论后,Mr. Pink 最终支付了小费以结束争执。
+    gold_entity_ids: [evt_tt0105236_001_05]
+    intent: causal
+  - id: rd_c3
+    question: 为什么 Mr. White 坚持要把 Mr. Orange 送到医院?
+    gold_answer: 因为 Mr. Orange 受了重伤昏迷,Mr. White 认为他是同伴,要救他的命。
+    gold_entity_ids: [evt_tt0105236_008_05]
+    intent: causal
+  - id: rd_c4
+    question: Mr. Orange 为什么承认曾想过杀死 Mr. Blonde?
+    gold_answer: 因为团伙怀疑有内鬼,Mr. White 以此说明 Mr. Blonde 的疯狂行径连同伴都无法容忍。
+    gold_entity_ids: [evt_tt0105236_008_09]
+    intent: causal
+  # --- relational ---
+  - id: rd_r1
+    question: Mr. Blonde 和 Mr. White 之间是什么关系?
+    gold_answer: 敌对关系。Mr. Blonde 的疯狂开枪行为导致 Mr. White 指责并与其冲突。
+    gold_entity_ids: [char_tt0105236_80ca3692, char_tt0105236_f93b1425]
+    intent: relational
+  - id: rd_r2
+    question: Mr. White 和 Mr. Orange 之间是什么关系?
+    gold_answer: 同伙关系,且 Mr. White 对重伤的 Mr. Orange 有强烈的保护欲,不惜与 Mr. Pink 争执也要救他。
+    gold_entity_ids: [char_tt0105236_f93b1425, char_tt0105236_63c3cd5f]
+    intent: relational
+  - id: rd_r3
+    question: Joe Cabot 在团伙中的角色是什么?
+    gold_answer: Joe Cabot 是犯罪团伙的头目,抢劫行动的组织者,Mr. White 建议联系他来给 Mr. Orange 找医生。
+    gold_entity_ids: [char_tt0105236_cd2b5762, evt_tt0105236_008_03]
+    intent: relational
+  - id: rd_r4
+    question: Nice Guy Eddie 和 Joe Cabot 是什么关系?
+    gold_answer: Nice Guy Eddie 是 Joe Cabot 的儿子,团伙核心成员之一。
+    gold_entity_ids: [char_tt0105236_dbfbd2fd, char_tt0105236_cd2b5762]
+    intent: relational
+  # --- temporal ---
+  - id: rd_t1
+    question: 餐厅讨论结束后紧接着发生了什么?
+    gold_answer: Mr. White 与 Joe Cabot 离开餐厅后,Mr. White 在车内受伤,随后开始评估 Mr. Orange 的伤势。
+    gold_entity_ids: [evt_tt0105236_002_09, evt_tt0105236_002_10]
+    intent: temporal
+  - id: rd_t2
+    question: Mr. Blonde 和 Holdaway 到达仓库之后发生了什么?
+    gold_answer: 团伙开始怀疑有内鬼,随后 Mr. White 与 Mr. Blonde 发生对峙。
+    gold_entity_ids: [evt_tt0105236_008_06, evt_tt0105236_008_07, evt_tt0105236_008_08]
+    intent: temporal
+  - id: rd_t3
+    question: Mr. Orange 的卧底身份是怎么逐步揭露的?
+    gold_answer: 影片闪回展示 Mr. Orange(Freddy)排练卧底人设、与 Mr. White 首次相遇,最终揭示他是卧底警察。
+    gold_entity_ids: [evt_tt0105236_024_01, char_tt0105236_63c3cd5f]
+    intent: temporal
+  - id: rd_t4
+    question: 团伙发现内鬼的怀疑是在什么背景下产生的?
+    gold_answer: 抢劫出错、警察迅速赶到、Mr. Orange 重伤,Mr. White 和 Mr. Pink 由此怀疑有内鬼。
+    gold_entity_ids: [evt_tt0105236_008_07]
+    intent: temporal
+  # --- synthesis ---
+  - id: rd_s1
+    question: Mr. Pink 在小费问题上的立场是什么?他在餐厅和仓库里分别表现了什么性格?
+    gold_answer: Mr. Pink 反对给小费,显得功利冷酷;在仓库中他冷静务实,主张不能送 Mr. Orange 去医院以免暴露。
+    gold_entity_ids: [char_tt0105236_703604bc, evt_tt0105236_001_04]
+    intent: synthesis
+  - id: rd_s2
+    question: Mr. White 对待同伴的态度在整部片中是如何体现的?
+    gold_answer: 他为重伤的 Mr. Orange 辩护并坚持送医,不惜与 Mr. Pink 争吵,也因 Mr. Blonde 的疯狂而与其对峙,体现重情重义的特质。
+    gold_entity_ids: [char_tt0105236_f93b1425, evt_tt0105236_008_05, evt_tt0105236_008_08]
+    intent: synthesis
+  - id: rd_s3
+    question: 仓库里围绕 Mr. Orange 的处置产生了哪些分歧?
+    gold_answer: Mr. White 主张送医院救命,Mr. Pink 反对并担心暴露,双方激烈争执;Mr. Blonde 则另有所图。
+    gold_entity_ids: [evt_tt0105236_008_05]
+    intent: synthesis
+  - id: rd_s4
+    question: 团伙从餐厅到仓库经历了怎样的转折?
+    gold_answer: 餐厅里轻松谈论歌曲与小费,抢劫发生后情势急转:Mr. Orange 重伤、怀疑内鬼、内部对峙不断升级。
+    gold_entity_ids: [evt_tt0105236_001_01, evt_tt0105236_008_07]
+    intent: synthesis
+
+  # ============ Hackers (tt0113243) ============
+  # --- factual ---
+  - id: hk_f1
+    question: Dade 在 Nikon 的聚会上用什么名字介绍自己?
+    gold_answer: Dade 介绍自己是 Crash Override。
+    gold_entity_ids: [evt_tt0113243_088_01, char_tt0113243_c0c6ed11]
+    intent: factual
+  - id: hk_f2
+    question: The Plague 在公司会议上通报了什么安全危机?
+    gold_answer: 黑客通过超级用户账户入侵了公司系统,病毒在 Gibson 系统中留下声明,26 艘在航船只无法确认是否被感染。
+    gold_entity_ids: [evt_tt0113243_096_01, evt_tt0113243_096_05, char_tt0113243_461f7abb]
+    intent: factual
+  - id: hk_f3
+    question: Cereal Killer 最后在电视上揭露了什么?
+    gold_answer: Cereal Killer 通过直播揭露了 The Plague 在巴哈马的账户和整个阴谋,公开了真相。
+    gold_entity_ids: [evt_tt0113243_136_04, evt_tt0113243_136_07, char_tt0113243_f3301216]
+    intent: factual
+  - id: hk_f4
+    question: 走廊漏水事件中 Dade 给出了什么解释?
+    gold_answer: Dade 解释是屋顶的泳池漏水,试图平息混乱。
+    gold_entity_ids: [evt_tt0113243_064_03]
+    intent: factual
+  # --- causal ---
+  - id: hk_c1
+    question: 是什么导致 Dade 家被执法团队突袭?
+    gold_answer: Dade(Zero Cool)此前的黑客入侵行为引起执法部门注意,突袭随之而来。
+    gold_entity_ids: [evt_tt0113243_001_02, char_tt0113243_c0c6ed11]
+    intent: causal
+  - id: hk_c2
+    question: 众人最后为什么要入侵电视信号进行直播?
+    gold_answer: 为了公开揭露 The Plague 的阴谋和巴哈马账户,洗清自己并让他被逮捕。
+    gold_entity_ids: [evt_tt0113243_136_07]
+    intent: causal
+  - id: hk_c3
+    question: Dade 为什么向 Kate 和众人坦白自己曾把磁盘交给 Plague?
+    gold_answer: 因为分析磁盘时真相逼近,Dade 承认自己是 Zero Cool,曾是唯一想要 Kate 磁盘副本的人,把磁盘交给了 Plague。
+    gold_entity_ids: [evt_tt0113243_120_07]
+    intent: causal
+  - id: hk_c4
+    question: Kate 为什么对 Dade 发出挑战?
+    gold_answer: Kate 与 Dade 在酒吧游戏对抗中互不服气,她质疑 Dade 的能力并挑战他做得更好。
+    gold_entity_ids: [evt_tt0113243_056_01, char_tt0113243_a6cb3dfc]
+    intent: causal
+  # --- relational ---
+  - id: hk_r1
+    question: Dade Murphy 和 Kate 之间是什么关系?
+    gold_answer: 从对抗竞争到合作并互生情愫的恋人关系;初期是黑客技术上的对手。
+    gold_entity_ids: [char_tt0113243_c0c6ed11, char_tt0113243_a6cb3dfc]
+    intent: relational
+  - id: hk_r2
+    question: Dade 和 The Plague 之间是什么关系?
+    gold_answer: 敌对关系。The Plague 陷害黑客团伙,Dade 最终揭露并击败了他。
+    gold_entity_ids: [char_tt0113243_c0c6ed11, char_tt0113243_461f7abb]
+    intent: relational
+  - id: hk_r3
+    question: Nikon 在黑客团体中扮演什么角色?
+    gold_answer: 黑客团体成员,聚会的组织者之一,最初质疑 Dade 后来接纳了他。
+    gold_entity_ids: [char_tt0113243_55669157, evt_tt0113243_088_04]
+    intent: relational
+  - id: hk_r4
+    question: Joey Pardella 在故事中的处境如何?
+    gold_answer: Joey 是团队中最年轻、急于证明自己的黑客,最初想加入 Dade 他们,尝试入侵 Gibson 闯下大祸,最终参与揭露 Plague。
+    gold_entity_ids: [char_tt0113243_1e8354a0, evt_tt0113243_088_09]
+    intent: relational
+  # --- temporal ---
+  - id: hk_t1
+    question: Dade 一家搬家之后最先发生了什么?
+    gold_answer: Dade 转入新学校,在办理入学时询问校长办公室,随后结识当地黑客团体。
+    gold_entity_ids: [evt_tt0113243_040_01]
+    intent: temporal
+  - id: hk_t2
+    question: 分析磁盘之后事态如何发展?
+    gold_answer: 众人发现病毒与 The Plague 有关,Dade 坦白自己曾把磁盘交给 Plague,随后团队决定反击并在直播中揭露阴谋。
+    gold_entity_ids: [evt_tt0113243_120_07, evt_tt0113243_136_07]
+    intent: temporal
+  - id: hk_t3
+    question: The Plague 是如何一步步把危机嫁祸给黑客们的?
+    gold_answer: 他先向公司通报黑客入侵和病毒,把矛头指向黑客团体,自己则藏起巴哈马账户的真相。
+    gold_entity_ids: [evt_tt0113243_096_01, evt_tt0113243_136_04]
+    intent: temporal
+  - id: hk_t4
+    question: 大中央车站的紧张对峙之后发生了什么?
+    gold_answer: Secret Service 赶到现场,Kate 大喊让 Dade 逃跑,场面失控。
+    gold_entity_ids: [evt_tt0113243_128_03, evt_tt0113243_128_07]
+    intent: temporal
+  # --- synthesis ---
+  - id: hk_s1
+    question: Dade Murphy 从 Zero Cool 到 Crash Override 经历了怎样的转变?
+    gold_answer: 年少时作为 Zero Cool 入侵 1507 台系统被捕并被禁用电脑;搬家后以 Crash Override 之名重返黑客圈,结识伙伴,最终用技术揭露 Plague 洗清大家。
+    gold_entity_ids: [char_tt0113243_c0c6ed11, evt_tt0113243_088_01, evt_tt0113243_136_07]
+    intent: synthesis
+  - id: hk_s2
+    question: The Plague 的阴谋包含哪些环节?
+    gold_answer: 他在 Gibson 系统植入病毒制造危机,用超级用户账户嫁祸黑客,试图把赃款转入巴哈马账户,最后被 Cereal Killer 等人直播揭穿。
+    gold_entity_ids: [char_tt0113243_461f7abb, evt_tt0113243_096_01, evt_tt0113243_136_04]
+    intent: synthesis
+  - id: hk_s3
+    question: 黑客团体有哪些成员,各自有什么特点?
+    gold_answer: 团体包括 Dade(Crash Override)、Kate(技术强好胜)、Nikon(组织聚会)、Cereal(话多幽默)、Phreak(引荐 Dade)和 Joey(年轻急于证明自己)。
+    gold_entity_ids: [char_tt0113243_c0c6ed11, char_tt0113243_a6cb3dfc, char_tt0113243_f3301216]
+    intent: synthesis
+  - id: hk_s4
+    question: Kate 和 Dade 的关系如何影响了剧情走向?
+    gold_answer: 两人从游戏对抗到合作分析磁盘,竞争与信任交织;磁盘事件让 Dade 坦白身份,最终并肩揭露 Plague。
+    gold_entity_ids: [char_tt0113243_a6cb3dfc, char_tt0113243_c0c6ed11, evt_tt0113243_056_01]
+    intent: synthesis
+
+  # ============ The Rock (tt0117500) ============
+  # --- factual ---
+  - id: rk_f1
+    question: General Hummel 去世的妻子墓前做了什么告别举动?
+    gold_answer: 他在雨中祭拜亡妻墓,最后把荣誉勋章放在了墓碑上。
+    gold_entity_ids: [evt_tt0117500_008_04, char_tt0117500_91e246c0]
+    intent: factual
+  - id: rk_f2
+    question: Hummel 的部队从海军武器库偷取了什么武器?
+    gold_answer: 装有 VX 毒气的火箭弹,用于占领恶魔岛后的威胁行动。
+    gold_entity_ids: [evt_tt0117500_032_01]
+    intent: factual
+  - id: rk_f3
+    question: Womack 对 Mason 的特赦令做了什么?
+    gold_answer: 在 Mason 签署特赦令后,Womack 当众将其撕毁,表现对 Mason 的不信任。
+    gold_entity_ids: [evt_tt0117500_104_03, char_tt0117500_c9730d1b]
+    intent: factual
+  - id: rk_f4
+    question: Goodspeed 最后用什么方式杀死了 Captain Frye?
+    gold_answer: 他把 VX 毒气球塞进 Frye 嘴里并击打使其破裂,Frye 中毒身亡。
+    gold_entity_ids: [evt_tt0117500_416_02, char_tt0117500_214ff0ef]
+    intent: factual
+  # --- causal ---
+  - id: rk_c1
+    question: 是什么促使 Hummel 决定发动这次行动?
+    gold_answer: 他探访亡妻之墓成为转折点,决意为被政府遗忘的牺牲士兵讨回公道,实施夺取 VX 火箭的争议行动。
+    gold_entity_ids: [evt_tt0117500_008_05]
+    intent: causal
+  - id: rk_c2
+    question: SEAL 突击队为什么会全军覆没?
+    gold_answer: 他们潜入恶魔岛后被 Hummel 的探测设备发现,Hummel 劝降无效后 Frye 和 Darrow 率先开火,导致除 Mason 和 Goodspeed 外全部阵亡。
+    gold_entity_ids: [evt_tt0117500_224_02, evt_tt0117500_224_03]
+    intent: causal
+  - id: rk_c3
+    question: Mason 为什么改变主意决定留下帮忙?
+    gold_answer: 因为 Goodspeed 揭示了任务真相——留在岛上拆弹是为了拯救 Mason 女儿的生命,Mason 因此决定留下。
+    gold_entity_ids: [evt_tt0117500_224_04, char_tt0117500_ba1b8fda]
+    intent: causal
+  - id: rk_c4
+    question: 第一枚火箭为什么没有击中体育场?
+    gold_answer: Hummel 秘密修改了火箭坐标,使其坠入海洋而非烛台公园,避免大规模伤亡。
+    gold_entity_ids: [evt_tt0117500_352_01, evt_tt0117500_336_01]
+    intent: causal
+  # --- relational ---
+  - id: rk_r1
+    question: Stanley Goodspeed 和 John Mason 之间是什么关系?
+    gold_answer: 从互相怀疑到生死与共的战友关系;Goodspeed 请求 Mason 协助,最终两人合作拆除了火箭。
+    gold_entity_ids: [char_tt0117500_aeef82ca, char_tt0117500_ba1b8fda]
+    intent: relational
+  - id: rk_r2
+    question: Hummel 和他的部下 Frye、Darrow 之间发生了什么矛盾?
+    gold_answer: Frye 和 Darrow 主张真发射火箭杀人,Hummel 不愿造成无辜伤亡,双方对峙并最终爆发枪战,Hummel 被击中。
+    gold_entity_ids: [char_tt0117500_91e246c0, evt_tt0117500_392_02]
+    intent: relational
+  - id: rk_r3
+    question: Mason 和女儿 Jade 的关系如何?
+    gold_answer: Mason 长期被囚禁与女儿分离;在艺术宫与 Jade 重逢,女儿对父亲的缺席感到痛苦,两人进行了情感交流。
+    gold_entity_ids: [char_tt0117500_ba1b8fda, char_tt0117500_101222f5, evt_tt0117500_160_01]
+    intent: relational
+  - id: rk_r4
+    question: Womack 对 Mason 的态度是怎样的?
+    gold_answer: 极度不信任和敌意:撕毁特赦令、囚禁威胁,事后还想违约。
+    gold_entity_ids: [char_tt0117500_c9730d1b, evt_tt0117500_104_03]
+    intent: relational
+  # --- temporal ---
+  - id: rk_t1
+    question: Hummel 探访妻子墓地之后紧接着发生了什么?
+    gold_answer: 他摘下结婚戒指,随后带领叛变海军陆战队突袭海军武器库夺取 VX 火箭。
+    gold_entity_ids: [evt_tt0117500_016_01, evt_tt0117500_032_01]
+    intent: temporal
+  - id: rk_t2
+    question: Mason 从酒店逃脱之后当局做了什么?
+    gold_answer: Mason 驾驶跑车在旧金山街头制造混乱甩开追捕,Goodspeed 通过无线电通报信号六在酒店出现,追捕进入关键阶段。
+    gold_entity_ids: [evt_tt0117500_136_01, evt_tt0117500_144_01]
+    intent: temporal
+  - id: rk_t3
+    question: Hummel 与 Baxter、Frye 一行对峙的最后结局是什么?
+    gold_answer: 对峙失控爆发枪战,Major Baxter 和 Hummel 中弹,Hummel 临终向 Goodspeed 透露最后一枚火箭在下灯塔。
+    gold_entity_ids: [evt_tt0117500_392_02, evt_tt0117500_392_03]
+    intent: temporal
+  - id: rk_t4
+    question: Goodspeed 拆除最后一枚火箭之后发生了什么?
+    gold_answer: 他点燃两枚绿色信号弹示意威胁解除,但喷气机已投弹,爆炸把他抛入海中。
+    gold_entity_ids: [evt_tt0117500_400_10, evt_tt0117500_400_11]
+    intent: temporal
+  # --- synthesis ---
+  - id: rk_s1
+    question: Hummel 这个角色为什么最终没有杀死无辜市民?
+    gold_answer: 他本质是为牺牲士兵讨公道的军人而非恐怖分子:发射的火箭被其秘密改道入海,拒绝向市民区投放毒气,最终因此与主战的 Frye、Darrow 决裂。
+    gold_entity_ids: [char_tt0117500_91e246c0, evt_tt0117500_336_01, evt_tt0117500_392_02]
+    intent: synthesis
+  - id: rk_s2
+    question: Goodspeed 在恶魔岛上经历了怎样的成长?
+    gold_answer: 从只会摆弄毒气样本的实验室专家,到被迫上岛、在枪林弹雨中拆除火箭、近身搏杀 Frye、亲手注射解毒剂,完成了从书呆子到英雄的蜕变。
+    gold_entity_ids: [char_tt0117500_aeef82ca, evt_tt0117500_400_08, evt_tt0117500_400_09]
+    intent: synthesis
+  - id: rk_s3
+    question: Mason 为什么值得被信任,他与当局的关系经历了什么变化?
+    gold_answer: 他被冤枉囚禁三十年,请求特赦协助上岛;特赦令被 Womack 撕毁后他逃脱,又因女儿和 Goodspeed 的坦诚回归,最终救下旧金山并重获自由。
+    gold_entity_ids: [char_tt0117500_ba1b8fda, evt_tt0117500_104_03, evt_tt0117500_224_04]
+    intent: synthesis
+  - id: rk_s4
+    question: 结尾 Goodspeed 手里的微缩胶卷暗示了什么?
+    gold_answer: Mason 告诉了他微缩胶卷的位置,里面藏有肯尼迪遇刺的秘密;Goodspeed 从教堂脱身后带着胶卷驾车离去。
+    gold_entity_ids: [evt_tt0117500_464_03, char_tt0117500_ba1b8fda]
+    intent: synthesis

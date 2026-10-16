@@ -16,10 +16,17 @@ class GraphQueryPlan(BaseModel):
     params: dict
 
 
+class RawTargetEntity(BaseModel):
+    # LLM 偶发给出词表外类型(实测 "Song"),先收下,由 plan_retrieval 过滤——
+    # 直接 Literal 会让整次问答崩在重试耗尽(试点实证)
+    type: str
+    name_hint: str
+
+
 class PlannerOutput(BaseModel):
-    intent: Literal["factual", "causal", "relational", "temporal", "synthesis"]
+    intent: str  # 宽松收下;下游统计用题目自带 intent,不依赖此值
     rewritten_query: str
-    target_entities: list[TargetEntity] = []
+    target_entities: list[RawTargetEntity] = []
     graph_queries: list[GraphQueryPlan] = []
 
 
@@ -38,7 +45,10 @@ def plan_retrieval(llm, question: str) -> RetrievalPlan:
                         messages=[{"role": "system", "content": system},
                                   {"role": "user", "content": "请输出检索计划 JSON。"}],
                         schema=PlannerOutput)
+    valid_types = {"Character", "Event", "VirtualTime", "Location"}
+    targets = [TargetEntity(type=t.type, name_hint=t.name_hint)
+               for t in raw.target_entities if t.type in valid_types]
     valid_queries = [g for g in raw.graph_queries if g.template_id in TEMPLATES][:2]
     return RetrievalPlan(intent=raw.intent, rewritten_query=raw.rewritten_query,
-                         target_entities=raw.target_entities,
+                         target_entities=targets,
                          graph_queries=valid_queries)
