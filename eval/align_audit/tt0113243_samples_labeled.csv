@@ -1,0 +1,161 @@
+threshold,cue_idx,band,cue_text,old_speaker,new_speaker,matched_speaker,matched_text,dedup_tokens,l_ocr,sibling,label,reason
+0.6,30,0.6-1.01,CouId you read me the number on the modem?,,DADE,DADE,"Yeah, well, you know these Japanese management techniques. Could you, uh, read me the number on the modem?",8,False,True,correct,近逐字对应
+0.6,38,0.6-1.01,You are about to experience the awe and mystery,,TV,TV,"You are about to experience the awe and mystery, which reaches from the inner mind, to... The Outer Limits.",9,False,False,correct,近逐字对应
+0.6,40,0.6-1.01,to... The Outer Limits.,,TV,TV,"You are about to experience the awe and mystery, which reaches from the inner mind, to... The Outer Limits.",4,False,True,correct,近逐字对应
+0.6,111,0.6-1.01,l don't have an identity until l have a handle.,JOEY,JOEY,JOEY,"I need a handle, man. I don't have an identity until I have a handle.",9,True,True,correct,近逐字对应
+0.6,119,0.6-1.01,"featuring Hendrix, Joplin, Mama Cass, Belushi,",,CEREAL,CEREAL,"Check this out, each and every one of you. Compilation tape, of my own making. I call this the ""Greatest Zooks Album"". Featuring artists like, well I got some Hendrix on there, some Joplin, Mama Cass, Belushi... all great artists that asphyxiated on their own vomit!",6,False,True,correct,近逐字对应
+0.6,128,0.6-1.01,"ls this kid bothering you, Kate?",CURTIS,CURTIS,CURTIS,"Is this kid bothering you, Kate?",6,False,False,correct,逐字对应
+0.6,138,0.6-1.01,What's he do?,DADE,DADE,DADE,And what's he do?,4,False,False,correct,近逐字对应
+0.6,167,0.6-1.01,Class crashing. Come on.,DADE,DADE,DADE,Shit! Come on!,4,False,False,incorrect,"原句不在剧本,误配"
+0.6,271,0.6-1.01,"Sweet dreams, Joseph.",JOEY'S MOM,JOEY'S MOM,JOEY'S MOM,"Sweet dreams, Joey.",3,False,False,correct,近逐字对应
+0.6,276,0.6-1.01,"Nice place, huh?",CEREAL,CEREAL,CEREAL,"Nice place, huh.",3,False,False,correct,逐字对应
+0.6,301,0.6-1.01,WeIcome to our show!,RAZOR,RAZOR,RAZOR,Welcome to our show!,4,False,False,correct,逐字对应
+0.6,340,0.6-1.01,Joey!,JOEY'S MOM,JOEY'S MOM,JOEY'S MOM,Joey!,1,False,False,correct,"逐字对应,同人同场"
+0.6,531,0.6-1.01,Was that her top?,DADE,DADE,DADE,Was that her top?,4,False,False,correct,逐字对应
+0.6,689,0.6-1.01,Operator Services?,OPERATOR,OPERATOR,OPERATOR,"Hello, operator services.",2,False,False,correct,近逐字对应
+0.6,746,0.6-1.01,"What can l tell you? Computers never lie, kid.",,PLAGUE,PLAGUE,"What can I tell you. Computers never lie, kid. Your mom will be arrested at work, she'll be handcuffed, and later, strip searched.",9,True,False,correct,近逐字对应
+0.6,802,0.6-1.01,"l thought you was black, man.",,NIKON,NIKON,"Biggest crash in history, front page, New York Times, August 10th, 1988. I thought you was black, man! Yo, man, this is Zero Cool! Oh, shit!",6,True,True,correct,原句子串对应
+0.6,843,0.6-1.01,Then they'll all be put away.,,PLAGUE,PLAGUE,"Yeah. To civilians. But they're hackers. But don't worry. All we have to do is launch the Da Vinci virus, and then they'll all be put away.",7,False,True,correct,近逐字对应
+0.6,922,0.6-1.01,How will you take care of the cops?,BLADE,BLADE,BLADE,How are you going to take care of the cops?,8,False,False,correct,近逐字对应
+0.6,926,0.6-1.01,You're the man!,NIKON,NIKON,NIKON,"Yo, brain dead, the manual!",4,False,True,incorrect,"原句不在剧本,误配"
+0.6,927,0.6-1.01,"Joey, you made it!",CEREAL,CEREAL,CEREAL,"Hey Joey, you made it!",4,False,False,correct,近逐字对应
+0.5,13,0.55-0.6,l sentence you to probation. You are forbidden to use a computer,,JUDGE,JUDGE,"...and sentence you to probation, under which you are forbidden to own or operate a computer or touch tone telephone, until the day of your eighteenth birthday.",10,True,False,correct,近逐字对应
+0.5,66,0.5-0.55,"l miss you, too, baby. Claro que s�.",,KATE,KATE,"If I win, you become my slave.",8,True,False,incorrect,背景台词不在剧本
+0.5,69,0.6-1.01,l'm sorry. Where's the principal's office?,DADE,DADE,DADE,"Yeah, I'm sorry, I was just looking for the principal's office.",8,True,False,correct,近逐字对应
+0.5,71,0.6-1.01,Do you have your transfer forms?,GIRL,GIRL,GIRL,Do you have your transfer forms?,6,False,False,correct,逐字对应
+0.5,97,0.5-0.55,"I'm subbing for Ms BayIess, who was arrested at the anti-fur raIIy.",,TEACHER,TEACHER,I'm not so sure your mother qualifies as a significant author of the twentieth century.,14,False,False,incorrect,另有近逐字原句
+0.5,100,0.5-0.55,What's your interest in Kate Libby?,,KID,KID,"So, um, what's your interest in Kate Libby, eh? Academic? Purely sexual?",7,False,False,correct,近逐字对应
+0.5,103,0.6-1.01,"What's up, man? l'm the Phreak.",KID,KID,KID,"What's up, man? I'm the Phreak!",8,True,False,correct,逐字对应
+0.5,120,0.6-1.01,all great artists who asphyxiated on their own vomit!,,CEREAL,CEREAL,"Check this out, each and every one of you. Compilation tape, of my own making. I call this the ""Greatest Zooks Album"". Featuring artists like, well I got some Hendrix on there, some Joplin, Mama Cass, Belushi... all great artists that asphyxiated on their own vomit!",9,False,True,correct,近逐字对应
+0.5,173,0.6-1.01,Ahh. Did we meet someone special?,MRS. MURPHY,MRS. MURPHY,MRS. MURPHY,Aaaah. Did we meet someone special?,6,False,False,correct,逐字对应
+0.5,185,0.55-0.6,Can l score a fry?,,JOEY,JOEY,Can I get some more coffee?,5,True,False,incorrect,另有近逐字原句
+0.5,189,0.55-0.6,"Anyway, guys, listen.",,DADE,DADE,"Kate, listen.",3,False,False,incorrect,另有近逐字原句
+0.5,204,0.55-0.6,What's that?,CEREAL,CEREAL,CEREAL,Oh yeah? What's that?,3,False,False,correct,"近逐字,同场同人"
+0.5,227,0.5-0.55,"'Love', 'Secret' and 'Sex'.",,AGENT RAY,AGENT RAY,Secret Service!,4,False,False,incorrect,另有近逐字原句
+0.5,242,0.5-0.55,"Lay off that shit, man.",,CEREAL,CEREAL,"It was him, man!",5,False,True,incorrect,另有近逐字原句
+0.5,259,0.5-0.55,l is here.,BLADE,DADE,DADE,I'm Crash Override.,3,True,False,incorrect,另有近逐字原句
+0.5,276,0.6-1.01,"Nice place, huh?",CEREAL,CEREAL,CEREAL,"Nice place, huh.",3,False,False,correct,逐字对应
+0.5,310,0.5-0.55,"As you can see, this isjust a simpIe micro-cassette recorder.",,BLADE,BLADE,"As you can see, this is just a simple microcassette recorder. (shows the microcassette recorder)  Hook it up to the phone and drop in five bucks in quarters.",11,False,False,correct,逐字对应
+0.5,324,0.6-1.01,Joey!,CEREAL,CEREAL,CEREAL,Joey?!,1,False,False,incorrect,另有同场逐字原句
+0.5,325,0.55-0.6,Get in there!,,NIKON,NIKON,He's way down there.,3,False,False,incorrect,另有近逐字原句
+0.5,331,0.55-0.6,"Looks good, sir.",,DADE,DADE,You look good in a dress.,3,False,False,incorrect,另有近逐字原句
+0.5,335,0.5-0.55,to finish my career feeling like an idiot.,,CEREAL,CEREAL,Yo. I kinda feel like God!,8,False,False,incorrect,另有近逐字原句
+0.5,383,0.6-1.01,"The Secret Service is helping us out, 100 percent.",PLAGUE,PLAGUE,PLAGUE,"Yeah, the Secret Service is helping us out 100 percent. Okay?",9,False,False,correct,近逐字对应
+0.5,418,0.55-0.6,"'You may stop me,",,DADE,DADE,Did you talk to him?,4,False,False,incorrect,另有宣言原句
+0.5,429,0.6-1.01,You hear about Joey's bust?,TEACHER,TEACHER,TEACHER,"You, however, are not on my list.",6,False,False,incorrect,另有近逐字原句
+0.5,436,0.55-0.6,Want to go to a big party tonight?,,MARGO,MARGO,I don't want to go to jail for this.,7,False,False,incorrect,另有近逐字原句
+0.5,462,0.5-0.55,You were our prime suspect.,,KATE,KATE,"No, you're not in my class.",5,False,False,incorrect,另有近逐字原句
+0.5,466,0.5-0.55,We want you to help us find it.,,MARGO,MARGO,Pervert! What are you talking about?,8,False,False,incorrect,另有近逐字原句
+0.5,473,0.5-0.55,"For us, there's no such thing as family and friends.",,KATE,KATE,"Come here, look at this. This thing is dense.",11,False,False,incorrect,另有近逐字原句
+0.5,477,0.55-0.6,l'm the one who understands you.,PLAGUE,PLAGUE,PLAGUE,"I'm the one who understands you. Now, can we be allies?",7,True,False,correct,近逐字对应
+0.5,481,0.5-0.55,Watch which friends you do play with.,,KATE,KATE,What the hell are you doing?,7,False,False,incorrect,另有近逐字原句
+0.5,514,0.55-0.6,"My lawyer told the judge l'm an addict, but l'm not addicted to my computer.",,JOEY,JOEY,"Nono, really, really, listen, listen to this. I got in trouble with my computer, right, okay, and my lawyer told the judge that I'm an addict, but I'm not addicted to my computer! No really, really,",14,True,False,correct,原句子串对应
+0.5,520,0.5-0.55,lt's got a 28.8 bps modem.,,PHREAK,PHREAK,It's at Kate's...,8,True,False,incorrect,另有近逐字原句
+0.5,521,0.6-1.01,Yeah? Display?,DADE,DADE,DADE,Yeah? Display?,2,False,False,correct,逐字对应
+0.5,548,0.6-1.01,What's he doing here?,KATE,KATE,KATE,What is he doing in here?,5,False,False,correct,近逐字对应
+0.5,562,0.55-0.6,l just hacked into it.,,PLAGUE,PLAGUE,"Nothing, it's just a minor glitch.",5,True,False,incorrect,另有近逐字原句
+0.5,573,0.6-1.01,Yeah?,DADE,DADE,DADE,Yeah?,1,False,False,correct,"逐字对应,场景吻合"
+0.5,604,0.55-0.6,No heIp from us.,,DADE,DADE,You did this from your house.,4,False,False,incorrect,另有近逐字原句
+0.5,650,0.55-0.6,the new worId order.,,AGENT BOB,AGENT BOB,The news crew you requested is here.,4,False,False,incorrect,另有近逐字原句
+0.5,695,0.6-1.01,Hello?,KATE,KATE,KATE,Hello?,1,False,False,correct,"逐字对应,场景吻合"
+0.5,720,0.55-0.6,Can you help us find out what's on this disk?,,KATE,KATE,Phreak and Joey are being framed. We need your help to figure out what's on this disc.,11,False,True,correct,"措辞异,同句同人"
+0.5,738,0.55-0.6,Turn on your laptop.,,KATE,KATE,Here's your class.,4,False,False,incorrect,另有近逐字原句
+0.5,765,0.55-0.6,This thing is tense.,KATE,KATE,KATE,"Come here, look at this. This thing is dense.",4,False,True,correct,"OCR形近,余同句"
+0.5,822,0.6-1.01,Okay. Let's go shopping.,DADE,DADE,DADE,Okay. Let's go shopping.,5,False,False,correct,逐字对应
+0.5,838,0.5-0.55,How much do they know?,,LISA,LISA,"Hey, how do you know my name?",5,False,False,incorrect,另有近逐字原句
+0.5,842,0.55-0.6,Don't worry. We just launch the da Vinci virus.,,CEREAL,CEREAL,"Yo, everyone check this out. Hey, what's the Da Vinci virus?",10,False,False,incorrect,另有近逐字原句
+0.5,845,0.6-1.01,You can't do that.,KATE,KATE,KATE,Think you can do better?,5,False,False,incorrect,另有近逐字原句
+0.5,891,0.55-0.6,I'II beep you.,,DADE,DADE,I'm trying to help you.,4,False,False,incorrect,另有近逐字原句
+0.5,893,0.6-1.01,"May the Force be with you, man.",CEREAL,CEREAL,CEREAL,"May the Force be with you, man.",7,False,False,correct,逐字对应
+0.5,918,0.5-0.55,You need an army.,,PLAGUE,PLAGUE,Did you get a trace?,4,False,False,incorrect,另有近逐字原句
+0.5,935,0.6-1.01,Take his place. Do it.,KATE,KATE,KATE,"Joey, take his place.",5,False,False,correct,近逐字对应
+0.5,951,0.6-1.01,Send a flu shot.,PLAGUE,PLAGUE,PLAGUE,Send a Flu-shot.,4,False,False,correct,逐字对应
+0.5,975,0.6-1.01,We have massive infection. Multiple GPl viruses...,SYSOP,SYSOP,SYSOP,We have massive infection.  Multiple GPI and FSI viruses.,7,False,False,correct,近逐字对应
+0.5,985,0.5-0.55,l found it!,WOMAN,DADE,DADE,We did it!,3,True,True,incorrect,另有近逐字原句
+0.5,997,0.5-0.55,All right! Wow!,AGENT RAY,MRS. MURPHY,MRS. MURPHY,"Up all night again, huh?",3,False,False,incorrect,"无对应,误配他场句"
+0.5,1007,0.55-0.6,Should be okay.,,JOEY,JOEY,"Yeah, uh, yeah, okay.",3,False,False,incorrect,另有近义原句
+0.5,1027,0.6-1.01,"Me, all right? l did it. She knows shit about computers.",DADE,DADE,DADE,"Me, alright? I did it. She knows shit about computers. She... she's just my girlfriend.",11,True,False,correct,逐字对应
+0.5,1046,0.5-0.55,You face arrest if you do that.,,TEACHER,TEACHER,You. What is your name?,6,False,False,incorrect,另有近逐字原句
+0.5,1054,0.5-0.55,This incident just proves that we need,,DADE,DADE,This isn't a virus. It's a worm!,7,False,False,incorrect,另有近逐字原句
+0.5,1092,0.5-0.55,What's going on? Let go of me! Stewardess!,,PLAGUE,PLAGUE,What's going on? Let go of me! Stewardess! I'll never fly this airline again!,9,False,False,correct,原句子串对应
+0.5,1100,0.55-0.6,you're pretty good.,,KATE,KATE,You're not gonna win.,4,False,False,incorrect,另有近逐字原句
+0.45,14,0.5-0.55,or a touchtone telephone until the day of your 18th birthday.,,JUDGE,JUDGE,"...and sentence you to probation, under which you are forbidden to own or operate a computer or touch tone telephone, until the day of your eighteenth birthday.",11,False,True,correct,近逐字对应
+0.45,28,0.45-0.5,"lf l screw up, he'll make me commit hari-kari.",,CEREAL,CEREAL,"You're both screwed. I help, we can do it in six.",11,True,False,incorrect,另有近逐字原句
+0.45,29,0.45-0.5,You know these Japanese management techniques.,,DADE,DADE,"Yeah, well, you know these Japanese management techniques. Could you, uh, read me the number on the modem?",6,False,False,correct,原句子串对应
+0.45,38,0.45-0.5,You are about to experience the awe and mystery,,TEACHER,TEACHER,"You, however, are not on my list.",9,False,False,incorrect,另有近逐字原句
+0.45,90,0.55-0.6,Take the stairs over there.,,NIKON,NIKON,He's way down there.,5,False,False,incorrect,另有近逐字原句
+0.45,97,0.5-0.55,"I'm subbing for Ms BayIess, who was arrested at the anti-fur raIIy.",,TEACHER,TEACHER,I'm not so sure your mother qualifies as a significant author of the twentieth century.,14,False,False,incorrect,另有近逐字原句
+0.45,98,0.45-0.5,"I know some ofyou kids got computers at home, but these are schooI property.",,GILL,GILL,"It got you seven years probation. No computer, couldn't even use a touch tone phone.",14,False,False,incorrect,另有近逐字原句
+0.45,107,0.45-0.5,Joey! One more 'dude' and l'll slap the shit out of you.,,DADE,DADE,You lay a finger on her and I'll kill you.,13,True,False,incorrect,另有近逐字原句
+0.45,120,0.45-0.5,all great artists who asphyxiated on their own vomit!,,KATE,KATE,Well that's great. There goes MIT.,9,False,False,incorrect,另有近逐字原句
+0.45,133,0.6-1.01,Congratulations. No-one's ever beat her before.,,PHREAK,PHREAK,Congratulations. No one's ever beat her before. You just made an enemy for life. Boy meets world. Let's go?,8,False,False,correct,近逐字对应
+0.45,134,0.45-0.5,You just made an enemy for life.,,TEACHER,TEACHER,You. What is your name?,7,False,False,incorrect,另有近逐字原句
+0.45,171,0.6-1.01,What did we learn in school today?,MRS. MURPHY,MRS. MURPHY,MRS. MURPHY,What did we learn in school today?,7,False,False,correct,逐字对应
+0.45,189,0.55-0.6,"Anyway, guys, listen.",,DADE,DADE,"Kate, listen.",3,False,False,incorrect,另有近逐字原句
+0.45,190,0.45-0.5,"l'm in this computer, right? l'm looking around...",JOEY,NIKON,NIKON,"Look at this, it's so lean and clean.",8,True,False,incorrect,另有近逐字原句
+0.45,210,0.55-0.6,lt's choice.,,CEREAL,CEREAL,It's a nice room.,3,True,False,incorrect,另有近逐字原句
+0.45,254,0.45-0.5,l think we got a hacker.,GILL,DADE,DADE,Ummm... we come in peace?,6,True,False,incorrect,另有近逐字原句
+0.45,259,0.5-0.55,l is here.,BLADE,DADE,DADE,I'm Crash Override.,3,True,False,incorrect,另有近逐字原句
+0.45,282,0.6-1.01,Crash Override.,DADE,DADE,DADE,Crash Override.,2,False,False,correct,逐字对应
+0.45,283,0.6-1.01,Never heard of you. You done anything?,NIKON,NIKON,NIKON,Never heard of you. Done anything?,6,False,False,correct,近逐字对应
+0.45,293,0.5-0.55,Hackers penetrate and ravage,,NIKON,NIKON,That's Razor and Blade.,4,False,False,incorrect,另有近逐字原句
+0.45,294,0.6-1.01,"public and private computer systems, infecting them with viruses...",GILL,GILL,GILL,"Well, hackers penetrate and ravage delicate public and privately owned computer systems, infecting them with viruses...",9,False,False,correct,近逐字对应
+0.45,311,0.45-0.5,"Hook it up to the phone, and drop in five bucks in quarters.",,BLADE,BLADE,Jolt Cola! The soft drink of the elite hacker.,12,False,False,incorrect,另有近逐字原句
+0.45,316,0.5-0.55,"l'm a real wild child, l'm a wild one",,JOEY,JOEY,"I'm not an addict. I'm not, I'm not.",7,True,False,incorrect,"歌词不在剧本,误配"
+0.45,331,0.45-0.5,"Looks good, sir.",,AGENT RAY,AGENT RAY,Alright sir.,3,False,False,incorrect,另有近逐字原句
+0.45,347,0.45-0.5,"l see we're still dressing in the dark, Eugene.",MARGO,HAL,HAL,There's a new virus in the database.,10,True,False,incorrect,另有近逐字原句
+0.45,352,0.55-0.6,Someone didn't bother reading my memo on commonly used passwords.,,PHREAK,PHREAK,"Alright, what are the three most commonly used passwords?",11,False,False,incorrect,另有近逐字原句
+0.45,357,0.6-1.01,Virus?,MARGO,MARGO,MARGO,Virus?,1,False,False,correct,逐字对应
+0.45,364,0.55-0.6,"UnIess $5 miIIion is transferred to the foIIowing account in 7 days,",,VIRUS,VIRUS,"Unless five million dollars are transferred to the following numbered account in seven days, I will capsize five tankers in the Ellingson fleet.",12,False,False,correct,近逐字对应
+0.45,374,0.45-0.5,"which links them to our network, and the virus, wherever they are.",,HAL,HAL,There's a new virus in the database.,12,False,False,incorrect,另有近逐字原句
+0.45,388,0.5-0.55,l created da Vinci so we could get the Secret Service,,PLAGUE,PLAGUE,"I created Mister da Vinci so we could call in the Secret Service. So they'd arrest the hacker, sieze his equipment, things that we can't do on our own.",11,True,False,correct,近逐字对应
+0.45,389,0.5-0.55,"to arrest the hacker and seize the equipment, which we can't do alone.",,PLAGUE,PLAGUE,"I created Mister da Vinci so we could call in the Secret Service. So they'd arrest the hacker, sieze his equipment, things that we can't do on our own.",13,False,True,correct,"同句后半,意译吻合"
+0.45,415,0.6-1.01,"'Yes, l am a criminal. My crime is that of curiosity.",,AGENT BOB,AGENT BOB,"Listen to this bullshit. ""This is our world now. The world of the electron and the switch, the beauty of the baud. We exist without nationality, skin color, or religious bias. You wage wars, murder, cheat, lie to us and try to make us believe it's for our own good, yet we're the criminals. Yes, I am a criminal. My crime is that of curiosity. I am a hacker and this is my manifesto."" Huh, right, manifesto? ""You may stop me, but you can't stop us all.""",11,True,False,correct,原句子串对应
+0.45,418,0.55-0.6,"'You may stop me,",,DADE,DADE,Did you talk to him?,4,False,False,incorrect,另有宣言原句
+0.45,432,0.6-1.01,Did you talk to him?,DADE,DADE,DADE,Did you talk to him?,5,False,False,correct,逐字对应
+0.45,463,0.5-0.55,Till we trashed your stuff and found no trace of it.,,KATE,KATE,We need your help.  If you're up to it.,11,False,False,incorrect,另有近逐字原句
+0.45,471,0.6-1.01,Dade.,MRS. MURPHY,MRS. MURPHY,MRS. MURPHY,Dade?,1,False,False,correct,近逐字对应
+0.45,479,0.5-0.55,Nah. l don't play well with others.,DADE,DADE,DADE,I don't like this.,8,True,False,incorrect,另有近逐字原句
+0.45,481,0.5-0.55,Watch which friends you do play with.,,KATE,KATE,What the hell are you doing?,7,False,False,incorrect,另有近逐字原句
+0.45,487,0.6-1.01,Blow me.,DADE,DADE,DADE,Blow me.,2,False,False,correct,逐字对应
+0.45,495,0.55-0.6,"ln the house, man. Thanks.",,DADE,DADE,Pool on the roof must have a leak.,5,False,False,incorrect,另有同场更佳原句
+0.45,507,0.6-1.01,"Oh! Look at that pooper, man. Spandex, it's a privilege, not a right.",CEREAL,CEREAL,CEREAL,"Oooo, look at that pooper man. Spandex, it's a privilege, not a right!",13,False,False,correct,近逐字对应
+0.45,550,0.55-0.6,You're Acid Burn?!,CEREAL,KATE,KATE,You're not gonna win.,4,False,False,incorrect,另有近逐字原句
+0.45,597,0.45-0.5,l don't do dates.,RAZOR AND BLADE,AGENT,AGENT,"Secret Service, don't move!",5,True,False,incorrect,另有近逐字原句
+0.45,604,0.55-0.6,No heIp from us.,,DADE,DADE,You did this from your house.,4,False,False,incorrect,另有近逐字原句
+0.45,633,0.6-1.01,"Superhero-like, even.",CEREAL,CEREAL,CEREAL,Super hero like even.,3,False,False,correct,近逐字对应
+0.45,652,0.6-1.01,and me.,JOEY,JOEY,JOEY,"What, me?",2,False,False,incorrect,另有近逐字原句
+0.45,661,0.5-0.55,TeII me where the disk is.,,PLAGUE,PLAGUE,The girl. The girl has the disc I need.,6,False,False,incorrect,另有近逐字原句
+0.45,666,0.55-0.6,l copied a garbage file.,,PLAGUE,PLAGUE,I had to move fast. The hacker copied my garbage file.,5,True,False,incorrect,另有近逐字原句
+0.45,671,0.6-1.01,They're asking me about it. Will you take a look for me?,JOEY,JOEY,JOEY,"I copied it from Ellingson, okay? They're asking me about it, alright? Will you take a look for me?",12,False,False,correct,原句子串对应
+0.45,689,0.6-1.01,Operator Services?,OPERATOR,OPERATOR,OPERATOR,"Hello, operator services.",2,False,False,correct,近逐字对应
+0.45,690,0.6-1.01,l'm having trouble with a number.,PHREAK,PHREAK,PHREAK,"Hello, operator? I'm having trouble dialing a number.",7,True,False,correct,原句子串对应
+0.45,700,0.55-0.6,And they keep asking about you guys.,,KATE,KATE,You think they're going to bust us?,7,False,False,incorrect,另有近逐字原句
+0.45,738,0.55-0.6,Turn on your laptop.,,KATE,KATE,Here's your class.,4,False,False,incorrect,另有近逐字原句
+0.45,739,0.55-0.6,Set it to receive a file.,,PHREAK,PHREAK,I want it to have my children!,6,False,False,incorrect,另有近逐字原句
+0.45,740,0.45-0.5,Lauren Murphy is now a wanted feIon in the state of Washington.,,HAL,HAL,There's a new virus in the database.,12,False,False,incorrect,另有近逐字原句
+0.45,753,0.5-0.55,she came to me to figure it out.,,RAZOR,RAZOR,Welcome to our show!,7,False,False,incorrect,另有近逐字原句
+0.45,754,0.5-0.55,She didn't plant the virus. You leave her alone.,,PLAGUE,PLAGUE,A hacker planted the virus.,10,False,False,incorrect,另有近逐字原句
+0.45,765,0.55-0.6,This thing is tense.,KATE,KATE,KATE,"Come here, look at this. This thing is dense.",4,False,True,correct,"OCR形近,余同句"
+0.45,766,0.55-0.6,"That's ill, man.",CEREAL,CEREAL,CEREAL,That's far out!,4,False,False,incorrect,另有近逐字原句
+0.45,787,0.45-0.5,"We have to find out where the money's going before the worm disappears,",,GILL,GILL,Did you find the program for the virus on any of the discs we confiscated?,13,False,False,incorrect,另有近逐字原句
+0.45,800,0.55-0.6,"Zero Cool crashed 1 ,507 systems in one day. Biggest crash in history.",,NIKON,NIKON,Zero Cool? Crashed fifteen hundred and seven systems in one day?,12,False,False,correct,近逐字对应
+0.45,836,0.6-1.01,The phone's all right. The problem must be somewhere else.,CEREAL,CEREAL,CEREAL,Phone's alright. The problem must be somewhere else.,10,False,False,correct,近逐字对应
+0.45,841,0.55-0.6,Yeah... to civilians. But they're hackers.,,DADE,DADE,Razor and Blade! They're flakes!,7,False,False,incorrect,另有近逐字原句
+0.45,843,0.5-0.55,Then they'll all be put away.,,KATE,KATE,There they are!,7,False,False,incorrect,另有近逐字原句
+0.45,856,0.45-0.5,and those hackers tried to get into our system again.,,MARGO,MARGO,"""Minor glitch"" with you seems to turn into a major catastrophe.",10,False,False,incorrect,另有近逐字原句
+0.45,866,0.6-1.01,"Yeah, it's Kate.",KATE,KATE,KATE,"Yeah, it's Kate.",4,False,False,correct,逐字对应
+0.45,891,0.55-0.6,I'II beep you.,,DADE,DADE,I'm trying to help you.,4,False,False,incorrect,另有近逐字原句
+0.45,892,0.5-0.55,Are you coming?,GIRL,GILL,GILL,You're welcome.,3,False,False,incorrect,另有近逐字原句
+0.45,897,0.5-0.55,"Get off the stage, man! Get off!",,DADE,DADE,"What are you doing, man? Get off me!",5,False,False,incorrect,"原句不在剧本,误配"
+0.45,916,0.45-0.5,Nobody said no.,,DADE,DADE,"No, wait.",3,False,False,incorrect,另有近逐字原句
+0.45,918,0.5-0.55,You need an army.,,PLAGUE,PLAGUE,Did you get a trace?,4,False,False,incorrect,另有近逐字原句
+0.45,971,0.55-0.6,Give it up!,,DADE,DADE,I'll give it a shot.,3,False,False,incorrect,另有近逐字原句
+0.45,999,0.6-1.01,Roger that.,RAZOR,RAZOR,RAZOR,Roger that.,2,False,False,correct,逐字对应
+0.45,1020,0.45-0.5,Hack the planet!,BLADE,CEREAL,CEREAL,HACK THE PLANET! HACK THE PLANET!,3,False,False,correct,逐字对应
+0.45,1021,0.45-0.5,Hack the planet!,ALL BUT DADE,CEREAL,CEREAL,HACK THE PLANET! HACK THE PLANET!,3,False,True,correct,逐字对应
+0.45,1029,0.5-0.55,"l suggest you modify your attitude,",,MARGO,MARGO,"Jesus. You know, you're sick, Eugene. You...",6,True,False,incorrect,另有近逐字原句
+0.45,1030,0.55-0.6,because you are floating,,CEREAL,CEREAL,"Tag, you're in.",4,False,False,incorrect,另有近逐字原句
+0.45,1045,0.6-1.01,Your son is facing 30 felony counts in an ongoing investigation.,GILL,GILL,GILL,Your son is facing thirty felony counts in an ongoing investigation. You face possible arrest if you do that.,11,False,False,correct,近逐字对应
+0.45,1060,0.5-0.55,I'm here to teII you about this heinous scheme hatched within EIIingson MineraI.,,KATE,KATE,"Come here, look at this. This thing is dense.",14,False,False,incorrect,另有近逐字原句
+0.45,1084,0.5-0.55,l don't even know how to work the VCR let alone a computer. Get off!,,MARGO,MARGO,"I don't even know how to work a VCR, let alone a computer! Get off! Look, listen, I'll make a deal. Eugene Belford! I know where his mother is, I promise you. Get offa me! I need a lawyer!",16,True,False,correct,原句子串对应

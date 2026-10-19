@@ -1,0 +1,161 @@
+threshold,cue_idx,band,cue_text,old_speaker,new_speaker,matched_speaker,matched_text,dedup_tokens,l_ocr,sibling,label,reason
+0.6,117,0.6-1.01,Where's that water?,GOODSPEED,GOODSPEED,GOODSPEED,"LONNER, WHERE'S THE GODDAMNED WATER?",4,False,False,correct,近逐字同景
+0.6,121,0.6-1.01,We're fucked.,LT. FISK,LT. FISK,LT. FISK,"We're fucked, cap'n.",3,False,False,incorrect,气室cue配沙漠行
+0.6,126,0.6-1.01,Forty seconds!,DR.  LING,DR.  LING,DR.  LING,"Ten seconds, Bill.",2,False,False,correct,同景倒计时行
+0.6,132,0.6-1.01,Do it now!,S.E.A.L. SHEPHERD,GOODSPEED,GOODSPEED,Not now.,3,False,False,incorrect,应配注入催促行
+0.6,357,0.6-1.01,Get the point?,GENERAL KRAMER,GENERAL KRAMER,GENERAL KRAMER,Get me the President.,3,False,False,incorrect,剧本有原句
+0.6,385,0.6-1.01,This isn't happening!,ISHERWOOD,ISHERWOOD,ISHERWOOD,This is thrilling.,4,False,False,incorrect,求婚cue配气室行
+0.6,409,0.6-1.01,Come to San Francisco.,GOODSPEED,GOODSPEED,GOODSPEED,I've got to go to San Francisco.,4,False,False,incorrect,剧本有原句
+0.6,430,0.6-1.01,Under there is a maze of shit.,,COMMANDER ANDERSON,COMMANDER ANDERSON,"They're useless.  Alcatraz was originally a Civil War fort.  It's been ripped up and rebuilt for years.  Under there is a maze of shit, excuse my language. What I need is personal, firsthand intelligence on the island's tunnels.",7,False,True,correct,含原句同景
+0.6,556,0.6-1.01,"I'm an agent with the, uh,",BARBER,BARBER,BARBER,I can't do a decent job with these.,7,False,False,incorrect,审讯自介配理发行
+0.6,802,0.6-1.01,So they let you out?,JADE,JADE,JADE,So  how long have you been out?,5,False,False,correct,同人同景近义
+0.6,875,0.6-1.01,That won't be necessary.,COMMANDER ANDERSON,COMMANDER ANDERSON,COMMANDER ANDERSON,Won't be necessary.,5,False,False,correct,近逐字同人
+0.6,880,0.6-1.01,That's why you're coming with us.,COMMANDER ANDERSON,COMMANDER ANDERSON,COMMANDER ANDERSON,"I know they are, Goodspeed.  That's why you're going with us.",8,False,False,correct,含原句同景
+0.6,893,0.6-1.01,"Ah, thank you.",GOODSPEED,GOODSPEED,GOODSPEED,Thank you.,3,False,False,correct,近逐字同景
+0.6,924,0.6-1.01,"This is goin' nowhere, Frank.",LOUIS LINDSTROM,LOUIS LINDSTROM,LOUIS LINDSTROM,This is going nowhere Frank ....,5,False,False,correct,近逐字同人
+0.6,959,0.6-1.01,"Oh, I would just love for you to tell me what is goin' on.",CARLA,CARLA,CARLA,Would you please tell me what is going on?,14,False,False,correct,同人同景改写
+0.6,1063,0.6-1.01,It's a fucking trap.,MASON,MASON,MASON,You son-of-fucking-Satan.,5,False,False,incorrect,伏击cue无对应行
+0.6,1469,0.6-1.01,Hummel.,HUMMEL,HUMMEL,HUMMEL,Hummel.,1,False,False,correct,原句同景
+0.6,1472,0.6-1.01,How do you think it's going?,BARBER,BARBER,BARBER,How would you like it sir?,7,False,False,incorrect,电话cue配理发行
+0.6,1558,0.6-1.01,"Cut the crap, General.",CAPTAIN DARROW,CAPTAIN DARROW,CAPTAIN DARROW,"Authorize the launch, General.",4,False,False,correct,同人同景同拍
+0.6,1751,0.6-1.01,"Thank you, sir.",GOODSPEED,GOODSPEED,GOODSPEED,Thank you.,3,False,False,incorrect,码头cue配浴室行
+0.5,8,0.55-0.6,"They're not comin' for us, are they, sir?",,GOODSPEED,GOODSPEED,I've got some questions for you but they can wait.,8,False,False,incorrect,闪回cue配停尸行
+0.5,54,0.55-0.6,"That'll be five dollars, Isherwood.",,GOODSPEED,GOODSPEED,"You owe me five dollars, Marvin.",6,False,False,correct,同人同景改写
+0.5,56,0.5-0.55,You guys have too much time on your hands.,,GOODSPEED,GOODSPEED,You don't have to get all bent out of shape.,9,False,False,incorrect,实验cue配废墟行
+0.5,63,0.5-0.55,Could be serious.,,GOODSPEED,GOODSPEED,Yes.  You'll be outside.,3,False,False,incorrect,实验cue配审讯行
+0.5,75,0.5-0.55,"Agent Stanley Goodspeed, Agent Trainee Marvin Isherwood...",,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,No Goodspeed.  It's not a training exercise.,6,False,False,incorrect,应配录音口播行
+0.5,126,0.6-1.01,Forty seconds!,DR.  LING,DR.  LING,DR.  LING,"Ten seconds, Bill.",2,False,False,correct,同景倒计时行
+0.5,191,0.5-0.55,The Rock is the most famous and was the most feared prison ever built.,,PARK RANGER JOE,PARK RANGER JOE,"Alcatraz - ""the Rock"" - is the most famous, and was the most feared, prison ever built.  Here the inmates were allowed one hour of daily exercise.",11,False,False,correct,近逐字含原句
+0.5,200,0.5-0.55,"Hey, girls? Hi. You all havin' a good time?",,SANCHEZ,SANCHEZ,Why didn't you throw in a trip to Fiji?,9,False,False,incorrect,登岛cue配局内行
+0.5,220,0.5-0.55,I'm not allowed to carry a gun!,,CAPTAIN FRYE,CAPTAIN FRYE,They are not going to call General.,8,False,False,incorrect,部署cue配哗变行
+0.5,252,0.5-0.55,We'll be branded as traitors; the gravest capitol crime.,,U.S. ATTORNEY REYNOLDS,U.S. ATTORNEY REYNOLDS,"I'll have this forwarded to the President, Director.",10,False,False,incorrect,应配叛国演说行
+0.5,279,0.55-0.6,"Mr. Director, you have a very serious problem.",,AGENT SANCHEZ,AGENT SANCHEZ,"Director, no one's ever escaped from Alcatraz ...",8,False,False,incorrect,应配将军电话行
+0.5,306,0.5-0.55,83 Force Reconnaissance Marines have died under my various commands.,,HUMMEL,HUMMEL,"I'll come straight to the point, General Kramer: Eighty-three Force Reconnaissance Marines have died under my various commands. Forty-seven in northern Laos and southern China ...",10,False,False,correct,含原句同景
+0.5,307,0.6-1.01,47 in Northern Laos and Southern China.,,HUMMEL,HUMMEL,"I'll come straight to the point, General Kramer: Eighty-three Force Reconnaissance Marines have died under my various commands. Forty-seven in northern Laos and southern China ...",7,False,True,correct,含原句同景
+0.5,309,0.6-1.01,Who is this? Identify yourself.,HUMMEL,HUMMEL,HUMMEL,Who is that.  Identify yourself.,5,False,False,correct,近逐字同人
+0.5,312,0.6-1.01,I'm 33.,CAPTAIN FRYE,CAPTAIN FRYE,CAPTAIN FRYE,I'm in.,3,False,False,incorrect,剧本有原句
+0.5,390,0.55-0.6,How could they possibly know that you're home?,,COMMANDER ANDERSON,COMMANDER ANDERSON,You know what you're doing?,9,False,False,incorrect,电话cue配机上行
+0.5,413,0.6-1.01,And we'll finish what we started?,CARLA,CARLA,CARLA,"... We'll finish what we started.  Baby, are you sexy in those boots ...",6,False,False,correct,含原句同人
+0.5,441,0.55-0.6,He does exist!,,JADE,JADE,He is?,3,False,False,incorrect,会议cue配公园行
+0.5,468,0.55-0.6,"The gas, Dr. Goodspeed.",,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,"Don't give away the farm, Goodspeed.",4,False,False,incorrect,机上cue配观察室行
+0.5,479,0.5-0.55,It's been a fairly interesting day so far.,,SANCHEZ,SANCHEZ,There's no harm in cooperating with us.,9,False,False,incorrect,办公cue配审讯行
+0.5,492,0.5-0.55,We're prepared to offer him a full pardon.,,GOODSPEED,GOODSPEED,We're never gettin off this island.,9,False,False,incorrect,应配赦免表态行
+0.5,526,0.5-0.55,"Why don't we cut the shit, huh? You know the Rock. You broke out.",,GOODSPEED,GOODSPEED,"Mason, uhm, John, I have something to tell you.  You know that pardon contract you signed?",13,False,False,incorrect,应配审讯官台词
+0.5,532,0.55-0.6,"While I'm considering your offer,",,HUMMEL,HUMMEL,I'm giving you a direct order.,6,False,False,incorrect,应配酒店条件行
+0.5,572,0.6-1.01,"Mr. Mason, really.",SANCHEZ,SANCHEZ,SANCHEZ,Maybe.  Not really.,3,False,False,unsure,短句同景难证
+0.5,579,0.5-0.55,This is a pardon and release contract from the Attorney General's office.,,GOODSPEED,GOODSPEED,"No actually, I'm Bill Goodspeed. Mr. Mason, we really need your help.  That's a pardon and release contract from the Attorney Generals office.  It makes you a free man, provided you cooperate.",13,False,False,correct,含原句同人
+0.5,706,0.6-1.01,Where's Mason?,GOODSPEED,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,Where's Mason?,3,False,False,incorrect,酒店cue配码头行
+0.5,750,0.6-1.01,Hang on!,GOODSPEED,GOODSPEED,GOODSPEED,What's going on?,2,False,False,incorrect,追车cue配隧道行
+0.5,841,0.5-0.55,there's a connection to the abandoned septic system.,,NAVAL MEDIC,NAVAL MEDIC,"Atropine.  Any contact with the gas, use it.",9,False,False,incorrect,应配隧道讲解行
+0.5,883,0.55-0.6,You mean I'm going-- going out there... under the water?,,MASON,MASON,You going to stand there and watch?,10,False,False,incorrect,潜入cue配浴室行
+0.5,907,0.6-1.01,Okay. You're right.,COMMANDER ANDERSON,COMMANDER ANDERSON,COMMANDER ANDERSON,You know what you're doing?,4,False,False,incorrect,鼓励cue配机上行
+0.5,915,0.6-1.01,Hummel!,HUMMEL,HUMMEL,HUMMEL,Hummel.,1,False,False,correct,原句同景
+0.5,919,0.6-1.01,"Don't tell me problems, tell me solutions.",HUMMEL,HUMMEL,HUMMEL,"Don't tell me your problems, tell me your solutions.",6,False,False,correct,近逐字同人
+0.5,939,0.55-0.6,"Make no mistake, gentlemen, we're in the fight of our lives,",,GOODSPEED,GOODSPEED,"It's not too late, General.  Tell me where the last chem round is.",12,False,False,incorrect,应配动员讲话行
+0.5,945,0.6-1.01,Pass out and activate the Minicams.,COMMANDER ANDERSON,COMMANDER ANDERSON,COMMANDER ANDERSON,Activate mini-cams.,6,False,False,correct,近逐字同人
+0.5,979,0.6-1.01,We're going dark.,HUMMEL,HUMMEL,HUMMEL,They're going to call.,4,False,False,incorrect,夜航cue配哗变行
+0.5,1035,0.55-0.6,"They're hearing sounds above, sir.",,HUMMEL,HUMMEL,They're going to call.,6,False,False,incorrect,应配哨兵报告行
+0.5,1053,0.5-0.55,We've got visitors. Let's move.,,GOODSPEED,GOODSPEED,"Yes madam.  We've got to go, John.",7,False,False,incorrect,应配访客警报行
+0.5,1076,0.6-1.01,"Your unit is covered from an elevated position, Commander.",HUMMEL,HUMMEL,HUMMEL,"Your unit is covered from an elevated position, Commander.  I'm not going to ask again.",9,False,False,correct,逐字含原句
+0.5,1117,0.55-0.6,Where are you going?,GOODSPEED,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,Where's Mason?,4,False,False,incorrect,原句在隧道段
+0.5,1124,0.5-0.55,"The status is, they're dead. They're dead!",,SANCHEZ,SANCHEZ,What's the really bad news.,6,False,True,incorrect,电台cue配浴室行
+0.5,1136,0.6-1.01,Then maybe we need to execute a few hostages.,CAPTAIN DARROW,CAPTAIN DARROW,CAPTAIN DARROW,Then maybe we'll execute a few hostages.,9,False,False,correct,近逐字同人
+0.5,1145,0.55-0.6,"Now, you told me I'm on a need-to-know basis,",,GOODSPEED,GOODSPEED,You're on a need to know basis and you don't need to know.,12,False,False,incorrect,剧本有原句
+0.5,1200,0.55-0.6,Even if you escape from the island...,,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,when he escaped from San Quentin.,7,False,False,incorrect,劝留cue配走廊行
+0.5,1216,0.55-0.6,We've lost coms. Still got 'em on locators.,,LOUIS LINDSTROM,LOUIS LINDSTROM,When was the last communication from our men on Alcatraz?,9,False,False,incorrect,答句配到问句行
+0.5,1239,0.5-0.55,"Come on, come on, you can do it, Doc.",,HUMMEL,HUMMEL,Convinced?  Mr. Henderson hopes so. You have two minutes.,7,False,False,incorrect,应配催促台词行
+0.5,1269,0.6-1.01,How?,GOODSPEED,GOODSPEED,GOODSPEED,How?,1,False,False,incorrect,毒理cue配牢房行
+0.5,1276,0.55-0.6,"you spasm so hard you break your own back, spit your guts out.",,MASON,MASON,"You're on your own, kid.  Your gear's over there.",11,False,False,incorrect,应配毒效描述行
+0.5,1324,0.5-0.55,I'm rather glad you didn't hesitate too long.,,GOODSPEED,GOODSPEED,"All I know is that whatever you did, you don't deserve to go back.",10,False,False,incorrect,矿车cue配结尾行
+0.5,1387,0.55-0.6,Thank you for making my point.,,GOODSPEED,GOODSPEED,Shut up; you're making me nervous.,6,False,False,incorrect,对峙cue配停尸行
+0.5,1419,0.6-1.01,Thermite plasma is operational.,SANCHEZ,SANCHEZ,SANCHEZ,Mini-cams operational.,4,False,False,incorrect,应配白磷就绪行
+0.5,1438,0.55-0.6,"I only ask because in our current situation,",,GOODSPEED,GOODSPEED,"I only ask because, in our current situation, it might be useful information ...",8,False,False,correct,含原句同人
+0.5,1445,0.5-0.55,"I heard you, Captain. -Just makin' sure.",,HUMMEL,HUMMEL,I heard you Captain.,7,False,False,correct,含原句同人
+0.5,1463,0.5-0.55,Why don't you talk louder?,,GOODSPEED,GOODSPEED,"Well thank-you, thank-you very much.",6,False,False,incorrect,哗变cue配巷战行
+0.5,1546,0.55-0.6,"Well, that's great.",RAYDEN SINCLAIR,CAPTAIN DARROW,CAPTAIN DARROW,Give that to me.,4,False,False,incorrect,偏航cue配灯塔行
+0.5,1602,0.6-1.01,So now they think we're gutless?,GOODSPEED,GOODSPEED,GOODSPEED,He thinks we're Seals.,7,False,False,incorrect,哗变cue配广播行
+0.5,1635,0.55-0.6,Let's get him.,GOODSPEED,GOODSPEED,GOODSPEED,It's me sir.,4,False,False,incorrect,追杀cue配电台行
+0.5,1637,0.55-0.6,"My God, what have I done?",HUMMEL,GOODSPEED,GOODSPEED,What are you doing?,6,False,False,incorrect,剧本有原句
+0.5,1679,0.6-1.01,"It's me and you, pal!",HUMMEL,HUMMEL,HUMMEL,I heard you Captain.,6,False,False,incorrect,灯塔cue配倒计时段
+0.5,1754,0.6-1.01,Vaporized. Blown out to sea.,GOODSPEED,GOODSPEED,GOODSPEED,"Vaporized, sir.  Blown out to sea.",5,False,False,correct,近逐字同人
+0.5,1762,0.5-0.55,"Oh, yeah. Absolutely, sir.",,ROYCE,ROYCE,He's dead anyway sir.,4,False,False,incorrect,码头cue配清场行
+0.45,5,0.5-0.55,"Sir, they're lighting us up like a firestorm!",,F.B.I. AGENT,F.B.I. AGENT,"Sir, the White House calling.  It's the President.",9,False,False,incorrect,闪回cue配码头行
+0.45,70,0.45-0.5,You guys wanna get suited up?,,CARLA,CARLA,Wrote a new song.  Wanna hear it?,6,False,False,incorrect,实验cue配公寓行
+0.45,73,0.45-0.5,"We have airlock, Stanley. You're all set to go.",,GOODSPEED,GOODSPEED,What are you doing?,10,False,False,incorrect,应配气闸指令行
+0.45,81,0.45-0.5,Stone Age Cavegirls In the Raw. Kinky.,,RAYDEN SINCLAIR,RAYDEN SINCLAIR,No.  Give me the skinny.,7,False,False,incorrect,开箱cue配会议行
+0.45,99,0.45-0.5,"Everybody, out of the room, now!",,GOODSPEED,GOODSPEED,Hey!  Now there's some good news.,6,False,False,incorrect,气室cue配公寓行
+0.45,103,0.55-0.6,Just wash us off. Where are my sprinklers?,,GOODSPEED,GOODSPEED,"Chill, Marvin. WHERE'S THE GODDAMN SPRINKLERS?",8,False,False,correct,近逐字同人
+0.45,125,0.6-1.01,"Fucking shit, oh fucking shit--",MASON,MASON,MASON,You son-of-fucking-Satan.,3,False,True,incorrect,应配恐慌独白行
+0.45,128,0.5-0.55,"If you die, we all die! Inject your heart...",,DR. LING,DR. LING,"You die, we all die, Bill.  Inject yourself, then diffuse it. Goddamn it, Bill, take the antidote.",8,False,False,correct,近逐字同人
+0.45,140,0.55-0.6,We're not gonna make it.,,CARLA,CARLA,Wrote a new song.  Wanna hear it?,6,False,False,incorrect,气室cue配公寓行
+0.45,183,0.55-0.6,I know. It's funny you should mention that.,,MASON,MASON,"I know what the fucking word means, idiot.  In this context.",9,False,False,incorrect,求婚cue配审讯行
+0.45,226,0.55-0.6,"Roger that, sir.",,CAPTAIN DARROW,CAPTAIN DARROW,Give that to me.,3,False,False,incorrect,部署cue配灯塔行
+0.45,233,0.6-1.01,What's it do?,GOODSPEED,GOODSPEED,GOODSPEED,What's going on?,4,False,False,incorrect,装置cue配隧道行
+0.45,252,0.5-0.55,We'll be branded as traitors; the gravest capitol crime.,,U.S. ATTORNEY REYNOLDS,U.S. ATTORNEY REYNOLDS,"I'll have this forwarded to the President, Director.",10,False,False,incorrect,应配叛国演说行
+0.45,263,0.5-0.55,Can you live with that?,,CAPTAIN FRYE,CAPTAIN FRYE,"You're comin, with me.",5,False,False,incorrect,剧本有原句
+0.45,272,0.45-0.5,"God be with all of you. Man your positions, men.",,MASON,MASON,- Drop the gun or I'll drop your boss.,10,False,False,incorrect,应配散会动员行
+0.45,279,0.55-0.6,"Mr. Director, you have a very serious problem.",,AGENT SANCHEZ,AGENT SANCHEZ,"Director, no one's ever escaped from Alcatraz ...",8,False,False,incorrect,应配将军电话行
+0.45,282,0.5-0.55,I will call again at 0100 hours to state my demands.,,CARLA,CARLA,Hi! Bill and Carla ain't in! State your business!  Make it interesting!,11,False,False,incorrect,剧本有原句
+0.45,289,0.45-0.5,"Last night, Gen. Hummel using brutal but nonlethal force...",,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,"What did Hummel mean by "",standard countermeasure,"" General?",9,False,False,incorrect,剧本有原句
+0.45,309,0.6-1.01,Who is this? Identify yourself.,HUMMEL,HUMMEL,HUMMEL,Who is that.  Identify yourself.,5,False,False,correct,近逐字同人
+0.45,314,0.45-0.5,you've probably got no fucking idea what I'm talking about.,,CARLA,CARLA,"No. I'm sorry, but NO.  I need you here with me.  We need to talk about this...",12,False,False,incorrect,训斥cue配公寓行
+0.45,354,0.45-0.5,it's lethal up to... 100 feet.,,CAPTAIN DARROW,CAPTAIN DARROW,Give that to me.,7,False,False,incorrect,简报cue配灯塔行
+0.45,384,0.5-0.55,"No, Stan. Don't answer it.",,JADE,JADE,But I don't know you.,6,False,False,incorrect,求婚cue配公园行
+0.45,388,0.5-0.55,"It's the office, baby. They know I'm home.",,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,"Christ, the concert's for the Prince of Wales or somebody ...",10,False,False,incorrect,电话cue配局长行
+0.45,463,0.45-0.5,What do you know about V.X. gas?,F.B.I. DIRECTOR WOMACK,SANCHEZ,SANCHEZ,"What do you have, a FUCKING WATER PISTOL?  Get him back!",8,False,False,incorrect,剧本有原句
+0.45,496,0.55-0.6,"All right, I'll take care of him.",,GOODSPEED,GOODSPEED,"All right, all right.  Don't call me idiot, okay?",8,False,False,incorrect,指派cue配废墟行
+0.45,533,0.5-0.55,I want a suite at the Fairmont Hotel.,,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,"Don't give away the farm, Goodspeed.",8,False,False,incorrect,应配酒店条件行
+0.45,540,0.55-0.6,I'm not sending him anywhere.,,BAXTER,BAXTER,I'm not accepting it.,6,False,False,incorrect,会议cue配哗变行
+0.45,542,0.55-0.6,I don't think we have time for him to just sit around and think about it.,,SANCHEZ,SANCHEZ,I don't have time for this shit... Yes. I can read.,16,False,False,incorrect,观察室配审讯行
+0.45,567,0.6-1.01,"No, no, I'm fine, thank you.",MASON,MASON,MASON,Good.  Thank-you.,6,False,False,incorrect,审讯cue配理发行
+0.45,585,0.6-1.01,"""I fear the Greeks even when they bring gifts.""",GOODSPEED,GOODSPEED,GOODSPEED,"""I fear the Greeks even when they bring gifts.""",9,False,False,correct,逐字同人同景
+0.45,635,0.5-0.55,"I am unarmed, sir.",GOODSPEED,BAXTER,BAXTER,I'm not accepting it.,4,False,False,incorrect,装备cue配哗变行
+0.45,655,0.5-0.55,You the barber?,CARLA,CAPTAIN FRYE,CAPTAIN FRYE,You heard him.  End it.,3,False,False,incorrect,理发cue配清场行
+0.45,674,0.45-0.5,# Don't know when I'll be back again #,,PARK RANGER JOE,PARK RANGER JOE,"Don't want to be locked up, fellahs?",9,False,False,incorrect,歌词cue配导游行
+0.45,740,0.55-0.6,I hope you're insured!,,MASON,MASON,I thought you were cool under pressure.,5,False,False,incorrect,追车cue配停尸行
+0.45,750,0.6-1.01,Hang on!,GOODSPEED,GOODSPEED,GOODSPEED,What's going on?,2,False,False,incorrect,追车cue配隧道行
+0.45,761,0.45-0.5,"Oh, no! Baby's goin' down in flames!",,JADE,JADE,No. You're doing okay.,8,False,False,incorrect,摩托cue配公园行
+0.45,771,0.45-0.5,"Look, I just stole a kid's motorcycle.",,MASON,MASON,"No, and I used to be a lot quicker.",8,False,False,incorrect,电话cue配停尸行
+0.45,774,0.6-1.01,Go to February '76. Who was transferred to Wolfburg from San Quentin?,GOODSPEED,GOODSPEED,GOODSPEED,NOT NOW Isherwood.  Go to February 1976.  Who was transferred to Wolfburg from San Quentin that year?,11,False,False,correct,近逐字同人
+0.45,779,0.45-0.5,"They have next of kin, a Jade Angelou of 32 Stenson Drive, San Francisco.",,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,Tell him to pack a bag for San Francisco.,13,False,False,incorrect,剧本有原句
+0.45,781,0.55-0.6,"No, I'm Stacy, Jade's friend.",,RAYDEN SINCLAIR,RAYDEN SINCLAIR,No.  Give me the skinny.,7,False,False,incorrect,访友cue配会议行
+0.45,782,0.55-0.6,Were you afraid to come alone?,,JADE,JADE,You lied to me.,6,False,False,incorrect,拍点不合无对应
+0.45,802,0.6-1.01,So they let you out?,JADE,JADE,JADE,So  how long have you been out?,5,False,False,correct,同人同景近义
+0.45,808,0.5-0.55,What? We can what?,,CPT.  GILER,CPT.  GILER,What are you saying?,3,False,False,incorrect,公园cue配沙漠行
+0.45,812,0.45-0.5,I've rehearsed this speech a thousand times on the chance that we would meet.,,COMMANDER ANDERSON,COMMANDER ANDERSON,"Shep, what's the status on the special operational gear for Mason.",15,False,False,incorrect,公园cue配集结行
+0.45,814,0.5-0.55,"Well, I don't know how I'm supposed to be feeling either.",,LARRY HENDERSON,LARRY HENDERSON,"I don't know who you are, but p please, there's a gun",12,False,False,incorrect,公园cue配人质行
+0.45,816,0.5-0.55,"If you can believe that, then it's a start.",,CAPTAIN FRYE,CAPTAIN FRYE,I don't believe it.  He pulled the plug.,10,False,False,incorrect,公园cue配哗变行
+0.45,844,0.5-0.55,Where do we go from there?,,HUMMEL,HUMMEL,Tell 'em to stay out there.,6,False,False,incorrect,应配问路台词行
+0.45,852,0.45-0.5,"I was underground for three days in the dark,",,MASON,MASON,Wait for me to unlock the door.,9,False,False,incorrect,简报cue配水池行
+0.45,871,0.6-1.01,"No, sir, but I've studied them.",GOODSPEED,GOODSPEED,GOODSPEED,"No sir, but I've studied them ....",7,False,False,correct,逐字同人同景
+0.45,890,0.5-0.55,and 15 guided rockets armed with V.X. poison gas.,,GENERAL KRAMER,GENERAL KRAMER,"What's the potential casualty rate of a single rocket armed with V.X., General Peterson?",10,False,False,incorrect,简报cue配会议行
+0.45,915,0.6-1.01,Hummel!,HUMMEL,HUMMEL,HUMMEL,Hummel.,1,False,False,correct,原句同景
+0.45,919,0.6-1.01,"Don't tell me problems, tell me solutions.",HUMMEL,HUMMEL,HUMMEL,"Don't tell me your problems, tell me your solutions.",6,False,False,correct,近逐字同人
+0.45,938,0.45-0.5,we launch green flares and we wait for the cavalry.,,GOODSPEED,GOODSPEED,"No cuffs until we get to the cars,",9,False,False,incorrect,应配动员讲话行
+0.45,943,0.55-0.6,Let's load up!,,S.E.A.L. SHEPHERD,S.E.A.L. SHEPHERD,Let go of me.,4,False,False,incorrect,应配动员收尾行
+0.45,991,0.55-0.6,Good to go!,,MASON,MASON,Good.  Thank-you.,3,False,True,incorrect,口令cue配理发行
+0.45,992,0.55-0.6,Good to go!,,MASON,MASON,Good.  Thank-you.,3,False,True,incorrect,口令cue配理发行
+0.45,998,0.5-0.55,The Eagles are on the Rock. They've entered the cistern room.,,MASON,MASON,"Find the rockets.  If they're guarded, kill the men guarding them.",10,False,False,incorrect,应配守军通报行
+0.45,1044,0.6-1.01,Motion sensors.,COMMANDER ANDERSON,COMMANDER ANDERSON,COMMANDER ANDERSON,Motion sensor.,2,False,False,correct,近逐字同人
+0.45,1063,0.5-0.55,It's a fucking trap.,MASON,GOODSPEED,GOODSPEED,It's me sir.,5,False,False,incorrect,伏击cue无对应行
+0.45,1131,0.6-1.01,I didn't want this.,GOODSPEED,GOODSPEED,GOODSPEED,I... I don't know if I can do this.,5,False,False,incorrect,应配懊悔台词行
+0.45,1137,0.6-1.01,Got a live one!,GOODSPEED,GOODSPEED,GOODSPEED,Had a close one.,4,False,False,incorrect,清场cue配公寓行
+0.45,1140,0.6-1.01,"Holster that sidearm, Captain!",HUMMEL,HUMMEL,HUMMEL,"CAPTAIN, HOLSTER THAT SIDEARM.",4,False,False,correct,逐字同人同景
+0.45,1164,0.6-1.01,"the alien landing at Roswell, the truth about the J.F.K. assassination.",,F.B.I. DIRECTOR WOMACK,F.B.I. DIRECTOR WOMACK,"John MASON has been incarcerated without trial on American soil since 1962. He knows our most intimate secrets of the last half century.  The alien landing at Roswell, the truth about the J.F.K. assassination.",11,False,False,correct,逐字含原句
+0.45,1352,0.6-1.01,All right.,MARSHAL CORD,MARSHAL CORD,MARSHAL CORD,That's right.,2,False,True,incorrect,分工cue配浴室行
+0.45,1371,0.6-1.01,I have a unique knowledge of this prison facility.,HUMMEL,HUMMEL,HUMMEL,"Do you have some unique knowledge of this prison facility, Commander Mason?",9,False,False,incorrect,答语配到问句行
+0.45,1381,0.55-0.6,"And, uh... this is not combat.",,RAYDEN SINCLAIR,RAYDEN SINCLAIR,Well that's not so bad ...,6,False,False,incorrect,应配斥责台词行
+0.45,1392,0.5-0.55,You're lucky that old man Hummel wants you alive.,,ROYCE,ROYCE,"You heard the man, let's move it.",9,False,False,incorrect,应配威胁台词行
+0.45,1420,0.55-0.6,Get me the president.,GENERAL KRAMER,GOODSPEED,GOODSPEED,"Bill Goodspeed, Mr. President.",4,False,False,incorrect,剧本有原句
+0.45,1430,0.5-0.55,Which brings me to another question.,,MASON,MASON,Wait for me to unlock the door.,6,False,False,incorrect,牢房cue配水池行
+0.45,1433,0.45-0.5,"through the tunnels to the powerplant,",,F.B.I. AGENT,F.B.I. AGENT,"Sir, the White House calling.  It's the President.",5,False,False,incorrect,复盘cue配码头行
+0.45,1436,0.45-0.5,"but how, in the name of Zeus's butthole,",,DR. LING,DR. LING,"Three, two...  the gas is clear!",9,False,False,incorrect,牢房cue配气室行
+0.45,1490,0.55-0.6,I got three weeks' weapons training.,,MASON,MASON,I'm not the chemical weapons expert.,6,False,False,incorrect,决意cue配广播行
+0.45,1508,0.45-0.5,"Because if the winds change and if you launch those rockets, we're gonna die.",,S.E.A.L. BOYER,S.E.A.L. BOYER,"It's us or them, Reigert, fuck they're gonna waste us ...",14,False,False,incorrect,内讧cue配伏击行
+0.45,1577,0.6-1.01,I'm warming up.,CAPTAIN FRYE,CAPTAIN FRYE,CAPTAIN FRYE,I'm in.,4,False,False,incorrect,应配将军答语
+0.45,1613,0.55-0.6,Bullshit it's over.,,MASON,MASON,Hello.  Yes.  It's me.,4,False,False,incorrect,哗变cue配公园行
+0.45,1625,0.55-0.6,"That's a simple order, Major!",,MASON,MASON,That's been said to me before ....,6,False,False,incorrect,应配命令台词行
+0.45,1661,0.6-1.01,How do you like how that shit works?,CAPTAIN DARROW,BARBER,BARBER,How would you like it sir?,7,False,False,incorrect,灯塔cue配理发行
+0.45,1680,0.5-0.55,I want that fucking chip!,,BAXTER,BAXTER,I'm not accepting it.,5,False,False,incorrect,应配索要芯片行
+0.45,1684,0.45-0.5,Increase speed to 5-0-0 knots.,,MASON,MASON,Pleased to meet you.,6,False,False,incorrect,战机cue配逮捕行
+0.45,1703,0.55-0.6,I got green smoke. I got green smoke!,,F.B.I. TECHNICIAN,F.B.I. TECHNICIAN,Green smoke!  It's...   GOODSPEED!!,4,False,False,correct,近逐字同拍

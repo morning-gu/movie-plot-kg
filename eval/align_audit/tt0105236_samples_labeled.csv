@@ -1,0 +1,161 @@
+threshold,cue_idx,band,cue_text,old_speaker,new_speaker,matched_speaker,matched_text,dedup_tokens,l_ocr,sibling,label,reason
+0.6,37,0.6-1.01,He's diggin' tunnels. Now she's gettin' serious dick action.,,MR. BROWN,MR. BROWN,"Then one day she meets a John Holmes motherfucker, and it's like, whoa baby. This mother fucker's like Charles Bronson in ""The Great Escape."" He's diggin' tunnels. Now she's gettin' this serious dick action, she's feelin' something she ain't felt since forever. Pain.",10,False,True,correct,逐字对应
+0.6,45,0.6-1.01,what it was once like to be a virgin.,,MR. BROWN,MR. BROWN,"It hurts. It hurts her. It shouldn't hurt. Her pussy should be Bubble-Yum by now. But when this cat fucks her, it hurts. It hurts like the first time. The pain is reminding a fuck machine what is was like to be a virgin. Hence, ""Like a Virgin.""",9,False,False,correct,逐字对应
+0.6,47,0.6-1.01,Wong.,JOE,JOE,JOE,Wong?,1,False,False,correct,逐字对应
+0.6,126,0.6-1.01,for female non-college graduates in this country.,,MR. WHITE,MR. WHITE,"Waitressing is the number one occupation for female non-college graduates in this country. It's the one job basically any woman can get, and make a living on. The reason is because of tips.",8,False,True,correct,逐字对应
+0.6,132,0.6-1.01,It would appear that waitresses are one of the many groups...,,MR. PINK,MR. PINK,"Hey, I'm very sorry that the government taxes their tips. That's fucked up. But that ain't my fault. it would appear that waitresses are just one of the many groups the government fucks in the ass on a regular basis. You show me a paper says the government shouldn't do that, I'll sign it. Put it to a vote, I'll vote for it. But what I don't do is play ball. And this non-college bullshit you're telling me, I got two words for that: ""Learn to fuckin' type."" Cause if you're expecting me to help out with the rent, you're in for a big fuckin' surprise.",11,False,True,correct,逐字对应
+0.6,143,0.6-1.01,Mr. Pink?,JOE,MR. ORANGE,MR. ORANGE,Mr. Pink.,2,False,True,incorrect,问号应为JOE行
+0.6,160,0.6-1.01,I'm gonna die.,,MR. ORANGE,MR. ORANGE,"All this blood is scaring the shit outta me. I'm gonna die, I know it.",4,False,False,correct,逐字片段对应
+0.6,192,0.6-1.01,Look where we are.,MR. BLONDE,MR. BLONDE,MR. BLONDE,Now where were we?,4,False,True,incorrect,加戏错绑他场
+0.6,323,0.6-1.01,But they didn't make a move until after Mr. Blonde started shootin' everybody.,MR. PINK,MR. PINK,MR. PINK,The cops didn't show up after the alarm went off. They didn't show till after Mr. Blonde started shooting everyone.,14,False,False,correct,同段近逐字
+0.6,329,0.6-1.01,You're right. This is bad.,,MR. WHITE,MR. WHITE,"You're right, this is bad. How did you get out?",6,False,False,correct,逐字对应
+0.6,358,0.6-1.01,"But I ain't no madman, either.",,MR. WHITE,MR. WHITE,"That's the way I look at it. A choice between doin' ten years, and takin' out some stupid motherfucker, ain't no choice at all. But I ain't no madman either. What the fuck was Joe thinkin'? You can't work with a guy like that. That motherfucker's unstable. What do you think? Do you think he panicked, or ya think he's just trigger-happy?",7,False,True,correct,逐字对应
+0.6,404,0.6-1.01,We discovered one of the team was an undercover cop.,,MR. WHITE,MR. WHITE,"Two jobs back, it was a four man job, we discovered one of the team was an undercover cop.",10,False,True,correct,逐字对应
+0.6,624,0.6-1.01,You talked to Nice Guy Eddie? Why didn't you say that in the first place?,MR. WHITE,MR. WHITE,MR. WHITE,You talked to Nice Guy Eddie? Why the fuck didn't you say that in the first place?,15,False,False,correct,近逐字对应
+0.6,872,0.6-1.01,Why not?,EDDIE,EDDIE,EDDIE,Why not?,2,False,False,correct,逐字对应
+0.6,984,0.6-1.01,Freddy Newendyke.,MR. ORANGE,MR. ORANGE,MR. ORANGE,Freddy Newendyke.,2,False,False,correct,逐字对应
+0.6,1074,0.6-1.01,What is this?,FREDDY,FREDDY,FREDDY,What's this?,3,False,False,correct,近逐字对应
+0.6,1145,0.6-1.01,So we go to the train station--,,FREDDY,FREDDY,"Yeah, the guy needed it right away. Don't ask me why. So we get to the train station, and we're waitin' for the guy. Now I'm carrying the weed in one of those carry-on bags, and I gotta take a piss. So I tell the connection I'll be right back, I'm goin' to the little boys room...",7,False,False,correct,逐字片段对应
+0.6,1258,0.6-1.01,Great. Now I'm totally fuckin' tortured.,,MR. PINK,MR. PINK,"What the fuck was that chick's name? Oh this is just great, I'm totally fuckin' tortured now.",7,False,False,correct,逐字片段对应
+0.6,1273,0.6-1.01,I don't know. He just did things.,MR. PINK,MR. PINK,MR. PINK,"I don't know, but somebody did.",8,False,False,incorrect,应为EDDIE答句
+0.6,1278,0.6-1.01,and glues his dick to his belly.,,EDDIE,EDDIE,"Nobody knows for sure what he did. We just know he did something. Anyway, Elois plays it real cool. And waits for the next time this bag of shit gets drunk. So one night the guy gets drunk and passes out on the couch. So while the guy's inebriated, she strips him naked. Then she takes some crazy glue and glues his dick to his belly.",6,False,False,correct,逐字片段对应
+0.5,3,0.55-0.6,"No, it ain't.",,MR. WHITE,MR. WHITE,"No, they're not.",4,False,False,incorrect,应为BLONDE行
+0.5,26,0.55-0.6,"You said ""True Blue"" was about a guy--",,COP,COP,Your boss even said there wasn't a set up.,8,False,False,incorrect,应为PINK行
+0.5,45,0.5-0.55,what it was once like to be a virgin.,,MR. BLONDE,MR. BLONDE,What if she's too busy?,9,False,False,incorrect,应为BROWN独白
+0.5,80,0.5-0.55,I must've zoned out during that part before.,,VIC,VIC,"I just wanted you to know, they meant a lot.",9,False,False,incorrect,应为EDDIE行
+0.5,83,0.5-0.55,You guys can get the tip.,,NICE GUY EDDIE,NICE GUY EDDIE,You don't believe in tipping?,6,False,False,incorrect,应为JOE买单行
+0.5,90,0.6-1.01,I don't tip.,MR. ORANGE,MR. ORANGE,MR. ORANGE,He don't tip.,4,False,False,incorrect,应为PINK原话
+0.5,137,0.6-1.01,"If you're expectin' me to help out with the rent, you're in for a big surprise.",,MR. PINK,MR. PINK,"Hey, I'm very sorry that the government taxes their tips. That's fucked up. But that ain't my fault. it would appear that waitresses are just one of the many groups the government fucks in the ass on a regular basis. You show me a paper says the government shouldn't do that, I'll sign it. Put it to a vote, I'll vote for it. But what I don't do is play ball. And this non-college bullshit you're telling me, I got two words for that: ""Learn to fuckin' type."" Cause if you're expecting me to help out with the rent, you're in for a big fuckin' surprise.",16,False,True,correct,逐字片段对应
+0.5,164,0.6-1.01,I'm sorry!,MR. ORANGE,MR. ORANGE,MR. ORANGE,I'm okay.,3,False,True,incorrect,应为开头画外行
+0.5,175,0.6-1.01,"No, I'm not. I'm not.",JOE,JOE,JOE,"I'm not askin', I'm betting.",4,False,False,incorrect,应为ORANGE行
+0.5,183,0.6-1.01,You're gonna be okay!,MR. WHITE,MR. WHITE,MR. WHITE,You gonna put it away?,5,False,False,incorrect,应为WHITE催说行
+0.5,212,0.5-0.55,"he's gonna help you out, he's gonna take care of you.",,JOE,JOE,"No, we're gonna be hittin' it. I'll take care of the check.",9,False,False,incorrect,应为WHITE安抚行
+0.5,220,0.5-0.55,You've been brave enough for one day.,,WAITRESS,WAITRESS,You guys have a wonderful day.,8,False,False,incorrect,应为WHITE耳语行
+0.5,240,0.5-0.55,"You'll be safe, man.",,FREDDY,FREDDY,I'll be right down.,5,False,False,incorrect,应为ORANGE行
+0.5,242,0.6-1.01,Listen to me. You're gonna be fine.,MR. WHITE,MR. WHITE,MR. WHITE,Say-the-goddamn-words: You're gonna be okay!,8,False,False,correct,同话人近义句
+0.5,267,0.5-0.55,"I didn't hear any sirens. The alarm went off, okay?",,MR. WHITE,MR. WHITE,"As soon as I heard the alarm, I saw the cops.",11,False,False,incorrect,应为PINK行
+0.5,312,0.5-0.55,I turn around and all these cops are outside.,,MR. BLONDE,MR. BLONDE,"I said: ""Are you gonna bark all day, dog, or are you gonna bite.""",9,False,False,incorrect,应为WHITE行
+0.5,320,0.6-1.01,It wasn't that soon.,MR. ORANGE,MR. ORANGE,MR. ORANGE,It is that too -,5,False,False,incorrect,应为PINK纠正行
+0.5,356,0.55-0.6,and takin' out some stupid motherfucker...,,MR. WHITE,MR. WHITE,You little motherfucker!,6,False,False,incorrect,应为WHITE独白
+0.5,427,0.55-0.6,and make a right.,,MR. PINK,MR. PINK,"I got 'em, all right?",4,False,False,incorrect,应为WHITE指路行
+0.5,441,0.6-1.01,Bustin' in and bustin' out of a diamond wholesaler's.,JOE,JOE,JOE,Five-man job. Bustin' in and bustin' out of a diamond wholesaler's.,9,False,False,correct,逐字对应
+0.5,459,0.55-0.6,"They're like a way station, you know?",,NICE GUY EDDIE,NICE GUY EDDIE,They were waiting for you?,8,False,False,incorrect,应为JOE行
+0.5,497,0.5-0.55,"Well, all right. Then I guess we take him to a hospital.",MR. PINK,MR. WHITE,MR. WHITE,I can' take you to a hospital.,12,False,False,incorrect,应为PINK决定行
+0.5,512,0.5-0.55,"I swear to God, I thought he was gonna die right then and there.",,EDDIE,EDDIE,Who cares what he was gonna do to this fuckin' pig?,13,False,False,incorrect,应为WHITE行
+0.5,518,0.5-0.55,It's against the rules?,,MR. WHITE,MR. WHITE,Let's go in the other room...,5,False,False,incorrect,应为WHITE辩解行
+0.5,542,0.5-0.55,You're lookin' at me like it's my fault? I didn't tell him my name!,,MR. WHITE,MR. WHITE,"Joe, you're making a terrible mistake I can't let you make.",16,False,False,incorrect,应为PINK长段行
+0.5,546,0.6-1.01,"So if you wanna throw bad looks around, throw 'em at a mirror!",,MR. PINK,MR. PINK,"Fuck you, White! I didn't create this situation, I'm just dealin' with it. You're acting like a first- year fuckin' thief. I'm actin like a professional. They get him, they can get you, they get you, they get closer to me, and that can't happen. And you, you motherfucker, are looking at me like it's my fault. I didn't tell him my name. I didn't tell him where I was from. I didn't tell him what I knew better than to tell him. Fuck, fifteen minutes ago, you almost told me your name. You, buddy, are stuck in a situation you created. So if you wanna throw bad looks somewhere, throw 'em at a mirror.",12,False,False,correct,逐字片段对应
+0.5,568,0.6-1.01,Nobody's goin' anywhere.,MR. BLONDE,MR. BLONDE,MR. BLONDE,Nobody's going anywhere.,4,False,False,correct,逐字对应
+0.5,576,0.55-0.6,I got a big fuckin' problem...,,MR. WHITE,MR. WHITE,Don't fuckin' patronize me.,6,False,False,incorrect,应为WHITE问题行
+0.5,600,0.5-0.55,"Fuck sides, man! What we need here is solidarity!",,MR. WHITE,MR. WHITE,Hardy-fuckin-har. What did he say?,9,False,False,incorrect,应为PINK团结行
+0.5,615,0.6-1.01,What?,JOE,MR. PINK,MR. PINK,What?,1,False,False,unsure,短句多候选
+0.5,709,0.6-1.01,"Listen, if I was a butt cowboy, I wouldn't even throw you to the posse.",VIC,VIC,VIC,"Eddie, if I was a pirate, I wouldn't throw you to the crew.",15,False,False,correct,电影变体同行
+0.5,727,0.55-0.6,I hear he's a motherfucker.,MR. WHITE,EDDIE,EDDIE,"Scagnetti? Oh shit, I hear he's a motherfucker.",6,False,False,correct,逐字片段对应
+0.5,730,0.6-1.01,"You're comin' back to work for us, right?",EDDIE,EDDIE,EDDIE,"You're coming back to work for us, right?",9,False,False,correct,逐字对应
+0.5,801,0.6-1.01,I will know. I'm practically there now.,,EDDIE,EDDIE,"Do I sound like I'm jokin'? He's fuckin' driving around with the cop in his trunk. I don't know who did that. I don't know who has the loot, if anybody has the loot. Who's dead, who's alive, who's caught, who's not... I will know, I'm practically there. But what do I tell these guys about daddy? You sure that's what he said? Okay, that's what I'll tell em.",7,False,False,correct,逐字片段对应
+0.5,843,0.6-1.01,You ain't dying. He is.,MR. WHITE,MR. WHITE,MR. WHITE,"You ain't dying, he is.",6,False,False,correct,逐字对应
+0.5,848,0.6-1.01,Brown's dead. We don't know what happened to Blue.,MR. PINK,EDDIE,EDDIE,Nobody saw what happened to Mr. Blue?,11,False,True,incorrect,应为PINK答句
+0.5,852,0.5-0.55,Either he's alive or he's dead...,,MR. BLONDE,MR. BLONDE,"Well, he's either dead or he's alive or the cops got him or they don't.",6,False,False,correct,近逐字对应
+0.5,855,0.55-0.6,Why are you beatin' on him?,MR. BLONDE,MR. WHITE,MR. WHITE,Where? Are they out in the car?,6,False,False,incorrect,应为EDDIE行
+0.5,859,0.55-0.6,"Come on, man, think!",,JOE,JOE,Come in.,4,False,False,incorrect,加词无对应
+0.5,905,0.55-0.6,and he sees all these cars parked outside...,,EDDIE,EDDIE,We're parked outside.,8,False,False,incorrect,应为EDDIE行
+0.5,967,0.55-0.6,You all through?,,MR. WHITE,MR. WHITE,You little motherfucker!,3,False,False,incorrect,加词无对应
+0.5,1073,0.55-0.6,"If you're a bad actor, that's bullshit in this job.",,MR. BROWN,MR. BROWN,Whoa... whoa... time out Greenbay. Tell that bullshit to the tourists.,12,False,False,incorrect,应为HOLDAWAY行
+0.5,1083,0.5-0.55,The things you gotta remember are the details.,,MR. WHITE,MR. WHITE,We think we got a rat in the house.,7,False,False,incorrect,应为HOLDAWAY行
+0.5,1088,0.6-1.01,You gotta know if the stalls ain't got no doors or not.,,HOLDAWAY,HOLDAWAY,"The things you gotta remember are the details. It's the details that sell your story. Now this story takes place in this men's room. So you gotta know the details about this men's room. You gotta know they got a blower instead of a towel to dry your hands. You gotta know the stalls ain't got no doors. You gotta know whether they got liquid or powdered soap, whether they got hot water or not, 'cause if you do your job when you tell your story, everybody should believe it. And if you tell your story to somebody who's actually taken a piss in this men's room, and you get one detail they remember right, they'll swear by you.",13,False,False,correct,逐字片段对应
+0.5,1096,0.55-0.6,"While you're doing that, remember that this story is about you...",,MR. ORANGE,MR. ORANGE,Shit. I don't remember that at all.,10,False,False,incorrect,加词无对应
+0.5,1128,0.55-0.6,Nobody had anything.,,MR. BLONDE,MR. BLONDE,Nobody's going anywhere.,3,False,False,incorrect,应为FREDDY行
+0.5,1166,0.5-0.55,Bam! Right in the face.,,MR. BLONDE,MR. BLONDE,They say it in the song.,5,False,False,incorrect,应为FREDDY行
+0.5,1200,0.55-0.6,He's funny. He's a funny guy.,,MR. BROWN,MR. BROWN,"I love this guy, he's a madman, this guy.",5,False,False,incorrect,应为FREDDY行
+0.5,1263,0.5-0.55,I'm tryin' to tell a story here. She looked exactly like Elois.,,FREDDY,FREDDY,I'm sorry. I can't believe she killed me...,13,False,False,incorrect,应为EDDIE行
+0.5,1301,0.6-1.01,Find me a different character down there.,,JOE,JOE,"Five guys sitting in a bull pen, San Quentin. Wondering how the fuck they got there. What'd we wrong? What should we've done? What didn't we do? It's your fault, my fault, his fault. All that bullshit. Finally, someone comes up with the idea, wait a minute, while we were planning this caper, all we did was sit around and tell fuckin' jokes. Got the message? When this caper's over, and I'm sure it's gonna be a successful one, hell, we'll go down to the Hawaiian Island and I'll roar and laugh with all of you. You'll find me a different character down there. Right now it's a matter of business. With the exception of Eddie and myself, who you already know, you'll be using aliases. Under no circumstances are you to tell one another your real name or anything else about yourself. That includes where you're from, your wife's name, where you might've done time, about a bank in St. Petersburg you might've robbed. You guys don't say shit about who you are, where you been or what you've done. Only thing you guys can talk about is what you're going to do. This way the only ones who know who the members of the team are Eddie and myself. And that's the way I like it. Because in the unlikely event of one of you getting apprehended by the cops, not that I expect that to happen - it most definitely should not happen - it hasn't happened, you don't have anything to deal with. You don't know any names. You know my name, you know Eddie's name. That I don't care about. You gotta prove it. I ain't worried. Besides, this way you gotta trust me. I like that. I set this up and picked the men I wanted for it. None of you came to me, I approached all of you. I know you. I know your work, I know your reputation. I know you as men. Except for this guy.",7,False,False,correct,逐字片段对应
+0.5,1311,0.55-0.6,where you might've done time...,,MR. WHITE,MR. WHITE,What are you gonna do about him?,6,False,False,incorrect,应为JOE演讲行
+0.5,1328,0.5-0.55,Be thankful you're not Mr. Yellow.,,HOLDAWAY,HOLDAWAY,How can you tell?,7,False,False,incorrect,应为JOE取名行
+0.5,1345,0.6-1.01,It's beneath me. I'm Mr. Pink. Let's move on.,MR. PINK,MR. PINK,MR. PINK,"Jesus Christ, Joe. Fuckin' forget it. This is beneath me. I'm Mr. Pink, let's move on.",11,False,True,correct,逐字片段对应
+0.5,1398,0.55-0.6,I'm gonna die. I know it.,JOE,MR. WHITE,MR. WHITE,I'm gonna get me my smokes.,6,False,False,incorrect,应为ORANGE行
+0.5,1411,0.55-0.6,What'd I tell ya?,,MR. WHITE,MR. WHITE,What's that?,5,False,False,incorrect,应为WHITE行
+0.5,1430,0.55-0.6,He could've fuckin' walked.,,VIC,VIC,You fuckin' wish.,5,False,False,incorrect,应为EDDIE行
+0.5,1443,0.5-0.55,What the hell for?,JOE,MR. WHITE,MR. WHITE,What the fuck are you talking about?,4,False,False,incorrect,应为JOE画外行
+0.5,1454,0.5-0.55,Trust me on this. You've made a mistake.,,MR. WHITE,MR. WHITE,Splash some water on your face. Take a breather.,9,False,False,incorrect,应为WHITE行
+0.5,1462,0.6-1.01,and got Mr. Brown and Mr. Blue killed.,MR. WHITE,MR. WHITE,MR. WHITE,Mr. Blonde and Mr. Blue?,6,False,False,incorrect,应为JOE行
+0.5,1493,0.55-0.6,do a little time.,MR. ORANGE,MR. WHITE,MR. WHITE,"Well, he knows a little about me.",4,False,False,incorrect,应为WHITE行
+0.45,11,0.5-0.55,It was a big-ass hit for Madonna.,,MR. WHITE,MR. WHITE,I hate Madonna.,8,False,False,incorrect,应为EDDIE行
+0.45,40,0.45-0.5,It hurts. It hurts her.,,MR. ORANGE,MR. ORANGE,It is that too -,3,False,False,incorrect,应为BROWN行
+0.45,51,0.45-0.5,"For the past 15 minutes now, you've been droning on about names.",,MR. WHITE,MR. WHITE,What are you gonna do about him?,13,False,False,incorrect,应为WHITE行
+0.45,55,0.5-0.55,"Toby Chung fuckin' Charlie Chan.""",,MR. WHITE,MR. WHITE,Hardy-fuckin-har. What did he say?,5,False,False,incorrect,应为WHITE行
+0.45,56,0.45-0.5,I've got Madonna's big dick comin' out of my left ear...,,JOE,JOE,Five-man job. Bustin' in and bustin' out of a diamond wholesaler's.,13,False,False,incorrect,应为WHITE行
+0.45,92,0.6-1.01,I don't believe in it.,MR. ORANGE,MR. ORANGE,MR. ORANGE,He don't believe in it.,6,False,False,incorrect,应为PINK原话
+0.45,119,0.6-1.01,"The world's smallest violin, playin' just for the waitresses.",MR. PINK,MR. PINK,MR. PINK,"Do you know what this is? It's the world's smallest violin, playing just for the waitresses.",9,False,False,correct,逐字片段对应
+0.45,141,0.45-0.5,Wait a minute. Who didn't throw in?,,JOE,JOE,"Okay ramblers, let's get to rambling. Wait a minute, who didn't throw in?",8,False,True,correct,逐字片段对应
+0.45,163,0.55-0.6,I'm gonna die!,,MR. ORANGE,MR. ORANGE,I'm okay.,4,False,False,incorrect,应为ORANGE行
+0.45,166,0.45-0.5,"I can't believe she killed me, man! Who'd have fuckin' thought that?",SOMEBODY,JOE,JOE,"No, she did it. She killed the cheatin' wife, too.",14,False,False,incorrect,应为开头画外行
+0.45,177,0.45-0.5,"If you're through givin' me your amateur opinion, lie back and listen.",,MR. BLONDE,MR. BLONDE,So you don't care that they're counting on your tip to live?,13,False,False,incorrect,应为WHITE车内行
+0.45,195,0.55-0.6,Who's a tough guy? Who's a tough guy?,,EDDIE,EDDIE,"Holy shit, this guy's all fucked up!",5,False,False,incorrect,加戏无对应
+0.45,199,0.45-0.5,We're in a warehouse. Look where we are.,,MR. WHITE,MR. WHITE,Let's go in the other room...,8,False,False,incorrect,加戏无对应
+0.45,217,0.6-1.01,Would you please hold me?,MR. PINK,MR. PINK,MR. PINK,Could you believe Mr. Blonde?,5,False,False,incorrect,应为ORANGE行
+0.45,242,0.45-0.5,Listen to me. You're gonna be fine.,MR. WHITE,JOE,JOE,"Cause you're a faggot, alright?",8,False,True,incorrect,应为WHITE行
+0.45,245,0.6-1.01,No shit!,MR. WHITE,MR. PINK,MR. PINK,No shit?,2,False,False,incorrect,加词错绑他场
+0.45,249,0.55-0.6,Time is on your side.,,MR. ORANGE,MR. ORANGE,What's your name?,5,False,False,incorrect,加词无对应
+0.45,258,0.5-0.55,This is so fucking bad. Is it bad?,MR. PINK,MARVIN,MARVIN,That fucking bastard! That fucking sick fucking bastard!,6,False,False,incorrect,应为PINK行
+0.45,285,0.55-0.6,"Larry, don't leave me.",MR. ORANGE,MR. BLONDE,MR. BLONDE,I don't like alarms.,5,False,False,incorrect,应为ORANGE行
+0.45,287,0.5-0.55,"I'm right here lookin' at you, okay?",,HOLDAWAY,HOLDAWAY,Did the two of you talk?,8,False,False,incorrect,应为WHITE行
+0.45,320,0.6-1.01,It wasn't that soon.,MR. ORANGE,MR. ORANGE,MR. ORANGE,It is that too -,5,False,False,incorrect,应为PINK纠正行
+0.45,356,0.55-0.6,and takin' out some stupid motherfucker...,,MR. WHITE,MR. WHITE,You little motherfucker!,6,False,False,incorrect,应为WHITE独白
+0.45,371,0.45-0.5,"I mean, Jesus Christ, how old do you think that black girl was? Twenty?",,MR. PINK,MR. PINK,We don't think this place is safe.,14,False,False,incorrect,应为WHITE行
+0.45,391,0.45-0.5,I stashed 'em.,,MR. WHITE,MR. WHITE,I think he's just passed out.,3,False,False,incorrect,应为PINK行
+0.45,400,0.5-0.55,"They don't know our names, but they could be singin' about this place.",,MR. BLONDE,MR. BLONDE,So you don't care that they're counting on your tip to live?,13,False,False,incorrect,应为PINK行
+0.45,401,0.6-1.01,"I swear to God, I think I'm fuckin' jinxed.",MR. WHITE,MR. WHITE,MR. WHITE,I swear to god I'm fuckin' jinxed.,8,False,False,correct,逐字对应
+0.45,403,0.45-0.5,"Two jobs back, it was a four-man job.",,EDDIE,EDDIE,"You're coming back to work for us, right?",9,False,False,incorrect,应为WHITE行
+0.45,411,0.6-1.01,Joe? Joe set this whole thing up. Maybe he set it up to set it up.,MR. PINK,MR. PINK,MR. PINK,"So who's the rat this time? Mr. Blue? Mr. Blonde? Joe? It's Joe's show, he set this whole thing up. Maybe he set it up to set it up.",10,False,False,correct,逐字片段对应
+0.45,418,0.5-0.55,"For all I know, you're the fuckin' rat!",MR. WHITE,EDDIE,EDDIE,Stop pointing your fuckin' gun at daddy!,9,False,False,incorrect,应为WHITE行
+0.45,419,0.45-0.5,"All right, now you're usin' your fuckin' head.",,EDDIE,EDDIE,Stop pointing your fuckin' gun at daddy!,9,False,True,incorrect,应为PINK回应行
+0.45,484,0.45-0.5,Joe could get a doctor to come to see him.,,MR. WHITE,MR. WHITE,"Joe could help him. If we can get in touch with Joe, Joe could get him to a doctor, Joe could get a doctor to come and see him.",9,False,True,correct,逐字片段对应
+0.45,524,0.6-1.01,I have one question. Do they have a sheet on you where you're from?,MR. PINK,MR. PINK,MR. PINK,"One question: Do they have a sheet on you, where you told him you're from?",13,False,False,correct,近逐字对应
+0.45,533,0.6-1.01,"If we don't, he's gonna die.",MR. WHITE,MR. WHITE,MR. WHITE,"If we don't, he'll die.",8,False,False,correct,近逐字对应
+0.45,536,0.5-0.55,I'll show you who you're fuckin' with!,MR. PINK,MR. WHITE,MR. WHITE,Follow you where?,8,False,False,incorrect,应为PINK行
+0.45,539,0.6-1.01,You're actin' like a first-year thief! I'm actin' like a professional!,,MR. PINK,MR. PINK,"Fuck you, White! I didn't create this situation, I'm just dealin' with it. You're acting like a first- year fuckin' thief. I'm actin like a professional. They get him, they can get you, they get you, they get closer to me, and that can't happen. And you, you motherfucker, are looking at me like it's my fault. I didn't tell him my name. I didn't tell him where I was from. I didn't tell him what I knew better than to tell him. Fuck, fifteen minutes ago, you almost told me your name. You, buddy, are stuck in a situation you created. So if you wanna throw bad looks somewhere, throw 'em at a mirror.",11,False,False,correct,逐字片段对应
+0.45,549,0.6-1.01,Mr. Blonde.,MR. WHITE,MR. WHITE,MR. WHITE,Mr. Brown?,2,False,False,incorrect,应为PINK招呼行
+0.45,561,0.5-0.55,"Okay, let's talk.",,MR. BLONDE,MR. BLONDE,"So, talk.",4,False,False,correct,电影变体同行
+0.45,569,0.55-0.6,Piss on this fuckin' turd.,MR. WHITE,MR. WHITE,MR. WHITE,"Piss on this turd, we're outta here.",5,False,False,correct,近逐字对应
+0.45,575,0.5-0.55,"What's my problem? Yeah, I got a fuckin' problem!",,MR. BROWN,MR. BROWN,"My eyes! My eyes! I'm blind, I'm fucking blind!",9,False,False,incorrect,应为WHITE行
+0.45,629,0.55-0.6,So in the meantime...,,MR. PINK,MR. PINK,"So, is he dead or what?",4,False,False,incorrect,应为BLONDE行
+0.45,648,0.55-0.6,A friend of mine's outside.,,JOE,JOE,"Sid, a friend of mine's here. I gotta go. Good enough, bye.",6,False,False,correct,逐字片段对应
+0.45,657,0.6-1.01,How about a little Remy Martin?,JOE,JOE,JOE,Ain't that a sad truth. Remy Martin?,6,False,False,correct,电影变体同行
+0.45,731,0.5-0.55,"Well, I wanna.",,JOE,JOE,Like hell I am.,3,False,False,incorrect,应为VIC行
+0.45,765,0.55-0.6,"Well, it's hard to say.",,MR. ORANGE,MR. ORANGE,It is that too -,6,False,False,incorrect,应为JOE行
+0.45,767,0.45-0.5,Things are kind of--,,MR. WHITE,MR. WHITE,What the fuck are you talking about?,4,False,False,incorrect,应为JOE行
+0.45,829,0.55-0.6,Nobody did. You fuckin' assholes turned the jewelry store--,,EDDIE,EDDIE,"Nobody did. You assholes turn the jewelry store into a wild west show, and you wonder why cops show up.",9,False,False,correct,近逐字对应
+0.45,835,0.55-0.6,I don't know. I ain't talked to him.,MR. PINK,MR. ORANGE,MR. ORANGE,I don't know what to tell you Marvin.,8,False,False,incorrect,应为EDDIE行
+0.45,846,0.5-0.55,A fuckin' snake charmer! Who do you think? I'll call a doctor.,,EDDIE,EDDIE,"A snake charmer, what the fuck d'you think. I'll call a doctor, take care of him, fix 'm right up. No, where's Mr. Brown and Mr. Blue?",12,False,False,correct,近逐字对应
+0.45,858,0.5-0.55,Now that don't necessarily make it fuckin' so!,,MR. BLONDE,MR. BLONDE,What would ever make you think that?,9,False,False,incorrect,应为EDDIE行
+0.45,951,0.6-1.01,You hear that?,MR. PINK,MR. PINK,MR. PINK,Fuck all that.,3,False,False,incorrect,加词无对应
+0.45,953,0.55-0.6,Don't! Stop! Stop!,,MR. ORANGE,MR. ORANGE,He don't tip.,3,False,False,incorrect,无对应行错绑
+0.45,962,0.55-0.6,I don't know anything about any of you fucking guys.,,MR. ORANGE,MR. ORANGE,I don't know what to tell you Marvin.,11,False,False,incorrect,应为COP行
+0.45,963,0.55-0.6,I'm not gonna say anything.,,JOE,JOE,"I'm not askin', I'm betting.",6,False,False,incorrect,应为COP行
+0.45,990,0.6-1.01,How do I look?,MARVIN,MARVIN,MARVIN,I do. How do I look?,4,False,False,correct,逐字片段对应
+0.45,994,0.55-0.6,That sick fuck!,,MR. WHITE,MR. WHITE,That fuckin did it!,3,False,False,incorrect,应为MARVIN行
+0.45,1003,0.55-0.6,I'm fuckin' dyin' here!,,MR. WHITE,MR. WHITE,That fuckin did it!,5,False,False,incorrect,应为ORANGE行
+0.45,1006,0.45-0.5,I was sent in to get him.,,FREDDY,FREDDY,I can do that.,7,False,False,incorrect,应为ORANGE行
+0.45,1010,0.6-1.01,We're just gonna sit here and bleed...,MR. BLONDE,MR. BLONDE,MR. BLONDE,We're gonna sit here and wait.,8,False,False,incorrect,应为ORANGE行
+0.45,1036,0.5-0.55,The way they talk. You can tell they're buddies.,FREDDY,JOE,JOE,He don't tip? You don't tip? Why?,9,False,False,incorrect,应为FREDDY行
+0.45,1039,0.6-1.01,Mr. White.,FREDDY,FREDDY,FREDDY,"Who, Mr. White?",2,False,False,unsure,短句多候选
+0.45,1048,0.5-0.55,So I want you to go through everybody in Milwaukee...,,VIC,VIC,"I just wanted you to know, they meant a lot.",10,False,False,incorrect,应为HOLDAWAY行
+0.45,1050,0.6-1.01,"Nice work, Freddy.",MR. BLONDE,MR. BLONDE,MR. BLONDE,Nice Guy Eddie.,3,False,False,incorrect,加词无对应
+0.45,1093,0.45-0.5,sprayed diarrhea all over one of the bowls.,,MR. WHITE,MR. WHITE,Where? Are they out in the car?,8,False,False,incorrect,加词无对应
+0.45,1109,0.5-0.55,"They knew I still smoked, so they asked me to buy some for them.",,MR. BLUE,MR. BLUE,"These people are taxed on the tips they make. When you stiff 'em, you cost them money.",13,False,False,incorrect,应为FREDDY行
+0.45,1121,0.6-1.01,"They're my friends and everything, but still--",,FREDDY,FREDDY,"...but then that got to be a pain in the ass. People called me on the phone all the fuckin' time. I couldn't rent a fuckin' tape without six phone calls interrupting me. ""Hey, Freddy, when's the next time you're gettin' some?"" ""Motherfucker, I'm tryin' to watch 'Lost Boys' - when I have some, I'll let you know."" And then these rinky-dink pot heads come by - there's my friends and everything, but still. I got all my shit laid out in sixty dollar bags. Well, they don't want sixty dollars worth. They want ten dollars worth. Breaking it up is a major fuckin' pain in the ass. I don't even know how much ten dollars worth is. ""Well, fuck, man, I don't want that much around. If I have that much around I'll smoke it."" ""Hey, if you guys can't control your smokin, that's not my problem. You motherfuckers been smokin' for five years, be a adult about it."" Finally I just told my connection, count me out. But as it turns out, I'm the best guy she had, and she depended a lot on my business. But I was still sick to death of it. And she's trying to talk me into not quitin'. Now this was a very weird situation, 'cause I don't know if you remember back in '86, there was a major fuckin' drought. Nobody and anything. People were livin' on resin and smokin' the wood in their pipes for months. And this chick had a bunch, and was beggin' me to sell it. So I told her I wasn't gonna be Joe the Pot Man anymore. But I would take a little bit and sell it to my close, close, close friends. She agreed to that, and said we'd keep the same arrangement as before, ten percent and free pot for me, as long as I helped her out that weekend. She had a brick of weed she was sellin', and she didn't want to go to the buy alone...",8,False,False,correct,逐字片段对应
+0.45,1144,0.45-0.5,Finally I said okay 'cause I'm sick of hearing it.,,MR. PINK,MR. PINK,Our girl was okay. She didn't do anything special.,10,False,False,incorrect,应为FREDDY行
+0.45,1187,0.45-0.5,"Listen to the officer! Put your hands on the dash!""",,FREDDY,FREDDY,The Thing. The motherfucker looks just like The Thing.,9,False,False,incorrect,应为警长故事行
+0.45,1213,0.55-0.6,They don't know shit.,MR. ORANGE,MR. WHITE,MR. WHITE,How do you know all this?,5,False,False,incorrect,应为FREDDY行
+0.45,1256,0.5-0.55,"So, who was Christie Love?",,MR. PINK,MR. PINK,So what is it?,5,False,False,incorrect,应为PINK行
+0.45,1271,0.45-0.5,Like what? What would he do?,,MR. WHITE,MR. WHITE,What's wrong with it?,5,False,False,incorrect,应为FREDDY行
+0.45,1274,0.45-0.5,"So anyway, one night she plays it real cool.",,FREDDY,FREDDY,"He's a cool guy. A real nice, real funny, real cool guy.",9,False,False,incorrect,应为EDDIE行
+0.45,1357,0.5-0.55,That girl's ass.,,FREDDY,FREDDY,What's this?,4,False,False,incorrect,加词无对应
+0.45,1394,0.5-0.55,"Hey, just cancel that shit right now.",,EDDIE,EDDIE,He'll be right down.,7,False,False,incorrect,应为WHITE行
+0.45,1427,0.55-0.6,that's what happened.,MR. WHITE,MR. PINK,MR. PINK,Did ya see what happened to anybody else?,4,False,False,incorrect,应为ORANGE行
+0.45,1436,0.5-0.55,who did four years for my father...,,JOE,JOE,drink) Who's your parole officer?,7,False,False,incorrect,应为EDDIE行
+0.45,1445,0.6-1.01,This man set us up.,JOE,JOE,JOE,This man set us up.,5,False,False,correct,逐字对应
+0.45,1455,0.55-0.6,He's a good kid.,,MR. WHITE,MR. WHITE,It's not good...,5,False,False,incorrect,应为WHITE行
+0.45,1466,0.5-0.55,He was the only one I wasn't 100 percent on.,,MR. WHITE,MR. WHITE,"That was the plan, we meet here.",11,False,False,incorrect,应为JOE行
+0.45,1494,0.6-1.01,I'm a cop.,MR. PINK,MR. ORANGE,MR. ORANGE,I'm a cop.,4,False,False,correct,逐字对应
+0.45,1500,0.55-0.6,I'm sorry.,FREDDY,MR. ORANGE,MR. ORANGE,I'm a cop.,3,False,True,incorrect,应为ORANGE道歉
