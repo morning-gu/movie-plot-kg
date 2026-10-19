@@ -212,6 +212,24 @@ def convert(movie: str = typer.Option(..., "--movie"),
     typer.echo(f"转换完成: {result}(报告见 {result / 'convert_report.md'})")
 
 
+@movienet_app.command("align-audit")
+def align_audit(movie: str = typer.Option(..., "--movie"),
+                src: str = typer.Option("data/raw/movienet", "--src"),
+                out: str = typer.Option("eval/align_audit", "--out"),
+                thresholds: str = typer.Option(
+                    "0.6", "--thresholds", help="逗号分隔,如 0.6,0.5,0.45"),
+                sample: int = typer.Option(
+                    100, "--sample", help="分层抽样总数(按分带均分)")):
+    """新旧对齐对照审计:legacy(v0.4.0 语义)vs 当前实现——翻转统计+分层抽样。"""
+    from pathlib import Path
+
+    from movie_kg.ingestion.movienet.audit import run_audit
+    thrs = [float(x) for x in thresholds.split(",")]
+    report = run_audit(movie, Path(src), Path(out),
+                       thresholds=thrs, sample_n=sample)
+    typer.echo(f"审计完成: {report}(抽样 CSV 同目录)")
+
+
 # typer.testing.CliRunner.invoke 只接受 Typer 实例,测试以 main 调用;
 # 控制台脚本 kg = movie_kg.cli:main 同样按可调用对象工作(Typer 可调用)。
 main = app
