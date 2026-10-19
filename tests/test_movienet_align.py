@@ -248,6 +248,23 @@ def test_short_cue_guard_uses_dedup_token_count():
     assert align_cues(cues2, script2, threshold=0.4) == ["BOB"]
 
 
+def test_coverage_contiguity_survives_autojunk_on_long_lines():
+    # difflib autojunk(b>=200 字符时出现 >n//100 次的字符被移出 b2j)会废掉
+    # find_longest_match 的种子,近逐字公共段塌缩为 1 → 覆盖兜底在独白长行上
+    # 大量漏救(终审实测:三部合计 136 条 cue;66/23/30 条剧本行 >=200 字符)。
+    # fixture 为真实数据 RD cue100 ↔ 剧本行 67(264 字符,autojunk 下连续段
+    # 1 vs 真实 31;cue 非精确子串——"that shit's" 替换了 "it's")。
+    line = ("I don't tip because society says I gotta. I tip when somebody "
+            "deserves a tip. When somebody really puts forth an effort, they "
+            "deserve a little something extra. But this tipping automatically, "
+            "that shit's for the birds. As far as I'm concerned, they're just "
+            "doin' their job.")
+    script = parse_script(f"                    MR. PINK\n          {line}\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\n"
+                     "But this tipping automatically, it's for the birds.\n")
+    assert align_cues(cues, script) == ["MR. PINK"]
+
+
 def test_score_prefiltered_equivalence():
     # 预筛只裁必然低于 floor 的对:阈值判定与数值完全等价(300 随机组)
     from movie_kg.ingestion.movienet.align import (_score,
@@ -320,7 +337,7 @@ def _naive_align(cues, script_lines, threshold, lookahead=60):
                     contig = len(nc)
                 else:
                     contig = difflib.SequenceMatcher(
-                        None, nc, ns).find_longest_match(
+                        None, nc, ns, autojunk=False).find_longest_match(
                         0, len(nc), 0, len(ns)).size
                 if contig < 0.5 * len(nc):
                     continue

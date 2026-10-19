@@ -274,3 +274,19 @@ def test_convert_resolves_speaker_from_meta_cast_beyond_visual_roster(tmp_path):
     assert "Sally" in [c.name for c in s2.meta.characters]       # 说话人并入场景名单(gold 跟进)
     report = (out / "convert_report.md").read_text(encoding="utf-8")
     assert "说话人不在 roster 0" in report
+
+
+def test_convert_and_audit_tolerate_null_character_in_meta_cast(tmp_path):
+    # meta.cast 的 character 键存在但为 null:.get(k, "") 的默认值不拦 null,
+    # None.strip() 崩(终审发现;A 层扩量时是真实数据形状,重定为必修)
+    src = _make_src(tmp_path)
+    meta = json.loads((src / "meta" / "tt0000001.json").read_text(encoding="utf-8"))
+    meta["cast"].append({"id": "nm9", "name": "Actor Null", "character": None})
+    (src / "meta" / "tt0000001.json").write_text(json.dumps(meta), encoding="utf-8")
+    out = tmp_path / "out"
+    convert("tt0000001", src, out)          # 不崩,roster 跳过 null 项
+    movie = load_movie(out)
+    assert all(c.name for s in movie.scenes for c in s.meta.characters)
+    from movie_kg.ingestion.movienet.audit import run_audit
+    run_audit("tt0000001", src, tmp_path / "audit",
+              thresholds=[0.6], sample_n=10)   # 审计侧同款守卫

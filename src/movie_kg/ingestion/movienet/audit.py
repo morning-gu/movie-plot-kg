@@ -171,7 +171,7 @@ def run_audit(movie: str, src: Path, out_dir: Path,
     rosters = scene_characters(ann, meta, scenes)
     movie_roster = sorted({n for r in rosters for n in r})
     meta_roster = sorted({c["character"].strip() for c in meta.get("cast", [])
-                          if c.get("character", "").strip()})
+                          if c.get("character") and c["character"].strip()})
     resolve_roster = sorted(set(movie_roster) | set(meta_roster))
 
     legacy = align_legacy(cues, lines)

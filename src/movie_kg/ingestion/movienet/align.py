@@ -58,7 +58,9 @@ def _score(nc: str, ns: str) -> float:
 
 def _score_prefiltered(nc: str, ns: str, floor: float) -> float:
     """_score + 长度预筛:ub = 2·min/(la+lb) 同时是 containment(min/max)
-    与 difflib ratio 的上界,低于 floor 的对不必构造 SequenceMatcher。"""
+    与 difflib ratio 的上界,低于 floor 的对不必构造 SequenceMatcher。
+    注意 autojunk 保持默认 True——v0.4.0 等价性(legacy 基线)依赖它,
+    勿与 _cov_pass 的 autojunk=False「一致化」。"""
     if not nc or not ns:
         return 0.0
     la, lb = len(nc), len(ns)
@@ -86,7 +88,12 @@ def _cov_pass(nc: str, ns: str, cue_toks: frozenset,
     if nc in ns:
         contig = len(nc)
     else:
-        contig = difflib.SequenceMatcher(None, nc, ns).find_longest_match(
+        # autojunk=False: b>=200 字符时 autojunk 会把高频字符移出种子,
+        # 近逐字公共段塌缩为 ~1,独白长行(覆盖兜底主战场)大量漏救
+        # (终审实证 RD cue100: 1 vs 真实 31);_score 系保持 autojunk=True
+        # 以维持 v0.4.0 等价性,两处不对称是有意的。
+        contig = difflib.SequenceMatcher(None, nc, ns,
+                                         autojunk=False).find_longest_match(
             0, len(nc), 0, len(ns)).size
     if contig < 0.5 * len(nc):
         return None

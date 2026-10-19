@@ -261,7 +261,7 @@ def convert(movie: str, src: Path, out: Path) -> Path:
     # 说话人解析字典 = 视觉 roster ∪ meta.cast 全集(试点评审 M2:视觉交集
     # 只有 10-12 人,meta.cast 有 24/65/69;未视觉标注的说话人不再丢弃)
     meta_roster = sorted({c["character"].strip() for c in meta.get("cast", [])
-                          if c.get("character", "").strip()})
+                          if c.get("character") and c["character"].strip()})
     resolve_roster = sorted(set(movie_roster) | set(meta_roster))
     per_dlg, dlg_stats = scene_dialogues(srt_text, script_text, scenes,
                                          resolve_roster)    # stage 4
