@@ -41,8 +41,12 @@ def parse_script(text: str) -> list[ScriptLine]:
     return out
 
 
+_L2I = {"l": "i", "lt": "it"}  # Hackers 字幕 OCR:独立 "l" 应为 I、"lt" 应为 it
+
+
 def _norm(s: str) -> str:
-    return " ".join(re.sub(r"[^a-z0-9 ]", " ", s.lower()).split())
+    toks = re.sub(r"[^a-z0-9 ]", " ", s.lower()).split()
+    return " ".join(_L2I.get(t, t) for t in toks)
 
 
 def _score(nc: str, ns: str) -> float:
@@ -89,13 +93,24 @@ def align_cues(cues: list[Cue], script_lines: list[ScriptLine],
     return speakers
 
 
+_HONORIFIC = re.compile(r"^(?:mr|mrs|ms|dr)[.\s]+", re.IGNORECASE)
+
+
 def resolve_speaker(speaker: str, roster: list[str]) -> str | None:
-    """剧本角色标签 → 元数据角色名:全等(大小写不敏感)→ 名/姓词级包含。"""
+    """剧本角色标签 → 元数据角色名(四级超集):
+    全等 → 名/姓词级 →(剥 mr/mrs/ms/dr 前缀后)全等 → 词级。"""
     s = speaker.strip().lower()
-    for c in roster:
-        if c.lower() == s:
-            return c
-    for c in roster:
-        if s and s in [w for w in re.split(r"[ .]", c.lower()) if w]:
-            return c
+    stripped = _HONORIFIC.sub("", s).strip()
+    for cand in (s, stripped):
+        if not cand:
+            continue
+        for c in roster:
+            if c.lower() == cand:
+                return c
+    for cand in (s, stripped):
+        if not cand:
+            continue
+        for c in roster:
+            if cand in [w for w in re.split(r"[ .]", c.lower()) if w]:
+                return c
     return None

@@ -1,5 +1,5 @@
 from movie_kg.ingestion.movienet.align import (
-    ScriptLine, align_cues, parse_script, resolve_speaker)
+    ScriptLine, _norm, align_cues, parse_script, resolve_speaker)
 from movie_kg.ingestion.movienet.subs import parse_srt
 
 SRT = """1
@@ -138,3 +138,32 @@ def test_align_cues_global_fallback_resyncs():
                      "2\n00:00:00,300 --> 00:00:00,400\nbravo\n\n"
                      "3\n00:00:00,500 --> 00:00:00,600\nalpha\n")
     assert align_cues(cues, script, lookahead=1) == ["AA", "BB", "AA"]
+
+
+def test_norm_maps_ocr_l_to_i():
+    # Hackers 字幕 15.5% 含 OCR 的 "l"(应为 I)与 "lt"(应为 it);
+    # token 级映射,不影响含 l 的正常词(评审 M3)
+    assert _norm("l got in trouble with lt's choice") == \
+        "i got in trouble with it s choice"
+    assert _norm("trouble lullaby") == "trouble lullaby"
+
+
+def test_norm_unchanged_for_clean_text():
+    # 既有行为不变钉:_norm 被对齐全链路使用,漂移会破坏既有匹配
+    assert _norm("You can't handle the truth.") == "you can t handle the truth"
+
+
+def test_resolve_speaker_strips_honorific_as_retry():
+    # 评审 M6:剥前缀作为精确/词级失败后的重试,不降级现有路径
+    roster = ["Lauren Murphy", "Mr. White"]
+    assert resolve_speaker("MRS. MURPHY", roster) == "Lauren Murphy"  # 剥后词级
+    assert resolve_speaker("MR. WHITE", roster) == "Mr. White"        # 精确路径不变
+    assert resolve_speaker("MRS.", roster) is None                    # 剥后为空
+
+
+def test_resolve_speaker_superset_of_two_level():
+    # 旧版两级行为逐例保持(超集原则)
+    for label, expect in [("MATTY", "Matty Walker"),
+                          ("ned racine", "Ned Racine"),
+                          ("GHOST", None)]:
+        assert resolve_speaker(label, ["Matty Walker", "Ned Racine"]) == expect
