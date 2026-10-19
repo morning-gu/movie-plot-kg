@@ -56,41 +56,117 @@ def _score(nc: str, ns: str) -> float:
     return difflib.SequenceMatcher(None, nc, ns).ratio()
 
 
-def align_cues(cues: list[Cue], script_lines: list[ScriptLine],
-               threshold: float = 0.6, lookahead: int = 60) -> list[str | None]:
-    """逐 cue 在剧本中找对齐台词,返回剧本说话人(未匹配 None)。
+def _score_prefiltered(nc: str, ns: str, floor: float) -> float:
+    """_score + 长度预筛:ub = 2·min/(la+lb) 同时是 containment(min/max)
+    与 difflib ratio 的上界,低于 floor 的对不必构造 SequenceMatcher。"""
+    if not nc or not ns:
+        return 0.0
+    la, lb = len(nc), len(ns)
+    if 2 * min(la, lb) / (la + lb) < floor:
+        return 0.0
+    if nc in ns or ns in nc:
+        return min(la, lb) / max(la, lb)
+    sm = difflib.SequenceMatcher(None, nc, ns)
+    if sm.real_quick_ratio() < floor or sm.quick_ratio() < floor:
+        return 0.0
+    return sm.ratio()
 
-    单调快路径:窗口 [j, j+lookahead) 内取最高分;窗口未命中时全局回退——
-    影片与剧本的顺序错位(非线性叙事/删改段落)会让单调指针失步,
-    全局找最优后重同步指针。"""
+
+def _cov_pass(nc: str, ns: str, cue_toks: frozenset,
+              line_toks: frozenset) -> tuple[float, int] | None:
+    """覆盖兜底合格判定:cue/行去重 token ≥4、cue token 召回 ≥0.85、
+    最长公共连续段 ≥ cue 一半(散落 token 不算——拼接长行上的叙事撞车,
+    试点评审 M1c)。返回 (recall, contig) 供候选排序;不合格 None。
+    不过长度预筛:独白包含对的长度比可低至 0.02,预筛会误杀(评审 B2)。"""
+    if len(cue_toks) < 4 or len(line_toks) < 4:
+        return None
+    recall = len(cue_toks & line_toks) / len(cue_toks)
+    if recall < 0.85:
+        return None
+    if nc in ns:
+        contig = len(nc)
+    else:
+        contig = difflib.SequenceMatcher(None, nc, ns).find_longest_match(
+            0, len(nc), 0, len(ns)).size
+    if contig < 0.5 * len(nc):
+        return None
+    return recall, contig
+
+
+def align_detailed(cues: list[Cue], script_lines: list[ScriptLine],
+                   threshold: float = 0.6,
+                   lookahead: int = 60) -> tuple[list[str | None],
+                                                 list[int | None],
+                                                 list[float | None]]:
+    """逐 cue 对齐,返回 (剧本说话人, 命中行 idx, 命中分;未匹配 None)。
+
+    规则(DESIGN §3.4 stage 4):
+    - base:窗口 [j, j+lookahead) 取最高分(平分取最早);兄弟候选 j-1
+      须严格更优才取代窗口胜者(平分窗口优先,保单调语义);均无胜者时
+      全局回退(窗口外全剧本取最大)——影片非线性叙事/删改段落失步重同步。
+    - 短门:cue 去重 token < 3 时有效阈值抬至 0.6(短串 difflib 无判别力)。
+    - 覆盖兜底:base 全无胜者时,全剧本找近逐字包含行,取
+      (recall, 连续段长, -idx) 最大;命中分记 recall。
+    """
+    norm_lines = [_norm(l.text) for l in script_lines]
+    line_toks = [frozenset(nl.split()) for nl in norm_lines]
     speakers: list[str | None] = [None] * len(cues)
+    idxs: list[int | None] = [None] * len(cues)
+    scores: list[float | None] = [None] * len(cues)
     j = 0
     for ci, cue in enumerate(cues):
         nc = _norm(cue.text)
         if not nc:
             continue
+        cue_toks = frozenset(nc.split())
+        eff_thr = 0.6 if len(cue_toks) < 3 else threshold
+        w_hi = min(j + lookahead, len(script_lines))
         best: tuple[float, int] | None = None
-        for jj in range(j, min(j + lookahead, len(script_lines))):
-            ns = _norm(script_lines[jj].text)
+        for jj in range(j, w_hi):                       # base: 窗口
+            ns = norm_lines[jj]
             if not ns:
                 continue
-            score = _score(nc, ns)
-            if score >= threshold and (best is None or score > best[0]):
-                best = (score, jj)
-        if best is None:  # 全局回退:失步后全剧本找最优
+            s = _score_prefiltered(nc, ns, eff_thr)
+            if s >= eff_thr and (best is None or s > best[0]):
+                best = (s, jj)
+        if j > 0 and norm_lines[j - 1]:                 # 兄弟候选:严格更优
+            s = _score_prefiltered(nc, norm_lines[j - 1], eff_thr)
+            if s >= eff_thr and (best is None or s > best[0]):
+                best = (s, j - 1)
+        if best is None:                                # base: 全局回退
             for jj in range(len(script_lines)):
-                if j <= jj < j + lookahead:
-                    continue  # 窗口已扫过
-                ns = _norm(script_lines[jj].text)
+                if j <= jj < w_hi:
+                    continue
+                ns = norm_lines[jj]
                 if not ns:
                     continue
-                score = _score(nc, ns)
-                if score >= threshold and (best is None or score > best[0]):
-                    best = (score, jj)
+                s = _score_prefiltered(nc, ns, eff_thr)
+                if s >= eff_thr and (best is None or s > best[0]):
+                    best = (s, jj)
+        if best is None:                                # 覆盖兜底
+            cov_best: tuple[float, int, int] | None = None
+            for jj, ns in enumerate(norm_lines):
+                if not ns:
+                    continue
+                r = _cov_pass(nc, ns, cue_toks, line_toks[jj])
+                if r is not None:
+                    key = (r[0], r[1], -jj)
+                    if cov_best is None or key > cov_best:
+                        cov_best = key
+            if cov_best is not None:
+                best = (cov_best[0], -cov_best[2])
         if best is not None:
             speakers[ci] = script_lines[best[1]].speaker
+            idxs[ci] = best[1]
+            scores[ci] = best[0]
             j = best[1] + 1
-    return speakers
+    return speakers, idxs, scores
+
+
+def align_cues(cues: list[Cue], script_lines: list[ScriptLine],
+               threshold: float = 0.6, lookahead: int = 60) -> list[str | None]:
+    """align_detailed 的说话人视图(convert 调用面)。"""
+    return align_detailed(cues, script_lines, threshold, lookahead)[0]
 
 
 _HONORIFIC = re.compile(r"^(?:mr|mrs|ms|dr)[.\s]+", re.IGNORECASE)

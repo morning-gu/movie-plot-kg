@@ -1,3 +1,6 @@
+import difflib
+import random
+
 from movie_kg.ingestion.movienet.align import (
     ScriptLine, _norm, align_cues, parse_script, resolve_speaker)
 from movie_kg.ingestion.movienet.subs import parse_srt
@@ -167,3 +170,191 @@ def test_resolve_speaker_superset_of_two_level():
                           ("ned racine", "Ned Racine"),
                           ("GHOST", None)]:
         assert resolve_speaker(label, ["Matty Walker", "Ned Racine"]) == expect
+
+
+def test_align_cues_rescues_verbatim_piece_of_long_line():
+    # 独白病态(评审 B2/M4 探针实证 'I'm gonna die.'):containment 分
+    # 13/67≈0.19、长度比 0.325 < 0.6 → base 与预筛都到不了;
+    # 覆盖兜底(recall=1.0、连续段=全长)救回,且预筛不得门控它
+    script = parse_script(
+        "                    MR. ORANGE\n"
+        "          All this blood is scaring the shit outta me. "
+        "I'm gonna die, I know it.\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\nI'm gonna die.\n")
+    assert align_cues(cues, script) == ["MR. ORANGE"]
+
+
+def test_coverage_rejects_scattered_tokens():
+    # Elois 反例(已验剧本原文):cue 的 token 全部在场但乱序散落
+    # (recall=1.0、difflib≈0.37<0.6)→ 最长连续段 18/42 < 50% → 拒绑
+    # (评审 M1c/F1;fixture 必须乱序——顺序散落时 difflib 子序列比可 ≥0.6)
+    line = ("So nobody knows for sure what really happened back then. "
+            "One night, anyway, she meets Elois, who waits and "
+            "plays it real cool.")
+    script = parse_script(f"                    EDDIE\n          {line}\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\n"
+                     "So anyway, one night she plays it real cool.\n")
+    assert align_cues(cues, script) == [None]
+
+
+def test_sibling_pieces_reuse_last_matched_line():
+    # 一行拆两 cue(兄弟结构,一行 2.4 cue 是常态):首片段覆盖兜底命中后,
+    # 次片段经兄弟候选(j-1)复用同一行(评审 m4 根因)
+    script = parse_script(
+        "                    BOB\n"
+        "          alpha bravo charlie delta echo foxtrot golf hotel\n\n"
+        "                    ALICE\n          something entirely different here\n")
+    cues = parse_srt(
+        "1\n00:00:00,100 --> 00:00:00,200\nalpha bravo charlie delta\n\n"
+        "2\n00:00:00,300 --> 00:00:00,400\necho foxtrot golf hotel\n")
+    assert align_cues(cues, script) == ["BOB", "BOB"]
+
+
+def test_last_line_candidate_loses_ties_to_window():
+    # 兄弟候选平分不抢窗口行:单调语义不变
+    script = parse_script(
+        "                    BOB\n          hello there\n\n"
+        "                    ALICE\n          hello there\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\nhello there\n\n"
+                     "2\n00:00:00,300 --> 00:00:00,400\nhello there\n")
+    assert align_cues(cues, script) == ["BOB", "ALICE"]
+
+
+def test_last_line_never_beats_higher_scoring_window_match():
+    # 兄弟候选严格更优才生效:B1 翻转例的梦台词——窗口内 1.0 真身行
+    # 不被低分兄弟行改绑
+    script = parse_script(
+        "                    PINK\n          wake up and apologize now\n\n"
+        "                    MR. WHITE\n"
+        "          you shoot me in a dream, you better wake up and apologize\n")
+    cues = parse_srt(
+        "1\n00:00:00,100 --> 00:00:00,200\nwake up and apologize now\n\n"
+        "2\n00:00:00,300 --> 00:00:00,400\n"
+        "You shoot me in a dream, you better wake up and apologize.\n")
+    assert align_cues(cues, script) == ["PINK", "MR. WHITE"]
+
+
+def test_short_cue_guard_uses_dedup_token_count():
+    # 短门口径 = 去重 token:'Yak, yak, yak.' 去重后 1 词 → 门槛抬至 0.6,
+    # 阈值降到 0.4 也不放行(阶段 2 的保护,先钉口径)
+    script = parse_script("                    BOB\n          yak yak yak indeed ok fine\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\nYak, yak, yak.\n")
+    assert align_cues(cues, script, threshold=0.4) == [None]
+    # 对照:阈值 0.4 下 3+ 去重 token 的 cue 正常放行(短门只护短 cue)
+    cues2 = parse_srt("1\n00:00:00,100 --> 00:00:00,200\n"
+                      "yak yak yak indeed and more words here\n")
+    script2 = parse_script(
+        "                    BOB\n          yak yak yak indeed and more words here\n")
+    assert align_cues(cues2, script2, threshold=0.4) == ["BOB"]
+
+
+def test_score_prefiltered_equivalence():
+    # 预筛只裁必然低于 floor 的对:阈值判定与数值完全等价(300 随机组)
+    from movie_kg.ingestion.movienet.align import (_score,
+                                                    _score_prefiltered)
+    rng = random.Random(7)
+    words = ["alpha", "bravo", "charlie", "delta", "x", "y", "l", "it"]
+    for _ in range(300):
+        nc = " ".join(rng.choice(words) for _ in range(rng.randint(1, 8)))
+        ns = " ".join(rng.choice(words) for _ in range(rng.randint(1, 12)))
+        for floor in (0.4, 0.45, 0.6):
+            fast = _score_prefiltered(nc, ns, floor)
+            slow = _score(nc, ns)
+            assert (fast >= floor) == (slow >= floor)
+            if fast >= floor:
+                assert abs(fast - slow) < 1e-12
+
+
+def _naive_align(cues, script_lines, threshold, lookahead=60):
+    """算法规格的朴素转写(测试专用):无预筛、无缓存,逐对现算 _norm/_score。"""
+    import movie_kg.ingestion.movienet.align as A
+    n = len(script_lines)
+    speakers = [None] * len(cues)
+    idxs = [None] * len(cues)
+    scores = [None] * len(cues)
+    j = 0
+    for ci, cue in enumerate(cues):
+        nc = A._norm(cue.text)
+        if not nc:
+            continue
+        cue_toks = set(nc.split())
+        eff = 0.6 if len(cue_toks) < 3 else threshold
+        window = range(j, min(j + lookahead, n))
+        best = None
+        for jj in window:
+            ns = A._norm(script_lines[jj].text)
+            if not ns:
+                continue
+            s = A._score(nc, ns)
+            if s >= eff and (best is None or s > best[0]):
+                best = (s, jj)
+        if j > 0:  # 兄弟候选 j-1:严格更优才取代窗口胜者
+            ns = A._norm(script_lines[j - 1].text)
+            if ns:
+                s = A._score(nc, ns)
+                if s >= eff and (best is None or s > best[0]):
+                    best = (s, j - 1)
+        if best is None:  # 全局回退:窗口外全剧本取最大
+            for jj in range(n):
+                if jj in window:
+                    continue
+                ns = A._norm(script_lines[jj].text)
+                if not ns:
+                    continue
+                s = A._score(nc, ns)
+                if s >= eff and (best is None or s > best[0]):
+                    best = (s, jj)
+        if best is None:  # 覆盖兜底(base 全无胜者;不过预筛)
+            cov = None
+            for jj in range(n):
+                ns = A._norm(script_lines[jj].text)
+                if not ns:
+                    continue
+                lt = set(ns.split())
+                if len(cue_toks) < 4 or len(lt) < 4:
+                    continue
+                recall = len(cue_toks & lt) / len(cue_toks)
+                if recall < 0.85:
+                    continue
+                if nc in ns:
+                    contig = len(nc)
+                else:
+                    contig = difflib.SequenceMatcher(
+                        None, nc, ns).find_longest_match(
+                        0, len(nc), 0, len(ns)).size
+                if contig < 0.5 * len(nc):
+                    continue
+                key = (recall, contig, -jj)
+                if cov is None or key > cov:
+                    cov = key
+            if cov is not None:
+                best = (cov[0], -cov[2])
+        if best is not None:
+            speakers[ci] = script_lines[best[1]].speaker
+            idxs[ci] = best[1]
+            scores[ci] = best[0]
+            j = best[1] + 1
+    return speakers, idxs, scores
+
+
+def test_align_detailed_matches_naive_reference():
+    # 朴素参考与生产实现产出一致(评审 M5:预筛/缓存不得改变语义)
+    from movie_kg.ingestion.movienet.align import align_detailed
+    rng = random.Random(11)
+    speakers_pool = ["BOB", "ALICE", "CURLY"]
+    words = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot",
+             "yak", "hello", "there", "now"]
+    for _ in range(300):
+        lines = [ScriptLine(
+            speaker=rng.choice(speakers_pool),
+            text=" ".join(rng.choice(words) for _ in range(rng.randint(2, 9))))
+            for _ in range(rng.randint(2, 10))]
+        srt = "\n\n".join(
+            f"{i + 1}\n00:00:0{i % 10},{100} --> 00:00:0{i % 10},{200}\n"
+            + " ".join(rng.choice(words) for _ in range(rng.randint(1, 6)))
+            for i in range(rng.randint(1, 8))) + "\n"
+        cues = parse_srt(srt)
+        thr = rng.choice([0.4, 0.45, 0.6])
+        look = rng.choice([1, 3, 60])
+        assert align_detailed(cues, lines, threshold=thr, lookahead=look) \
+            == _naive_align(cues, lines, thr, look)
