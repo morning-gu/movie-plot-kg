@@ -219,7 +219,7 @@ kg movienet convert --movie tt0113243 --src data/raw/movienet/ --out data/movies
 | 1 | fps 标定 | story 条目 Δframe/Δduration 取中位;离散度 >0.5% 或无 story → 报错退出 |
 | 2 | 场景窗口 | scene[].frame / fps → HH:MM:SS;按帧序重编号 scene_001..N;亚秒场景(整秒截断后起止同秒)并入相邻场景并计数进报告 |
 | 3 | 角色名单 | cast 实例 pid(IMDb nm-id)→ meta.cast 角色名;shot_idx ∈ 场景 shot 区间汇总;非主演("others")剔除 |
-| 4 | 台词 | SRT(影片绝对时间,毫秒截断)按场景窗口切片 → 剧本模糊对齐(difflib 相似度 ≥0.6,试点校准)→ 说话人归 roster(全等 → 名/姓包含两级);剧本未对上或说话人不在 roster → 丢弃,分别计数 |
+| 4 | 台词 | SRT(影片绝对时间,毫秒截断)按场景窗口切片 → 剧本对齐(difflib 相似度 ≥0.6 + 长度预筛加速;base 无胜者时覆盖兜底:cue/行去重 token ≥4、召回 ≥0.85、最长公共连续段 ≥ cue 一半;兄弟候选(上一命中行,严格更优才胜出);短 cue(<3 去重 token)门槛抬至 0.6;token 级 l→i/lt→it OCR 归一)→ 说话人归解析字典(视觉 roster ∪ meta.cast;全等 → 名/姓词级 → 剥 mr/mrs/ms/dr 前缀重试);未对上或不在解析字典 → 丢弃,分别计数;`kg movienet align-audit` 提供新旧对照审计 |
 | 5 | 地点 | place_tag 多值 join(" / ");未标注 → "" |
 | 6 | 描述 | story 段落赋给 shot 区间重叠最大的场景(粗粒度先验) |
 | 7 | 关键帧 | 关键帧 tar 内 shot_XXXX_img_Y.jpg → `frames/s{shot}i{img}.jpg`;ts = story 段内镜头线性插值(无段覆盖时按场景窗口位置),**插值结果 clamp 到场景窗口内**(近似值必须满足 §3.3 窗口校验) |
@@ -763,7 +763,8 @@ pytest>=8.0            # dev
 | v0.2.1 | 2026-10-13 | §7.2 勘误:检索规划示例参数键 event_hint→id(与模板参数契约一致) |
 | v0.3.0 | 2026-10-13 | 输入简化与标注增富:SRT 不再作为输入(台词完整转写内嵌元数据 dialogues),输入 3 类减为 2 类;元数据新增 description、shots(镜头)与结构化 keyframes(frame_id/ts/frame_type/description),keyframes 由纯时间戳数组升级,props 转为抽取先验;时间戳统一为影片绝对时间(修正 keyframes 相对/绝对不一致的隐性缺陷);shot_id/frame_id 由输入保证全局唯一;A1 全面 grounding(台词含情绪/动作、场景描述/道具/镜头时间轴进先验,关键帧图文成对交错);A1 输出与 Event 节点新增 evidence_frame_ids 证据帧引用(无效引用剔除并告警);Scene 节点新增 description(取代未实现的生成式 summary);输入校验升级(dialogue/keyframe/shot 窗口、shot 重叠、跨场景 ID 查重、片段时长 ±2s) |
 | v0.4.0 | 2026-10-14 | 视频输入移除 + MovieNet 免片源接入:输入 1 由场景视频片段(重编码切割、±2s 时长校验)改为场景关键帧目录(`frames/{frame_id}.jpg`);帧采样改为帧选择(超限均匀截断,删除均匀补帧与绝对→相对偏移换算),移除 PyAV 依赖;元数据 schema 新增顶层 keyframes(无镜头归属的帧,flat_keyframes 双源拼接,v0.3.0 标注兼容);输入校验以"帧文件存在且非空"替代视频校验;新增 MovieNet 离线转换器 `kg movienet fetch/convert`(§3.4:fps 由 story 帧率对标定,SRT 台词经剧本模糊对齐归属说话人、两级未匹配丢弃并计数,关键帧 ts 为 story 段插值近似锚定,convert_report 质量报告);首批试点 3 部(Hackers / The Rock / Reservoir Dogs) |
+| v0.4.1 | 2026-10-19 | 台词对齐调优(试点评估驱动,阈值保持 0.6):剧本行预归一化 + 长度预筛(单片对齐 >10min → 秒级);base 无胜者时覆盖兜底(去重 token ≥4、召回 ≥0.85、最长公共连续段 ≥ cue 一半,救回被切分/独白包含的逐字 cue);兄弟候选(上一命中行参与竞争,严格更优才胜出,一行多 cue 复用);短 cue(<3 去重 token)门槛抬至 0.6;`_norm` token 级 l→i/lt→it 归一(Hackers 字幕 OCR);说话人解析字典并入 meta.cast 全集(视觉交集 10 人 → cast 全集)并增剥 mr/mrs/ms/dr 前缀重试;新增 `kg movienet align-audit` 新旧对照审计(翻转统计 + 分层抽样);试点台词保留率 34%/44%/18% 的主要损失(剧本对齐 61%/37%/72% 未匹配)由此分阶段改善 |
 
 ---
 
-*文档版本: v0.4.0 | 最后更新: 2026-10-14*
+*文档版本: v0.4.1 | 最后更新: 2026-10-19*

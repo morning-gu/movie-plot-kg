@@ -258,8 +258,13 @@ def convert(movie: str, src: Path, out: Path) -> Path:
     scenes, merged_count = scene_windows(ann, fps)            # stage 2
     cast_rosters = scene_characters(ann, meta, scenes)         # stage 3
     movie_roster = sorted({n for r in cast_rosters for n in r})
+    # 说话人解析字典 = 视觉 roster ∪ meta.cast 全集(试点评审 M2:视觉交集
+    # 只有 10-12 人,meta.cast 有 24/65/69;未视觉标注的说话人不再丢弃)
+    meta_roster = sorted({c["character"].strip() for c in meta.get("cast", [])
+                          if c.get("character", "").strip()})
+    resolve_roster = sorted(set(movie_roster) | set(meta_roster))
     per_dlg, dlg_stats = scene_dialogues(srt_text, script_text, scenes,
-                                         movie_roster)         # stage 4
+                                         resolve_roster)    # stage 4
     places = [scene_place(sc) for sc in scenes]                # stage 5
     descs = scene_descriptions(ann, scenes)                    # stage 6
     kf_lists = keyframe_entries(ann, scenes)                   # stage 7

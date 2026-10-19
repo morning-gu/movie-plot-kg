@@ -221,3 +221,56 @@ def test_boundary_shot_assigned_to_first_scene_only():
     assert "s0001i0" in ids1 and "s0001i0" not in ids2
     assert "s0002i0" in ids2
     assert len(ids1) == 6 and len(ids2) == 3
+
+
+SRT_M = """1
+00:00:00,500 --> 00:00:01,200
+You can't handle the truth.
+
+2
+00:00:03,500 --> 00:00:03,900
+The money is gone.
+"""
+
+SCRIPT_M = """EXT. OFFICE - DAY
+
+                    MATTY
+          You can't handle the truth.
+
+                    SALLY
+          The money is gone.
+"""
+
+
+def test_convert_resolves_speaker_from_meta_cast_beyond_visual_roster(tmp_path):
+    # 评审 M2:roster 10 人是视觉标注交集的产物;meta.cast(24/65/69)才是
+    # cast 全集。视觉未标注的说话人(SALLY)经 meta.cast 解析保留,
+    # 并进入 scene.characters(character eval 的 gold 随之自动跟进)
+    ann = _ann()
+    ann["cast"] = [{"id": "x1", "pid": "nm1", "shot_idx": 0, "img_idx": 0}]
+    # 场景2 视觉 roster 自然为空(cast 实例只在 shot 0),shot 区间沿用 _ann
+    meta = {"imdb_id": "tt0000001", "title": "Mini (2020)",
+            "cast": [{"id": "nm1", "name": "Actor One", "character": "Matty Walker"},
+                     {"id": "nm3", "name": "Actor Three", "character": "Sally"}]}
+    src = tmp_path / "src"
+    for sub in ("annotation", "subtitle", "script", "meta", "keyframes"):
+        (src / sub).mkdir(parents=True, exist_ok=True)
+    (src / "annotation" / "tt0000001.json").write_text(json.dumps(ann), encoding="utf-8")
+    (src / "meta" / "tt0000001.json").write_text(json.dumps(meta), encoding="utf-8")
+    (src / "subtitle" / "tt0000001.srt").write_text(SRT_M, encoding="utf-8")
+    (src / "script" / "tt0000001.script").write_text(SCRIPT_M, encoding="utf-8")
+    with tarfile.open(src / "keyframes" / "tt0000001.tar", "w") as tf:
+        for shot in range(4):     # 场景引用 shot 0-3,tar 必须全覆盖
+            for img in range(3):
+                data = b"\xff\xd8\xff\xd9"
+                ti = tarfile.TarInfo(f"tt0000001/shot_{shot:04d}_img_{img}.jpg")
+                ti.size = len(data)
+                tf.addfile(ti, io.BytesIO(data))
+    out = tmp_path / "out"
+    convert("tt0000001", src, out)
+    movie = load_movie(out)
+    s2 = movie.scenes[1]
+    assert [d.char for d in s2.meta.dialogues] == ["Sally"]      # 不再 speaker_not_in_roster
+    assert "Sally" in [c.name for c in s2.meta.characters]       # 说话人并入场景名单(gold 跟进)
+    report = (out / "convert_report.md").read_text(encoding="utf-8")
+    assert "说话人不在 roster 0" in report
