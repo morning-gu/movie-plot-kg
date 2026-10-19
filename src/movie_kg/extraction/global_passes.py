@@ -143,18 +143,33 @@ def pass_b1_order_vts(llm, vts: list[VtInfo]) -> list[OrderedVt]:
 
 
 def pass_b2_merge_aliases(llm, characters: list[NameContext],
-                          locations: list[NameContext]) -> AliasPlan:
+                          locations: list[NameContext],
+                          batch_size: int = 25) -> AliasPlan:
+    """B2 分批归并:meta.cast 并入后角色名单可至 65 人,全量输出的归并 JSON
+    会超出 max_tokens 截断(Hackers 试点实证:949 行截断),按批调用拼接;
+    先按名排序使同源变体尽量落进同批。批间不归并(与 B3 分批同款局限)。"""
     def fmt(items):
         return "\n".join(f"- {i.name}(别名: {', '.join(i.aliases) or '无'}; {i.context})"
                          for i in items) or "(无)"
-    system = render(load_prompt("alias_merge"),
-                    CHARACTERS=fmt(characters), LOCATIONS=fmt(locations))
-    raw = llm.chat_json(model=_text_model(llm),
-                        messages=[{"role": "system", "content": system},
-                                  {"role": "user", "content": "请输出归并 JSON。"}],
-                        schema=B2Output)
-    plan = AliasPlan(characters=[MergeGroup(**g.model_dump()) for g in raw.characters],
-                     locations=[MergeGroup(**g.model_dump()) for g in raw.locations])
+
+    chars = sorted(characters, key=lambda c: c.name.lower())
+    cb = [chars[i:i + batch_size] for i in range(0, len(chars), batch_size)]
+    lb = [locations[i:i + batch_size] for i in range(0, len(locations), batch_size)]
+    valid = {c.name for c in chars} | {l.name for l in locations}
+    raw_chars: list[MergeGroupRaw] = []
+    raw_locs: list[MergeGroupRaw] = []
+    for k in range(max(len(cb), len(lb), 1)):   # 至少一批(保持空输入也调用)
+        system = render(load_prompt("alias_merge"),
+                        CHARACTERS=fmt(cb[k] if k < len(cb) else []),
+                        LOCATIONS=fmt(lb[k] if k < len(lb) else []))
+        raw = llm.chat_json(model=_text_model(llm),
+                            messages=[{"role": "system", "content": system},
+                                      {"role": "user", "content": "请输出归并 JSON。"}],
+                            schema=B2Output)
+        raw_chars += [g for g in raw.characters if g.canonical in valid]
+        raw_locs += [g for g in raw.locations if g.canonical in valid]
+    plan = AliasPlan(characters=[MergeGroup(**g.model_dump()) for g in raw_chars],
+                     locations=[MergeGroup(**g.model_dump()) for g in raw_locs])
     for nc in characters:
         if nc.name not in {g.canonical for g in plan.characters} and not any(
                 nc.name in g.aliases for g in plan.characters):

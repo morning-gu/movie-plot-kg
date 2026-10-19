@@ -56,6 +56,27 @@ def test_b2_plan_resolve(tmp_path):
     assert plan.resolve("location", "警局办公室") == "警局办公室"
 
 
+def test_b2_batches_large_character_lists():
+    # meta.cast 并入后角色可达 65 人,单次输出的归并 JSON 超 max_tokens 截断
+    # (Hackers 试点实证:949 行截断):分批调用拼接,未归并者透传
+    from movie_kg.extraction.global_passes import NameContext
+    chars = [NameContext(name=f"角色{i:02d}") for i in range(30)]
+    locs = [NameContext(name="码头")]
+    llm = ScriptedLLM(
+        {"characters": [{"canonical": "角色00", "aliases": ["零号"],
+                         "description": "d"}], "locations": []},
+        {"characters": [{"canonical": "角色29", "aliases": ["廿九"],
+                         "description": "d"}], "locations": []},
+    )
+    plan = pass_b2_merge_aliases(llm, chars, locs, batch_size=15)
+    assert plan.resolve("character", "零号") == "角色00"
+    assert plan.resolve("character", "廿九") == "角色29"
+    assert plan.resolve("character", "角色15") == "角色15"   # 未归并者透传
+    assert len(llm.calls) == 2
+    assert "角色00" in llm.calls[0][1][0]["content"]
+    assert "角色29" in llm.calls[1][1][0]["content"]
+
+
 def test_build_causal_pairs_intra_and_boundary(tmp_path):
     movie, exts = _setup(tmp_path)
     pairs = build_causal_pairs(movie, exts)
