@@ -248,6 +248,21 @@ def test_short_cue_guard_uses_dedup_token_count():
     assert align_cues(cues2, script2, threshold=0.4) == ["BOB"]
 
 
+def test_base_path_rejects_zero_token_overlap():
+    # atropine 案例(终审实证):'The atropine, Isherwood.' 曾凭纯字符相似
+    # (difflib ≈0.68 但 token 零交集)绑到无关行——base 路径须有 token
+    # 交集下限:零交集一律拒绝,分数再高不做数(阶段 2,设计 v2 批准项)
+    script = parse_script(
+        "                    DR. LING\n          a tree pine shore hood\n")
+    cues = parse_srt("1\n00:00:00,100 --> 00:00:00,200\n"
+                     "The atropine, Isherwood.\n")
+    assert align_cues(cues, script, threshold=0.4) == [None]
+    # 对照:有 token 交集的正常对不受影响
+    script2 = parse_script(
+        "                    DR. LING\n          the atropine isherwood now\n")
+    assert align_cues(cues, script2, threshold=0.4) == ["DR. LING"]
+
+
 def test_coverage_contiguity_survives_autojunk_on_long_lines():
     # difflib autojunk(b>=200 字符时出现 >n//100 次的字符被移出 b2j)会废掉
     # find_longest_match 的种子,近逐字公共段塌缩为 1 → 覆盖兜底在独白长行上
@@ -297,28 +312,27 @@ def _naive_align(cues, script_lines, threshold, lookahead=60):
         cue_toks = set(nc.split())
         eff = 0.6 if len(cue_toks) < 3 else threshold
         window = range(j, min(j + lookahead, n))
+
+        def base_score(jj):
+            ns = A._norm(script_lines[jj].text)
+            if not ns or not (cue_toks & set(ns.split())):
+                return 0.0      # token 零交集下限(与生产实现锁步)
+            return A._score(nc, ns)
+
         best = None
         for jj in window:
-            ns = A._norm(script_lines[jj].text)
-            if not ns:
-                continue
-            s = A._score(nc, ns)
+            s = base_score(jj)
             if s >= eff and (best is None or s > best[0]):
                 best = (s, jj)
         if j > 0:  # 兄弟候选 j-1:严格更优才取代窗口胜者
-            ns = A._norm(script_lines[j - 1].text)
-            if ns:
-                s = A._score(nc, ns)
-                if s >= eff and (best is None or s > best[0]):
-                    best = (s, j - 1)
+            s = base_score(j - 1)
+            if s >= eff and (best is None or s > best[0]):
+                best = (s, j - 1)
         if best is None:  # 全局回退:窗口外全剧本取最大
             for jj in range(n):
                 if jj in window:
                     continue
-                ns = A._norm(script_lines[jj].text)
-                if not ns:
-                    continue
-                s = A._score(nc, ns)
+                s = base_score(jj)
                 if s >= eff and (best is None or s > best[0]):
                     best = (s, jj)
         if best is None:  # 覆盖兜底(base 全无胜者;不过预筛)

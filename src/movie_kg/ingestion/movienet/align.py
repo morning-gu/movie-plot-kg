@@ -128,16 +128,24 @@ def align_detailed(cues: list[Cue], script_lines: list[ScriptLine],
         cue_toks = frozenset(nc.split())
         eff_thr = 0.6 if len(cue_toks) < 3 else threshold
         w_hi = min(j + lookahead, len(script_lines))
+
+        def _base_score(jj: int) -> float:
+            # token 交集下限:零交集的纯字符相似(如 atropine 案例,
+            # difflib 可达 0.68)一律拒绝——分数再高不做数(阶段 2)
+            if not (cue_toks & line_toks[jj]):
+                return 0.0
+            return _score_prefiltered(nc, norm_lines[jj], eff_thr)
+
         best: tuple[float, int] | None = None
         for jj in range(j, w_hi):                       # base: 窗口
             ns = norm_lines[jj]
             if not ns:
                 continue
-            s = _score_prefiltered(nc, ns, eff_thr)
+            s = _base_score(jj)
             if s >= eff_thr and (best is None or s > best[0]):
                 best = (s, jj)
         if j > 0 and norm_lines[j - 1]:                 # 兄弟候选:严格更优
-            s = _score_prefiltered(nc, norm_lines[j - 1], eff_thr)
+            s = _base_score(j - 1)
             if s >= eff_thr and (best is None or s > best[0]):
                 best = (s, j - 1)
         if best is None:                                # base: 全局回退
@@ -147,7 +155,7 @@ def align_detailed(cues: list[Cue], script_lines: list[ScriptLine],
                 ns = norm_lines[jj]
                 if not ns:
                     continue
-                s = _score_prefiltered(nc, ns, eff_thr)
+                s = _base_score(jj)
                 if s >= eff_thr and (best is None or s > best[0]):
                     best = (s, jj)
         if best is None:                                # 覆盖兜底
