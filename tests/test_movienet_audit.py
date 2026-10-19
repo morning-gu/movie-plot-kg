@@ -66,6 +66,26 @@ def test_diff_alignment_legacy_roster_keeps_old_semantics():
     assert d["kept_legacy"] == 0 and d["kept_new"] == 2
 
 
+def test_diff_alignment_legacy_resolution_uses_v040_semantics():
+    # legacy 基线不得被新四级解析污染:旧实现下 MRS. MURPHY 不可解析
+    # (试点实证:Hackers 旧 convert_report kept=489,初版审计用新解析
+    #  得 512,差值恰为 MRS. MURPHY 的 23 条 cue)
+    srt = ("1\n00:00:00,500 --> 00:00:01,200\n"
+           "Oh my God! He found the pool.\n")
+    script = parse_script(
+        "                    MRS. MURPHY\n"
+        "          Oh my God! He found the pool.\n")
+    cues = parse_srt(srt)
+    legacy = align_legacy(cues, script)
+    new = align_detailed(cues, script)
+    roster = ["Lauren Murphy"]
+    d = diff_alignment(cues, legacy, new, roster, legacy_roster=roster)
+    # 双方都匹配 MRS. MURPHY;旧解析(无剥前缀)不可解析 → kept_legacy 0,
+    # 新解析(剥前缀词级)可解析 → kept_new 1
+    assert d["both_matched"] == 1
+    assert d["kept_legacy"] == 0 and d["kept_new"] == 1
+
+
 def test_stratified_sample_rows_and_flags():
     cues = parse_srt(SRT)
     lines = parse_script(SCRIPT)

@@ -24,6 +24,19 @@ def _norm_v040(s: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9 ]", " ", s.lower()).split())
 
 
+def _resolve_speaker_v040(speaker: str, roster: list[str]) -> str | None:
+    """v0.4.0 两级解析(无荣誉剥前缀):legacy 统计的解析侧同样必须是旧语义
+    (试点实证:新四级解析会把 MRS. MURPHY 解进旧 roster,kept_legacy 虚高 23)。"""
+    s = speaker.strip().lower()
+    for c in roster:
+        if c.lower() == s:
+            return c
+    for c in roster:
+        if s and s in [w for w in re.split(r"[ .]", c.lower()) if w]:
+            return c
+    return None
+
+
 def align_legacy(cues, script_lines, threshold: float = 0.6,
                  lookahead: int = 60) -> tuple[list, list]:
     """v0.4.0 对齐语义:单调窗口 + 全局回退,无兄弟候选/短门/覆盖兜底。
@@ -83,13 +96,13 @@ def diff_alignment(cues, legacy, new, resolve_roster, legacy_roster=None,
             d["both_matched"] += 1
             if old != cur:
                 d["flips"] += 1
-                if resolve_speaker(old, old_roster) is not None:
+                if _resolve_speaker_v040(old, old_roster) is not None:
                     d["flips_old_resolvable"] += 1
         elif cur is not None:
             d["new_only"] += 1
         elif old is not None:
             d["legacy_only"] += 1
-        if old is not None and resolve_speaker(old, old_roster) is not None:
+        if old is not None and _resolve_speaker_v040(old, old_roster) is not None:
             d["kept_legacy"] += 1
         if cur is not None and resolve_speaker(cur, resolve_roster) is not None:
             d["kept_new"] += 1
