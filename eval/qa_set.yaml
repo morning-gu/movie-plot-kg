@@ -14,18 +14,18 @@ items:
   - id: rd_f3
     question: Mr. White 向 Mr. Orange 泄露了什么个人信息?
     gold_answer: Mr. White 告诉了 Mr. Orange 自己的名字(姓氏)和出身地。
-    gold_entity_ids: [evt_tt0105236_008_04]
+    gold_entity_ids: [evt_tt0105236_008_03]
     intent: factual
   - id: rd_f4
     question: 仓库里 Mr. White 和 Mr. Pink 怀疑组织里存在什么问题?
     gold_answer: 他们怀疑团伙里出了内鬼(告密者)。
-    gold_entity_ids: [evt_tt0105236_008_07]
+    gold_entity_ids: [evt_tt0105236_020_01]
     intent: factual
   # --- causal ---
   - id: rd_c1
     question: 是什么原因导致 Mr. White 和 Mr. Blonde 发生对峙?
     gold_answer: Mr. Blonde 在抢劫中疯狂开枪制造了麻烦,Mr. White 因此指责并与其对峙。
-    gold_entity_ids: [evt_tt0105236_008_08]
+    gold_entity_ids: [evt_tt0105236_008_06]
     intent: causal
   - id: rd_c2
     question: 餐厅里关于小费的争论是怎么结束的?
@@ -35,7 +35,7 @@ items:
   - id: rd_c3
     question: 为什么 Mr. White 坚持要把 Mr. Orange 送到医院?
     gold_answer: 因为 Mr. Orange 受了重伤昏迷,Mr. White 认为他是同伴,要救他的命。
-    gold_entity_ids: [evt_tt0105236_008_05]
+    gold_entity_ids: [evt_tt0105236_008_02]
     intent: causal
   - id: rd_c4
     question: Mr. Orange 为什么承认曾想过杀死 Mr. Blonde?
@@ -56,7 +56,7 @@ items:
   - id: rd_r3
     question: Joe Cabot 在团伙中的角色是什么?
     gold_answer: Joe Cabot 是犯罪团伙的头目,抢劫行动的组织者,Mr. White 建议联系他来给 Mr. Orange 找医生。
-    gold_entity_ids: [char_tt0105236_cd2b5762, evt_tt0105236_008_03]
+    gold_entity_ids: [char_tt0105236_cd2b5762]
     intent: relational
   - id: rd_r4
     question: Nice Guy Eddie 和 Joe Cabot 是什么关系?
@@ -82,7 +82,7 @@ items:
   - id: rd_t4
     question: 团伙发现内鬼的怀疑是在什么背景下产生的?
     gold_answer: 抢劫出错、警察迅速赶到、Mr. Orange 重伤,Mr. White 和 Mr. Pink 由此怀疑有内鬼。
-    gold_entity_ids: [evt_tt0105236_008_07]
+    gold_entity_ids: [evt_tt0105236_020_01]
     intent: temporal
   # --- synthesis ---
   - id: rd_s1
@@ -93,17 +93,17 @@ items:
   - id: rd_s2
     question: Mr. White 对待同伴的态度在整部片中是如何体现的?
     gold_answer: 他为重伤的 Mr. Orange 辩护并坚持送医,不惜与 Mr. Pink 争吵,也因 Mr. Blonde 的疯狂而与其对峙,体现重情重义的特质。
-    gold_entity_ids: [char_tt0105236_f93b1425, evt_tt0105236_008_05, evt_tt0105236_008_08]
+    gold_entity_ids: [char_tt0105236_f93b1425, evt_tt0105236_004_02, evt_tt0105236_008_03]
     intent: synthesis
   - id: rd_s3
     question: 仓库里围绕 Mr. Orange 的处置产生了哪些分歧?
     gold_answer: Mr. White 主张送医院救命,Mr. Pink 反对并担心暴露,双方激烈争执;Mr. Blonde 则另有所图。
-    gold_entity_ids: [evt_tt0105236_008_05]
+    gold_entity_ids: [evt_tt0105236_008_02, evt_tt0105236_008_04]
     intent: synthesis
   - id: rd_s4
     question: 团伙从餐厅到仓库经历了怎样的转折?
     gold_answer: 餐厅里轻松谈论歌曲与小费,抢劫发生后情势急转:Mr. Orange 重伤、怀疑内鬼、内部对峙不断升级。
-    gold_entity_ids: [evt_tt0105236_001_01, evt_tt0105236_008_07]
+    gold_entity_ids: [evt_tt0105236_001_01, evt_tt0105236_002_09]
     intent: synthesis
 
   # ============ Hackers (tt0113243) ============
@@ -126,7 +126,7 @@ items:
   - id: hk_f4
     question: 走廊漏水事件中 Dade 给出了什么解释?
     gold_answer: Dade 解释是屋顶的泳池漏水,试图平息混乱。
-    gold_entity_ids: [evt_tt0113243_064_03]
+    gold_entity_ids: [evt_tt0113243_064_05]
     intent: factual
   # --- causal ---
   - id: hk_c1
@@ -137,7 +137,7 @@ items:
   - id: hk_c2
     question: 众人最后为什么要入侵电视信号进行直播?
     gold_answer: 为了公开揭露 The Plague 的阴谋和巴哈马账户,洗清自己并让他被逮捕。
-    gold_entity_ids: [evt_tt0113243_136_07]
+    gold_entity_ids: [evt_tt0113243_136_04]
     intent: causal
   - id: hk_c3
     question: Dade 为什么向 Kate 和众人坦白自己曾把磁盘交给 Plague?
@@ -163,7 +163,7 @@ items:
   - id: hk_r3
     question: Nikon 在黑客团体中扮演什么角色?
     gold_answer: 黑客团体成员,聚会的组织者之一,最初质疑 Dade 后来接纳了他。
-    gold_entity_ids: [char_tt0113243_55669157, evt_tt0113243_088_04]
+    gold_entity_ids: [char_tt0113243_55669157]
     intent: relational
   - id: hk_r4
     question: Joey Pardella 在故事中的处境如何?
@@ -184,7 +184,7 @@ items:
   - id: hk_t3
     question: The Plague 是如何一步步把危机嫁祸给黑客们的?
     gold_answer: 他先向公司通报黑客入侵和病毒,把矛头指向黑客团体,自己则藏起巴哈马账户的真相。
-    gold_entity_ids: [evt_tt0113243_096_01, evt_tt0113243_136_04]
+    gold_entity_ids: [evt_tt0113243_074_04, evt_tt0113243_136_04]
     intent: temporal
   - id: hk_t4
     question: 大中央车站的紧张对峙之后发生了什么?
@@ -200,7 +200,7 @@ items:
   - id: hk_s2
     question: The Plague 的阴谋包含哪些环节?
     gold_answer: 他在 Gibson 系统植入病毒制造危机,用超级用户账户嫁祸黑客,试图把赃款转入巴哈马账户,最后被 Cereal Killer 等人直播揭穿。
-    gold_entity_ids: [char_tt0113243_461f7abb, evt_tt0113243_096_01, evt_tt0113243_136_04]
+    gold_entity_ids: [char_tt0113243_461f7abb, evt_tt0113243_074_04, evt_tt0113243_096_01]
     intent: synthesis
   - id: hk_s3
     question: 黑客团体有哪些成员,各自有什么特点?
@@ -228,7 +228,7 @@ items:
   - id: rk_f3
     question: Womack 对 Mason 的特赦令做了什么?
     gold_answer: 在 Mason 签署特赦令后,Womack 当众将其撕毁,表现对 Mason 的不信任。
-    gold_entity_ids: [evt_tt0117500_104_03, char_tt0117500_c9730d1b]
+    gold_entity_ids: [char_tt0117500_c9730d1b, evt_tt0117500_114_03]
     intent: factual
   - id: rk_f4
     question: Goodspeed 最后用什么方式杀死了 Captain Frye?
@@ -249,7 +249,7 @@ items:
   - id: rk_c3
     question: Mason 为什么改变主意决定留下帮忙?
     gold_answer: 因为 Goodspeed 揭示了任务真相——留在岛上拆弹是为了拯救 Mason 女儿的生命,Mason 因此决定留下。
-    gold_entity_ids: [evt_tt0117500_224_04, char_tt0117500_ba1b8fda]
+    gold_entity_ids: [char_tt0117500_ba1b8fda, evt_tt0117500_210_04]
     intent: causal
   - id: rk_c4
     question: 第一枚火箭为什么没有击中体育场?
@@ -275,7 +275,7 @@ items:
   - id: rk_r4
     question: Womack 对 Mason 的态度是怎样的?
     gold_answer: 极度不信任和敌意:撕毁特赦令、囚禁威胁,事后还想违约。
-    gold_entity_ids: [char_tt0117500_c9730d1b, evt_tt0117500_104_03]
+    gold_entity_ids: [char_tt0117500_c9730d1b, evt_tt0117500_089_01]
     intent: relational
   # --- temporal ---
   - id: rk_t1
@@ -286,7 +286,7 @@ items:
   - id: rk_t2
     question: Mason 从酒店逃脱之后当局做了什么?
     gold_answer: Mason 驾驶跑车在旧金山街头制造混乱甩开追捕,Goodspeed 通过无线电通报信号六在酒店出现,追捕进入关键阶段。
-    gold_entity_ids: [evt_tt0117500_136_01, evt_tt0117500_144_01]
+    gold_entity_ids: [evt_tt0117500_136_01]
     intent: temporal
   - id: rk_t3
     question: Hummel 与 Baxter、Frye 一行对峙的最后结局是什么?
@@ -312,7 +312,7 @@ items:
   - id: rk_s3
     question: Mason 为什么值得被信任,他与当局的关系经历了什么变化?
     gold_answer: 他被冤枉囚禁三十年,请求特赦协助上岛;特赦令被 Womack 撕毁后他逃脱,又因女儿和 Goodspeed 的坦诚回归,最终救下旧金山并重获自由。
-    gold_entity_ids: [char_tt0117500_ba1b8fda, evt_tt0117500_104_03, evt_tt0117500_224_04]
+    gold_entity_ids: [char_tt0117500_ba1b8fda, evt_tt0117500_258_04]
     intent: synthesis
   - id: rk_s4
     question: 结尾 Goodspeed 手里的微缩胶卷暗示了什么?
