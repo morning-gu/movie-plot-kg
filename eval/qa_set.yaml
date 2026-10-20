@@ -30,7 +30,7 @@ items:
   - id: rd_c2
     question: 餐厅里关于小费的争论是怎么结束的?
     gold_answer: Mr. Pink 与 Mr. Orange 就小费争论后,Mr. Pink 最终支付了小费以结束争执。
-    gold_entity_ids: [evt_tt0105236_001_05]
+    gold_entity_ids: [evt_tt0105236_002_07]
     intent: causal
   - id: rd_c3
     question: 为什么 Mr. White 坚持要把 Mr. Orange 送到医院?
@@ -40,7 +40,7 @@ items:
   - id: rd_c4
     question: Mr. Orange 为什么承认曾想过杀死 Mr. Blonde?
     gold_answer: 因为团伙怀疑有内鬼,Mr. White 以此说明 Mr. Blonde 的疯狂行径连同伴都无法容忍。
-    gold_entity_ids: [evt_tt0105236_008_09]
+    gold_entity_ids: [evt_tt0105236_020_07, evt_tt0105236_037_02]
     intent: causal
   # --- relational ---
   - id: rd_r1
@@ -67,7 +67,7 @@ items:
   - id: rd_t1
     question: 餐厅讨论结束后紧接着发生了什么?
     gold_answer: Mr. White 与 Joe Cabot 离开餐厅后,Mr. White 在车内受伤,随后开始评估 Mr. Orange 的伤势。
-    gold_entity_ids: [evt_tt0105236_002_09, evt_tt0105236_002_10]
+    gold_entity_ids: [evt_tt0105236_002_08, evt_tt0105236_002_09]
     intent: temporal
   - id: rd_t2
     question: Mr. Blonde 和 Holdaway 到达仓库之后发生了什么?
@@ -88,7 +88,7 @@ items:
   - id: rd_s1
     question: Mr. Pink 在小费问题上的立场是什么?他在餐厅和仓库里分别表现了什么性格?
     gold_answer: Mr. Pink 反对给小费,显得功利冷酷;在仓库中他冷静务实,主张不能送 Mr. Orange 去医院以免暴露。
-    gold_entity_ids: [char_tt0105236_703604bc, evt_tt0105236_001_04]
+    gold_entity_ids: [char_tt0105236_703604bc, evt_tt0105236_002_05, evt_tt0105236_002_06]
     intent: synthesis
   - id: rd_s2
     question: Mr. White 对待同伴的态度在整部片中是如何体现的?
@@ -132,7 +132,7 @@ items:
   - id: hk_c1
     question: 是什么导致 Dade 家被执法团队突袭?
     gold_answer: Dade(Zero Cool)此前的黑客入侵行为引起执法部门注意,突袭随之而来。
-    gold_entity_ids: [evt_tt0113243_001_02, char_tt0113243_c0c6ed11]
+    gold_entity_ids: [evt_tt0113243_002_01, evt_tt0113243_004_02, char_tt0113243_c0c6ed11]
     intent: causal
   - id: hk_c2
     question: 众人最后为什么要入侵电视信号进行直播?
@@ -142,7 +142,7 @@ items:
   - id: hk_c3
     question: Dade 为什么向 Kate 和众人坦白自己曾把磁盘交给 Plague?
     gold_answer: 因为分析磁盘时真相逼近,Dade 承认自己是 Zero Cool,曾是唯一想要 Kate 磁盘副本的人,把磁盘交给了 Plague。
-    gold_entity_ids: [evt_tt0113243_120_07]
+    gold_entity_ids: [evt_tt0113243_120_06]
     intent: causal
   - id: hk_c4
     question: Kate 为什么对 Dade 发出挑战?
@@ -168,7 +168,7 @@ items:
   - id: hk_r4
     question: Joey Pardella 在故事中的处境如何?
     gold_answer: Joey 是团队中最年轻、急于证明自己的黑客,最初想加入 Dade 他们,尝试入侵 Gibson 闯下大祸,最终参与揭露 Plague。
-    gold_entity_ids: [char_tt0113243_1e8354a0, evt_tt0113243_088_09]
+    gold_entity_ids: [char_tt0113243_1e8354a0, evt_tt0113243_075_04, evt_tt0113243_093_01]
     intent: relational
   # --- temporal ---
   - id: hk_t1
@@ -179,7 +179,7 @@ items:
   - id: hk_t2
     question: 分析磁盘之后事态如何发展?
     gold_answer: 众人发现病毒与 The Plague 有关,Dade 坦白自己曾把磁盘交给 Plague,随后团队决定反击并在直播中揭露阴谋。
-    gold_entity_ids: [evt_tt0113243_120_07, evt_tt0113243_136_07]
+    gold_entity_ids: [evt_tt0113243_120_06, evt_tt0113243_136_07]
     intent: temporal
   - id: hk_t3
     question: The Plague 是如何一步步把危机嫁祸给黑客们的?
@@ -270,7 +270,7 @@ items:
   - id: rk_r3
     question: Mason 和女儿 Jade 的关系如何?
     gold_answer: Mason 长期被囚禁与女儿分离;在艺术宫与 Jade 重逢,女儿对父亲的缺席感到痛苦,两人进行了情感交流。
-    gold_entity_ids: [char_tt0117500_ba1b8fda, char_tt0117500_101222f5, evt_tt0117500_160_01]
+    gold_entity_ids: [char_tt0117500_ba1b8fda, char_tt0117500_2db2ee25, evt_tt0117500_160_01]
     intent: relational
   - id: rk_r4
     question: Womack 对 Mason 的态度是怎样的?
@@ -296,7 +296,7 @@ items:
   - id: rk_t4
     question: Goodspeed 拆除最后一枚火箭之后发生了什么?
     gold_answer: 他点燃两枚绿色信号弹示意威胁解除,但喷气机已投弹,爆炸把他抛入海中。
-    gold_entity_ids: [evt_tt0117500_400_10, evt_tt0117500_400_11]
+    gold_entity_ids: [evt_tt0117500_398_03, evt_tt0117500_398_04, evt_tt0117500_401_01]
     intent: temporal
   # --- synthesis ---
   - id: rk_s1
@@ -307,7 +307,7 @@ items:
   - id: rk_s2
     question: Goodspeed 在恶魔岛上经历了怎样的成长?
     gold_answer: 从只会摆弄毒气样本的实验室专家,到被迫上岛、在枪林弹雨中拆除火箭、近身搏杀 Frye、亲手注射解毒剂,完成了从书呆子到英雄的蜕变。
-    gold_entity_ids: [char_tt0117500_aeef82ca, evt_tt0117500_400_08, evt_tt0117500_400_09]
+    gold_entity_ids: [char_tt0117500_aeef82ca, evt_tt0117500_398_04, evt_tt0117500_401_03]
     intent: synthesis
   - id: rk_s3
     question: Mason 为什么值得被信任,他与当局的关系经历了什么变化?
