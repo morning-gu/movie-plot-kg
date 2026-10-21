@@ -97,7 +97,9 @@ def test_retrieve_substitutes_id_key_via_binding():
         [{"path": {"id": "evt_m1_000_01", "topic": "争执", "description": "d",
                    "event_type": "conflict"}}],   # 模板结果(causes_of 返回 path)
     ])
-    evidence = retrieve(session, ScriptedLLM(), plan, top_k=10)
+    evidence = retrieve(session,
+                        ScriptedLLM({"node_id": "evt_m1_001_01"}), plan,
+                        top_k=10)
     template_calls = [(q, p) for q, p in session.queries if "CAUSES" in q]
     assert template_calls, "必须执行 causes_of 模板"
     assert template_calls[-1][1]["id"] == "evt_m1_001_01"  # name_hint 已替换为 ID
@@ -227,35 +229,58 @@ def test_bind_entities_tolerates_null_name_candidates():
     assert bound == {}
 
 
-def test_bind_entities_event_tier_vector_with_movie_filter():
-    # Event 节点无 name/aliases 且中文主题无分词,三级绑定全落空
-    # (试点实证 7/12 temporal 题 hit=0)。新层:向量 Event 候选,
-    # 有 Character 绑定时按其影片过滤(向量索引跨影片,rd_t1 的 top
-    # 命中是别片事件),分数 >= 0.55 才绑。
+def test_bind_entities_event_tier_llm_picks_anchor():
+    # 分数阈值分不开「相关事件」与「锚点事件」(Phase A 回归实证:
+    # 0.5667→0.4667,错锚点的遍历证据主动带偏答案)。改由文本模型在
+    # 候选中选锚点,可判 null(错绑不如不绑);Character 绑定仍用于
+    # 影片过滤(向量索引跨影片)。
     from movie_kg.qa.retriever import Evidence
 
-    def ev(nid, score):
-        return Evidence(source="vector", node_id=nid, text="[action] t:d",
-                        score=score, extra={"label": "Event"})
+    def ev(nid, score, topic="t"):
+        return Evidence(source="vector", node_id=nid,
+                        text=f"[action] {topic}:d", score=score,
+                        extra={"label": "Event"})
 
-    # 1) 无 Character 绑定:top Event 候选达标即绑
-    session = MockSession(results=[])
+    hits = [ev("evt_tt0113243_120_01", 0.80, "分析磁盘内容"),
+            ev("evt_tt0113243_131_09", 0.78, "系统遭受攻击"),
+            ev("evt_tt0113243_084_05", 0.76, "监控进行中"),
+            ev("evt_tt0117500_088_05", 0.90, "会议成员紧张互动")]
+    # LLM 选了次高分候选(分数序不等于锚点序)
+    session = MockSession(results=[[{"id": "char_tt0113243_c0c6ed11"}]])
+    llm = ScriptedLLM({"node_id": "evt_tt0113243_131_09"})
     bound = bind_entities(
-        session, [TargetEntity(type="Event", name_hint="分析磁盘")],
-        vector_hits=[ev("evt_tt0113243_120_01", 0.8),
-                     ev("evt_tt0117500_088_05", 0.76)])
-    assert bound == {"分析磁盘": "evt_tt0113243_120_01"}
-    # 2) 有 Character 绑定:跨影片候选被过滤,绑同影片候选
-    session = MockSession(results=[[{"id": "char_tt0105236_abc"}]])
-    bound = bind_entities(
-        session, [TargetEntity(type="Character", name_hint="Mr. White"),
-                  TargetEntity(type="Event", name_hint="餐厅讨论")],
-        vector_hits=[ev("evt_tt0117500_088_05", 0.9),
-                     ev("evt_tt0105236_002_05", 0.75)])
-    assert bound["餐厅讨论"] == "evt_tt0105236_002_05"
-    # 3) 分数不达标:宁可不绑(错绑比不绑更糟)
+        session, [TargetEntity(type="Character", name_hint="Dade"),
+                  TargetEntity(type="Event", name_hint="系统被攻击")],
+        vector_hits=hits, llm=llm)
+    assert bound["系统被攻击"] == "evt_tt0113243_131_09"
+    # 候选不含跨片项(Char 绑定在 Hackers → Rock 候选被过滤)
+    prompt = llm.calls[0][1][0]["content"]
+    assert "evt_tt0117500_088_05" not in prompt
+    assert "evt_tt0113243_120_01" in prompt
+
+
+def test_bind_entities_event_tier_llm_null_and_no_llm():
+    from movie_kg.qa.retriever import Evidence
+    hits = [Evidence(source="vector", node_id="evt_tt0113243_001_01",
+                     text="[action] t:d", score=0.8,
+                     extra={"label": "Event"})]
+    # LLM 判 null → 不绑(宁缺毋滥)
     session = MockSession(results=[])
     bound = bind_entities(
         session, [TargetEntity(type="Event", name_hint="无关")],
-        vector_hits=[ev("evt_tt0113243_001_01", 0.4)])
+        vector_hits=hits, llm=ScriptedLLM({"node_id": None}))
     assert bound == {}
+    # 无 llm(防御)→ 不绑
+    bound = bind_entities(
+        MockSession(results=[]),
+        [TargetEntity(type="Event", name_hint="无关")], vector_hits=hits)
+    assert bound == {}
+    # 低分候选根本不进选择器
+    low = [Evidence(source="vector", node_id="evt_tt0113243_002_01",
+                    text="[action] t:d", score=0.4,
+                    extra={"label": "Event"})]
+    llm = ScriptedLLM({"node_id": "evt_tt0113243_002_01"})
+    bound = bind_entities(
+        MockSession(results=[]),
+        [TargetEntity(type="Event", name_hint="x")], vector_hits=low, llm=llm)
+    assert bound == {} and llm.calls == []

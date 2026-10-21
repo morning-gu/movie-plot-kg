@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from movie_kg.graph.query_templates import execute_template
+from movie_kg.prompts import load_prompt, render
 from movie_kg.qa.planner import RetrievalPlan, TargetEntity
 
 INDEXES = [("event_vec", "Event"), ("character_vec", "Character"),
@@ -15,6 +16,10 @@ class Evidence(BaseModel):
     text: str
     score: float | None = None
     extra: dict = {}
+
+
+class EventPick(BaseModel):
+    node_id: str | None = None
 
 
 def _node_text(node: dict) -> str:
@@ -44,15 +49,16 @@ def _movie_of(node_id: str) -> str:
 
 
 def bind_entities(session, targets: list[TargetEntity],
-                  vector_hits: list[Evidence]) -> dict[str, str]:
+                  vector_hits: list[Evidence], llm=None) -> dict[str, str]:
     """name_hint -> 节点 ID:精确(name/aliases)→ 词级包含 → 向量同类命中。
 
     盲取首个同类向量命中会把 "John Mason" 绑到语义相近的 Goodspeed 上
     (试点实证),产出自环/错向证据;错绑比不绑更糟,各级都要求名字证据。
     Event 目标例外(试点实证 7/12 temporal 题 hit=0):Event 节点无
-    name/aliases 且中文主题无分词,三级全落空——改走向量 Event 候选,
-    分数 >= 0.55 才绑;有 Character 绑定时按其影片过滤(向量索引跨影片,
-    跨片 top 命中会污染 temporal 追溯)。"""
+    name/aliases 且中文主题无分词,三级全落空——改为 LLM 锚点选择:
+    top-5 同影片候选(有 Character 绑定时按其影片过滤,防跨片污染;
+    分数 >=0.55 预筛)交给文本模型按 hint 判定,可判 null
+    (Phase A 回归实证:分数阈值绑定的错锚点图证据比不绑定更糟)。"""
     bound: dict[str, str] = {}
     event_targets: list[TargetEntity] = []
     for t in targets:
@@ -84,22 +90,37 @@ def bind_entities(session, targets: list[TargetEntity],
                         break
         if found is not None:
             bound[t.name_hint] = found
-    # Event 专层:纯向量候选 + 影片过滤 + 分数门槛
-    if event_targets:
+    # Event 专层:LLM 锚点选择(top-5 同影片候选,可判 null)
+    if event_targets and llm is not None:
+        cfg = getattr(llm, "cfg", None)
+        model = cfg.text_model if cfg is not None else "text"
         bound_movies = {_movie_of(nid) for nid in bound.values()}
         for t in event_targets:
             cands = [h for h in vector_hits
                      if h.extra.get("label") == "Event"
-                     and (not bound_movies or _movie_of(h.node_id) in bound_movies)]
-            if cands and cands[0].score is not None and cands[0].score >= 0.55:
-                bound[t.name_hint] = cands[0].node_id
+                     and h.score is not None and h.score >= 0.55
+                     and (not bound_movies
+                          or _movie_of(h.node_id) in bound_movies)][:5]
+            if not cands:
+                continue
+            cand_lines = "\n".join(f"{h.node_id} | {h.text[:80]}"
+                                   for h in cands)
+            system = render(load_prompt("event_binding"),
+                            HINT=t.name_hint, CANDIDATES=cand_lines)
+            pick = llm.chat_json(
+                model=model,
+                messages=[{"role": "system", "content": system},
+                          {"role": "user", "content": "请输出选择 JSON。"}],
+                schema=EventPick)
+            if pick.node_id in {h.node_id for h in cands}:
+                bound[t.name_hint] = pick.node_id
     return bound
 
 
 def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 10) -> list[Evidence]:
     hits = vector_recall(session, llm, plan.rewritten_query, top_k)
     evidence: list[Evidence] = list(hits)
-    bound = bind_entities(session, plan.target_entities, hits)
+    bound = bind_entities(session, plan.target_entities, hits, llm=llm)
 
     def _resolve(v):
         # 参数值与 name_hint 不完全一致时(如缩写 "Mason"),按词级子集
