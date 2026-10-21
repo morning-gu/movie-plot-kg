@@ -46,9 +46,8 @@ def _relation_between_chars(p: dict) -> tuple[str, dict]:
 
 
 def _events_after(p: dict) -> tuple[str, dict]:
-    # 返回锚点 + 后继:回答端需要锚点事件本身的上下文(temporal 专项)
     return (f"MATCH (e1:Event)-[:PRECEDES*1..{p['depth']}]->(e2:Event) "
-            "WHERE e1.id = $id RETURN e1, e2 ORDER BY e2.global_order",
+            "WHERE e1.id = $id RETURN e2 ORDER BY e2.global_order",
             {"id": p["id"]})
 
 

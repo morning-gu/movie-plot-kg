@@ -37,28 +37,14 @@ def vector_recall(session, llm, query: str, top_k: int = 10) -> list[Evidence]:
     return out
 
 
-def _movie_of(node_id: str) -> str:
-    """从实体 ID 前缀取影片号(evt_tt0113243_120_01 → tt0113243)。"""
-    parts = node_id.split("_")
-    return parts[1] if len(parts) > 2 else ""
-
-
 def bind_entities(session, targets: list[TargetEntity],
                   vector_hits: list[Evidence]) -> dict[str, str]:
-    """name_hint -> 节点 ID:精确(name/aliases)→ 词级包含 → 向量同类命中。
+    """name_hint -> 节点 ID:精确(name/aliases)→ 词级包含 → 向量同类命中(名字须有词交集)。
 
-    盲取首个同类向量命中会把 "John Mason" 绑到语义相近的 Goodspeed 上
-    (试点实证),产出自环/错向证据;错绑比不绑更糟,各级都要求名字证据。
-    Event 目标例外(试点实证 7/12 temporal 题 hit=0):Event 节点无
-    name/aliases 且中文主题无分词,三级全落空——改走向量 Event 候选,
-    分数 >= 0.55 才绑;有 Character 绑定时按其影片过滤(向量索引跨影片,
-    跨片 top 命中会污染 temporal 追溯)。"""
+    盲取首个同类向量命中会把 "John Mason" 绑到语义相近的 Goodspeed 上(试点实证),
+    产出自环/错向证据;错绑比不绑更糟,各级都要求名字证据。"""
     bound: dict[str, str] = {}
-    event_targets: list[TargetEntity] = []
     for t in targets:
-        if t.type == "Event":
-            event_targets.append(t)
-            continue
         recs = list(session.run(
             f"MATCH (n:{t.type}) WHERE n.name = $h OR $h IN n.aliases "
             "RETURN n.id AS id LIMIT 1", h=t.name_hint))
@@ -84,15 +70,6 @@ def bind_entities(session, targets: list[TargetEntity],
                         break
         if found is not None:
             bound[t.name_hint] = found
-    # Event 专层:纯向量候选 + 影片过滤 + 分数门槛
-    if event_targets:
-        bound_movies = {_movie_of(nid) for nid in bound.values()}
-        for t in event_targets:
-            cands = [h for h in vector_hits
-                     if h.extra.get("label") == "Event"
-                     and (not bound_movies or _movie_of(h.node_id) in bound_movies)]
-            if cands and cands[0].score is not None and cands[0].score >= 0.55:
-                bound[t.name_hint] = cands[0].node_id
     return bound
 
 

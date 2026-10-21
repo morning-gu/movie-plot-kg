@@ -30,13 +30,6 @@ def test_events_after_interpolates_depth():
     assert "PRECEDES*1..3" in cypher and "$id" in cypher
 
 
-def test_events_after_returns_anchor_and_successors():
-    # temporal 专项:回答端需要锚点事件本身的上下文,不只后继
-    cypher, _ = validate_params_and_build(
-        "events_after", {"id": "evt_m1_001_01", "depth": 2})
-    assert "RETURN e1, e2" in cypher
-
-
 @pytest.mark.parametrize("bad", [
     {"a": "Zhang'} RETURN n //", "b": "char_m1_e5f67890"},          # 注入
     {"a": "char_m1_a1b2c3d4"},                                      # 缺参数
