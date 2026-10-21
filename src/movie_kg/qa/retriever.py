@@ -23,7 +23,7 @@ def _node_text(node: dict) -> str:
     return f"{node.get('name', '')}:{node.get('description', '')}"
 
 
-def vector_recall(session, llm, query: str, top_k: int = 5) -> list[Evidence]:
+def vector_recall(session, llm, query: str, top_k: int = 10) -> list[Evidence]:
     vec = llm.embed([query])[0]
     out: list[Evidence] = []
     for index, label in INDEXES:
@@ -73,7 +73,7 @@ def bind_entities(session, targets: list[TargetEntity],
     return bound
 
 
-def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 5) -> list[Evidence]:
+def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 10) -> list[Evidence]:
     hits = vector_recall(session, llm, plan.rewritten_query, top_k)
     evidence: list[Evidence] = list(hits)
     bound = bind_entities(session, plan.target_entities, hits)

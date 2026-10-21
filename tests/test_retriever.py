@@ -16,6 +16,8 @@ def test_vector_recall_queries_all_four_indexes():
                if "queryNodes" in q]
     assert set(indexes) == {"event_vec", "character_vec", "virtualtime_vec",
                             "location_vec"}
+    # 默认召回数 = 10(检索扩容实验实证 +5pp accuracy,2026-10-21)
+    assert all(p["k"] == 10 for q, p in session.queries if "queryNodes" in q)
 
 
 def test_bind_entities_exact_then_alias_then_fallback():

@@ -50,6 +50,15 @@ def test_run_qa_threads_top_k():
     assert ks and all(k == 10 for k in ks)
 
 
+def test_run_qa_default_top_k_is_10():
+    # 默认召回数 = 10(扩容实验 +5pp;旧行为 5 已被实验否决)
+    items = load_qa_set(_make_set())
+    session = MockSession(results=[[], [], [], []])
+    run_qa(session, ScriptedLLM(PLAN, ANSWER), items, mode="full")
+    ks = [p["k"] for q, p in session.queries if "queryNodes" in q]
+    assert ks and all(k == 10 for k in ks)
+
+
 def test_cli_eval_qa_top_k_flag(tmp_path, monkeypatch):
     # CLI 旗标穿线 + 报告文件名带 top_k 后缀(非默认值时)
     import shutil
@@ -73,11 +82,11 @@ def test_cli_eval_qa_top_k_flag(tmp_path, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(main, [
         "eval", "qa", "--qa-set", str(set_path), "--mode", "full",
-        "--top-k", "10"])
+        "--top-k", "30"])
     assert result.exit_code == 0, result.output
     ks = [p["k"] for q, p in session.queries if "queryNodes" in q]
-    assert ks and all(k == 10 for k in ks)
-    assert (tmp_path / "eval" / "qa_report_full_k10.md").exists()
+    assert ks and all(k == 30 for k in ks)
+    assert (tmp_path / "eval" / "qa_report_full_k30.md").exists()
 
 
 def _make_set(tmp=None):

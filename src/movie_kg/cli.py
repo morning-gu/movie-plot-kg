@@ -165,8 +165,8 @@ def eval_build(movie: str = typer.Option(..., "--movie")):
 def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
             mode: str = typer.Option("full", "--mode",
                                      help="full | vector-only(消融)"),
-            top_k: int = typer.Option(5, "--top-k",
-                                      help="每个向量索引的召回数(检索扩容)")):
+            top_k: int = typer.Option(10, "--top-k",
+                                      help="每个向量索引的召回数(检索扩容;默认 10 为扩容实验定值)")):
     """问答端评估: 跑 QA 集 + LLM judge + 汇总(消融用 --mode vector-only)。"""
     from pathlib import Path
 
@@ -182,7 +182,7 @@ def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
     judged = judge_answers(llm, items, results)
     summary = summarize(judged)
     # 非默认 top_k 时文件名带后缀,扩容实验的多次运行不互相覆盖
-    suffix = f"_k{top_k}" if top_k != 5 else ""
+    suffix = f"_k{top_k}" if top_k != 10 else ""
     report_path = f"eval/qa_report_{mode}{suffix}.md"
     Path(report_path).parent.mkdir(exist_ok=True)   # 干净 cwd 下运行须自建
     write_qa_report(report_path, judged, summary, mode=mode)

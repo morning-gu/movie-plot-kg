@@ -42,7 +42,7 @@ def load_qa_set(path: str | Path) -> list[QAItem]:
 
 def run_qa(session, llm, items: list[QAItem],
            mode: Literal["full", "vector-only"],
-           top_k: int = 5) -> list[QAResult]:
+           top_k: int = 10) -> list[QAResult]:
     if mode not in ("full", "vector-only"):
         raise ValueError(f"mode 必须为 full 或 vector-only: {mode!r}")
     results: list[QAResult] = []
