@@ -82,20 +82,22 @@ def test_retrieve_executes_bound_templates_and_dedupes():
 
 
 def test_retrieve_substitutes_id_key_via_binding():
-    # causes_of 等模板要求 params 键为 id;绑定后 name_hint 必须替换为实体 ID
+    # causes_of 等模板要求 params 键为 id;绑定后 name_hint 必须替换为实体 ID。
+    # Event 绑定走向量层(真实 Event 无 name/aliases,精确匹配在生产中
+    # 从未生效——temporal 专项重构后该路径移除)
     plan = RetrievalPlan(
         intent="causal", rewritten_query="导致对峙的事件链",
         target_entities=[TargetEntity(type="Event", name_hint="对峙")],
         graph_queries=[GraphQueryPlan(
             template_id="causes_of", params={"id": "对峙", "depth": 3})])
-    # 队列: 4 次向量召回 + 1 次绑定查询 + 1 次模板执行
     session = MockSession(results=[
-        [], [], [], [],                       # 向量召回(4 索引)
-        [{"id": "evt_m1_001_01"}],            # 绑定: 对峙 -> 事件 ID
+        [{"node": {"id": "evt_m1_001_01", "topic": "对峙", "description": "d",
+                   "event_type": "conflict"}, "score": 0.8}],  # 事件向量命中
+        [], [], [],                                              # 其余 3 索引空
         [{"path": {"id": "evt_m1_000_01", "topic": "争执", "description": "d",
                    "event_type": "conflict"}}],   # 模板结果(causes_of 返回 path)
     ])
-    evidence = retrieve(session, ScriptedLLM(), plan)
+    evidence = retrieve(session, ScriptedLLM(), plan, top_k=10)
     template_calls = [(q, p) for q, p in session.queries if "CAUSES" in q]
     assert template_calls, "必须执行 causes_of 模板"
     assert template_calls[-1][1]["id"] == "evt_m1_001_01"  # name_hint 已替换为 ID
@@ -193,4 +195,38 @@ def test_bind_entities_tolerates_null_name_candidates():
     bound = bind_entities(session,
                           [TargetEntity(type="Event", name_hint="决裂")],
                           vector_hits=[])
+    assert bound == {}
+
+
+def test_bind_entities_event_tier_vector_with_movie_filter():
+    # Event 节点无 name/aliases 且中文主题无分词,三级绑定全落空
+    # (试点实证 7/12 temporal 题 hit=0)。新层:向量 Event 候选,
+    # 有 Character 绑定时按其影片过滤(向量索引跨影片,rd_t1 的 top
+    # 命中是别片事件),分数 >= 0.55 才绑。
+    from movie_kg.qa.retriever import Evidence
+
+    def ev(nid, score):
+        return Evidence(source="vector", node_id=nid, text="[action] t:d",
+                        score=score, extra={"label": "Event"})
+
+    # 1) 无 Character 绑定:top Event 候选达标即绑
+    session = MockSession(results=[])
+    bound = bind_entities(
+        session, [TargetEntity(type="Event", name_hint="分析磁盘")],
+        vector_hits=[ev("evt_tt0113243_120_01", 0.8),
+                     ev("evt_tt0117500_088_05", 0.76)])
+    assert bound == {"分析磁盘": "evt_tt0113243_120_01"}
+    # 2) 有 Character 绑定:跨影片候选被过滤,绑同影片候选
+    session = MockSession(results=[[{"id": "char_tt0105236_abc"}]])
+    bound = bind_entities(
+        session, [TargetEntity(type="Character", name_hint="Mr. White"),
+                  TargetEntity(type="Event", name_hint="餐厅讨论")],
+        vector_hits=[ev("evt_tt0117500_088_05", 0.9),
+                     ev("evt_tt0105236_002_05", 0.75)])
+    assert bound["餐厅讨论"] == "evt_tt0105236_002_05"
+    # 3) 分数不达标:宁可不绑(错绑比不绑更糟)
+    session = MockSession(results=[])
+    bound = bind_entities(
+        session, [TargetEntity(type="Event", name_hint="无关")],
+        vector_hits=[ev("evt_tt0113243_001_01", 0.4)])
     assert bound == {}
