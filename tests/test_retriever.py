@@ -104,6 +104,35 @@ def test_retrieve_substitutes_id_key_via_binding():
     assert any(e.source == "graph" for e in evidence)
 
 
+def test_retrieve_orders_graph_first_and_caps_vector():
+    # 回答端优化:图证据(模板精心遍历的产物)置顶——LLM 对 prompt
+    # 开头的证据权重更高(旧序图证据垫底);向量证据按分数降序、
+    # 全局截 top-15 抗稀释。hit_rate 为集合口径,顺序与截断只作用于
+    # 呈现给回答器的列表。
+    from movie_kg.qa.retriever import Evidence
+    plan = RetrievalPlan(intent="temporal", rewritten_query="q",
+                         target_entities=[],
+                         graph_queries=[GraphQueryPlan(
+                             template_id="events_after",
+                             params={"id": "evt_m1_001_01", "depth": 2})])
+    vec_rows = [{"node": {"id": f"evt_m1_00{i}_01", "topic": f"t{i}",
+                           "description": "d", "event_type": "action"},
+                 "score": 0.9 - i * 0.01} for i in range(20)]
+    session = MockSession(results=[
+        vec_rows, [], [], [],                    # 事件索引 20 条,其余空
+        [{"e1": {"id": "evt_m1_900_01", "topic": "锚点", "description": "d",
+                  "event_type": "action"},
+          "e2": {"id": "evt_m1_901_01", "topic": "后继", "description": "d",
+                 "event_type": "action"}}],       # events_after 返回 e1+e2
+    ])
+    evidence = retrieve(session, ScriptedLLM(), plan, top_k=20)
+    sources = [e.source for e in evidence]
+    assert sources[:2] == ["graph", "graph"]      # 图证据置顶
+    vec = [e for e in evidence if e.source == "vector"]
+    assert len(vec) == 15                         # 向量截断 top-15
+    assert vec == sorted(vec, key=lambda e: -e.score)  # 分数降序
+
+
 def test_retrieve_vector_only_when_no_graph_queries():
     plan = RetrievalPlan(intent="factual", rewritten_query="q",
                          target_entities=[], graph_queries=[])
