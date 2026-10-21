@@ -41,6 +41,45 @@ def test_run_qa_rejects_bad_mode():
                mode="vecor-only")
 
 
+def test_run_qa_threads_top_k():
+    # 检索扩容实验:top_k 须从 run_qa 穿到 vector_recall(每个向量索引的 k)
+    items = load_qa_set(_make_set())
+    session = MockSession(results=[[], [], [], []])
+    run_qa(session, ScriptedLLM(PLAN, ANSWER), items, mode="full", top_k=10)
+    ks = [p["k"] for q, p in session.queries if "queryNodes" in q]
+    assert ks and all(k == 10 for k in ks)
+
+
+def test_cli_eval_qa_top_k_flag(tmp_path, monkeypatch):
+    # CLI 旗标穿线 + 报告文件名带 top_k 后缀(非默认值时)
+    import shutil
+    from pathlib import Path
+
+    import movie_kg.cli as cli_mod
+    from typer.testing import CliRunner
+    from movie_kg.cli import main
+    from tests.fakes import MockDriver
+    shutil.copytree(Path(__file__).resolve().parents[1] / "config",
+                    tmp_path / "config")
+    monkeypatch.setenv("LLM_API_KEY", "sk-test")
+    monkeypatch.setenv("NEO4J_PASSWORD", "pw-test")
+    monkeypatch.chdir(tmp_path)
+    set_path = _make_set(tmp=tmp_path)
+    monkeypatch.setattr(cli_mod, "_make_llm",
+                        lambda cfg: ScriptedLLM(PLAN, ANSWER, JUDGE_OK))
+    session = MockSession(results=[[], [], [], []])
+    monkeypatch.setattr(cli_mod, "_make_driver",
+                        lambda cfg: MockDriver(session))
+    runner = CliRunner()
+    result = runner.invoke(main, [
+        "eval", "qa", "--qa-set", str(set_path), "--mode", "full",
+        "--top-k", "10"])
+    assert result.exit_code == 0, result.output
+    ks = [p["k"] for q, p in session.queries if "queryNodes" in q]
+    assert ks and all(k == 10 for k in ks)
+    assert (tmp_path / "eval" / "qa_report_full_k10.md").exists()
+
+
 def _make_set(tmp=None):
     import tempfile
     from pathlib import Path

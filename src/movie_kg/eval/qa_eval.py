@@ -41,7 +41,8 @@ def load_qa_set(path: str | Path) -> list[QAItem]:
 
 
 def run_qa(session, llm, items: list[QAItem],
-           mode: Literal["full", "vector-only"]) -> list[QAResult]:
+           mode: Literal["full", "vector-only"],
+           top_k: int = 5) -> list[QAResult]:
     if mode not in ("full", "vector-only"):
         raise ValueError(f"mode 必须为 full 或 vector-only: {mode!r}")
     results: list[QAResult] = []
@@ -49,7 +50,7 @@ def run_qa(session, llm, items: list[QAItem],
         plan = plan_retrieval(llm, item.question)
         if mode == "vector-only":
             plan = plan.model_copy(update={"graph_queries": []})
-        evidence = retrieve(session, llm, plan)
+        evidence = retrieve(session, llm, plan, top_k=top_k)
         result = answer(llm, item.question, evidence)
         evidence_ids = [e.node_id for e in evidence]
         hit = (len(set(item.gold_entity_ids) & set(evidence_ids))

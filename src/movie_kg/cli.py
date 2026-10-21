@@ -164,8 +164,12 @@ def eval_build(movie: str = typer.Option(..., "--movie")):
 @eval_app.command("qa")
 def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
             mode: str = typer.Option("full", "--mode",
-                                     help="full | vector-only(消融)")):
+                                     help="full | vector-only(消融)"),
+            top_k: int = typer.Option(5, "--top-k",
+                                      help="每个向量索引的召回数(检索扩容)")):
     """问答端评估: 跑 QA 集 + LLM judge + 汇总(消融用 --mode vector-only)。"""
+    from pathlib import Path
+
     from movie_kg.eval.qa_eval import (judge_answers, load_qa_set, run_qa,
                                        summarize, write_qa_report)
 
@@ -173,11 +177,14 @@ def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
     llm = _make_llm(load_models_config())
     driver = _make_driver(load_neo4j_config())
     with driver.session() as session:
-        results = run_qa(session, llm, items, mode=mode)
+        results = run_qa(session, llm, items, mode=mode, top_k=top_k)
     driver.close()
     judged = judge_answers(llm, items, results)
     summary = summarize(judged)
-    report_path = f"eval/qa_report_{mode}.md"
+    # 非默认 top_k 时文件名带后缀,扩容实验的多次运行不互相覆盖
+    suffix = f"_k{top_k}" if top_k != 5 else ""
+    report_path = f"eval/qa_report_{mode}{suffix}.md"
+    Path(report_path).parent.mkdir(exist_ok=True)   # 干净 cwd 下运行须自建
     write_qa_report(report_path, judged, summary, mode=mode)
     typer.echo(f"accuracy={summary['overall_accuracy']} "
                f"hit_rate={summary['mean_hit_rate']} -> {report_path}")
