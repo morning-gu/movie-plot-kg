@@ -148,10 +148,4 @@ def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 10) -> list[Evidenc
         if e.node_id and e.node_id not in seen:
             seen.add(e.node_id)
             deduped.append(e)
-    # 回答端呈现序:图证据(模板精心遍历的产物)置顶——LLM 对 prompt
-    # 开头的证据权重更高;向量证据按分数降序、全局截 top-15 抗稀释。
-    # hit_rate 为集合口径,不受呈现序影响。
-    graph_ev = [e for e in deduped if e.source == "graph"]
-    vec_ev = sorted((e for e in deduped if e.source == "vector"),
-                    key=lambda e: -(e.score or 0.0))[:15]
-    return graph_ev + vec_ev
+    return deduped
