@@ -43,7 +43,7 @@ def vector_recall(session, llm, query: str, top_k: int = 10,
     for _, label in INDEXES:
         cypher = (f"MATCH (n:{label} {{movie_id: $mid}}) "
                   "WHERE n.embedding IS NOT NULL "
-                  "WITH n, vector.similarity.cosine(n.embedding, $vec) AS score "
+                  "RETURN n, vector.similarity.cosine(n.embedding, $vec) AS score "
                   "ORDER BY score DESC LIMIT $k")
         for rec in session.run(cypher, mid=movie_id, k=top_k, vec=vec):
             node = dict(rec["n"])
