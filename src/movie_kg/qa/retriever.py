@@ -23,14 +23,30 @@ def _node_text(node: dict) -> str:
     return f"{node.get('name', '')}:{node.get('description', '')}"
 
 
-def vector_recall(session, llm, query: str, top_k: int = 10) -> list[Evidence]:
+def vector_recall(session, llm, query: str, top_k: int = 10,
+                  movie_id: str | None = None) -> list[Evidence]:
     vec = llm.embed([query])[0]
     out: list[Evidence] = []
-    for index, label in INDEXES:
-        for rec in session.run(
-                "CALL db.index.vector.queryNodes($index, $k, $vec) YIELD node, score",
-                index=index, k=top_k, vec=vec):
-            node = dict(rec["node"])
+    if movie_id is None:
+        for index, label in INDEXES:
+            for rec in session.run(
+                    "CALL db.index.vector.queryNodes($index, $k, $vec) YIELD node, score",
+                    index=index, k=top_k, vec=vec):
+                node = dict(rec["node"])
+                out.append(Evidence(source="vector", node_id=node.get("id", ""),
+                                    text=_node_text(node), score=rec.get("score"),
+                                    extra={"label": label}))
+        return out
+    # 片内精确扫描:不走全局 ANN(设计否决"先检索再过滤");成本 O(单片规模),
+    # 与库内总片数无关。分数为 (1+cos)/2 重标度,与 ANN 裸 cosine 不可比。
+    # 标签来自 INDEXES 常量而非用户输入,可安全内插。
+    for _, label in INDEXES:
+        cypher = (f"MATCH (n:{label} {{movie_id: $mid}}) "
+                  "WHERE n.embedding IS NOT NULL "
+                  "WITH n, vector.similarity.cosine(n.embedding, $vec) AS score "
+                  "ORDER BY score DESC LIMIT $k")
+        for rec in session.run(cypher, mid=movie_id, k=top_k, vec=vec):
+            node = dict(rec["n"])
             out.append(Evidence(source="vector", node_id=node.get("id", ""),
                                 text=_node_text(node), score=rec.get("score"),
                                 extra={"label": label}))

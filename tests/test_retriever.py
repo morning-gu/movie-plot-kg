@@ -20,6 +20,27 @@ def test_vector_recall_queries_all_four_indexes():
     assert all(p["k"] == 10 for q, p in session.queries if "queryNodes" in q)
 
 
+def test_vector_recall_scoped_scans_movie_subgraph():
+    # 片内精确扫描(设计:真·片内检索,否决超采过滤):每标签一次,
+    # 带 $mid/$vec/$k,绝不走全局 ANN;某标签空结果不崩
+    hit = {"n": {"id": "evt_tt0105236_001_01", "topic": "对峙",
+                 "description": "d", "event_type": "conflict"}, "score": 0.9}
+    session = MockSession(results=[[hit], [], [], []])   # Event 命中,其余标签空
+    hits = vector_recall(session, ScriptedLLM(), "仓库对峙", movie_id="tt0105236")
+    assert len(hits) == 1 and hits[0].node_id == "evt_tt0105236_001_01"
+    assert hits[0].extra["label"] == "Event" and hits[0].score == 0.9
+    assert not any("queryNodes" in q for q, _ in session.queries), \
+        "scoped 不得走全局 ANN"
+    scans = [(q, p) for q, p in session.queries if "cosine" in q]
+    assert len(scans) == 4
+    assert all(p == {"mid": "tt0105236", "k": 10, "vec": [0.0] * 8}
+               for _, p in scans)
+    labels = {l for q, _ in scans
+              for l in ("Event", "Character", "VirtualTime", "Location")
+              if f"(n:{l} " in q}
+    assert labels == {"Event", "Character", "VirtualTime", "Location"}
+
+
 def test_bind_entities_exact_then_alias_then_fallback():
     # 1) 精确 name 命中
     session = MockSession(results=[[{"id": "char_m1_aaa"}]])
