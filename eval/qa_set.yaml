@@ -8,7 +8,7 @@ items:
     intent: factual
   - id: rd_f2
     question: 抢劫发生后 Mr. White 对 Mr. Orange 的伤势做出了什么判断?
-    gold_answer: Mr. White 判断 Mr. Orange 没有死只是昏迷,并强调要送他去医院救命。
+    gold_answer: Mr. White 判断 Mr. Orange 腹部中弹、伤势危重,不救治活不过当晚;但他一直安抚 Orange 说他不会死,并以怕暴露为由拒绝直接送医院,主张等 Joe 来安排医生。
     gold_entity_ids: [evt_tt0105236_008_02]
     intent: factual
   - id: rd_f3
@@ -33,8 +33,8 @@ items:
     gold_entity_ids: [evt_tt0105236_002_07]
     intent: causal
   - id: rd_c3
-    question: 为什么 Mr. White 坚持要把 Mr. Orange 送到医院?
-    gold_answer: 因为 Mr. Orange 受了重伤昏迷,Mr. White 认为他是同伴,要救他的命。
+    question: 为什么 Mr. White 坚持要让 Mr. Orange 得到救治?
+    gold_answer: 因为 Mr. Orange 腹部中弹是自己造成的,Mr. White 认为自己有责任,且不救治 Orange 活不过当晚,他不能眼睁睁看他死;他的具体主张是联系 Joe 安排医生,而非直接送医院。
     gold_entity_ids: [evt_tt0105236_008_02]
     intent: causal
   - id: rd_c4
@@ -70,9 +70,9 @@ items:
     gold_entity_ids: [evt_tt0105236_002_08, evt_tt0105236_002_09]
     intent: temporal
   - id: rd_t2
-    question: Mr. Blonde 和 Holdaway 到达仓库之后发生了什么?
-    gold_answer: 团伙开始怀疑有内鬼,随后 Mr. White 与 Mr. Blonde 发生对峙。
-    gold_entity_ids: [evt_tt0105236_008_06, evt_tt0105236_008_07, evt_tt0105236_008_08]
+    question: Mr. Blonde 到达仓库之后发生了什么?
+    gold_answer: Mr. White 指责他在劫案中开枪滥杀,两人冲突升级;随后 Mr. Blonde 夺过主导权,宣布谁也不许离开、原地等待 Joe,并把 Mr. White 和 Mr. Pink 带出仓库。
+    gold_entity_ids: [evt_tt0105236_008_05, evt_tt0105236_008_06, evt_tt0105236_008_07, evt_tt0105236_008_08]
     intent: temporal
   - id: rd_t3
     question: Mr. Orange 的卧底身份是怎么逐步揭露的?
@@ -92,12 +92,12 @@ items:
     intent: synthesis
   - id: rd_s2
     question: Mr. White 对待同伴的态度在整部片中是如何体现的?
-    gold_answer: 他为重伤的 Mr. Orange 辩护并坚持送医,不惜与 Mr. Pink 争吵,也因 Mr. Blonde 的疯狂而与其对峙,体现重情重义的特质。
+    gold_answer: 他为重伤的 Mr. Orange 辩护并坚持为他寻求救治(不肯眼睁睁看他死,主张联系 Joe 找医生),不惜与反对送医的 Mr. Pink 争吵动手,也因 Mr. Blonde 的疯狂而与其对峙,体现重情重义的特质。
     gold_entity_ids: [char_tt0105236_f93b1425, evt_tt0105236_004_02, evt_tt0105236_008_03]
     intent: synthesis
   - id: rd_s3
     question: 仓库里围绕 Mr. Orange 的处置产生了哪些分歧?
-    gold_answer: Mr. White 主张送医院救命,Mr. Pink 反对并担心暴露,双方激烈争执;Mr. Blonde 则另有所图。
+    gold_answer: Mr. Orange 本人苦苦哀求把他送到医院门口,Mr. White 以怕暴露为由拒绝并主张等 Joe 找医生;对 Pink 则强调不送医院 Orange 必死。Mr. Pink 坚决反对送医院,担心暴露和被出卖,与 White 争执升级到动手拔枪;Mr. Blonde 则另有所图。
     gold_entity_ids: [evt_tt0105236_008_02, evt_tt0105236_008_04]
     intent: synthesis
   - id: rd_s4

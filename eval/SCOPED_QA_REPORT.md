@@ -92,3 +92,73 @@ RD 0.35 全场最低,但 mean_hit_rate 0.825 全场最高——证据大多都�
 (非检索问题),解决该簇是单点最大杠杆:纯修 gold 可望 0.35→0.50
 (rd_s3 还需检索修复才到 0.55),建议下一步核查
 (evt_tt0105236_008_02 一带的抽取与 gold 谁对谁错)。
+
+→ **已核查并修正,见下节(同日追加)。**
+
+## 追加核查:送医矛盾簇 gold 修正(2026-10-22 同日)
+
+裁决依据:**剧本原文**(`data/raw/movienet/script/tt0105236.script`),
+图谱侧证据为只读查询(节点 topic/description + 因果/时序边)。
+
+### 裁决:图谱对,gold 错
+
+送医线剧本全程(行号为剧本文件行号):
+
+| 位置 | 台词/情节 | 图谱对应 |
+|---|---|---|
+| 590-618 车内 | "You're hurt really fucking bad, but you ain't dying … Joe's gonna get you a doctor" | — |
+| 713-718 场景4 | Orange:"I'm shot in the belly. And without medical attention, I'm gonna die";White:"**I can't take you to a hospital**" | 004_03/004_04 ✓ |
+| 723-724 场景4 | Orange:"Just drive me up to the front, drop me on the sidewalk"(只求放到医院门口) | 004_03"送到医院门口"逐句对应 ✓ |
+| 1393-1395 场景8 | White:"**He will be dead fer sure, if we don't get him to a hospital**" | 008_02 主题 ✓ |
+| 1400-1407 场景8 | "won't live through the night. **That bullet in his belly is my fault** … I'm not gonna just sit around and watch him die" | 008_02 ✓ |
+| 1423-1427 场景8 | White 具体主张:"**Joe could get him to a doctor**, Joe could get a doctor to come and see him" | 008_02"联系 Joe"✓ |
+| 1449-1455 场景8 | White 承认 Orange 哀求过送医院,"I told him to hold off till Joe got here" | — |
+| 1562-1569 场景8 | Pink:"**We ain't taking him to a hospital**";White:"If we don't, he'll die" | 008_02/008_04 ✓ |
+| 2510-2517 结尾 | Eddie:"I'll call a doctor" | — |
+
+**结论**:White 从未主张亲自送医院——他坚持的是"Orange 必须得到救治",
+具体方案始终是 Joe/Eddie 找医生,且当面拒绝过 Orange 本人的送院哀求
+(场景 4)。坚决反对送医院的是 **Pink**(rd_s1 的 gold 本来就写对了)。
+图谱 4 条事件全部忠实于剧本;"gold 与抽取事实冲突"的矛头全部指向 gold。
+
+### 修正(5 项:矛盾簇 4 + 连带发现 1)
+
+| 题 | 修正 | 依据 |
+|---|---|---|
+| rd_f2 | gold 重写:伤势危重(腹部中弹、不治活不过当晚)+ 安抚称不会死 + 拒绝直接送院(怕暴露)、等 Joe 找医生 | 590-618 / 713-718 / 1400-1407 |
+| rd_c3 | **问题去假前提**"坚持送到医院"→"坚持要得到救治";gold 重写:腹部中弹是自己造成的、有责任感、不肯看他死、主张联系 Joe | 1400-1427 |
+| rd_s2 | gold:"坚持送医"→"坚持为他寻求救治(不肯眼睁睁看他死,主张联系 Joe 找医生)" | 同上 |
+| rd_s3 | gold 重写:补全两层——Orange 苦求医院门口被拒 / White 对 Pink 强调不送必死;Pink 反对、争执升级动手拔枪;Blonde 另有所图 | 713-724 / 1393-1569 |
+| rd_t2 | **连带发现**:问题前提为假——Holdaway 从未到过仓库(只存在于"MR. ORANGE"闪回训练线,剧本 2871 行起 Denny's 场景);且原 gold"怀疑内鬼"发生在 Blonde 到达之前,与 gold 锚点 008_06-08 错位。问题改为"Mr. Blonde 到达仓库之后发生了什么?",gold 与锚点对齐(008_05-08:指责滥杀→对峙→Blonde 夺主导权原地等 Joe→带 White/Pink 出仓库) | 1635-1643 + 008_05-08 |
+
+### 隔离验证:旧答案 × 新 gold 重判(不重答,消除答案方差)
+
+| 题 | 旧判定 | 重判 | 解读 |
+|---|---|---|---|
+| rd_f2 | False | **True** | gold 即失败原因,实锤 |
+| rd_c3 | False | False | 预期内:旧答案是对旧问题假前提的"纠偏式"回答(开篇即"并未坚持"),顶撞新问法;重新作答应通过 |
+| rd_s2 | False | False | 旧答案将 White 定性为"任务优先、冷酷",与新 gold"重情重义"在定性轴上真冲突(非送医表述问题) |
+| rd_s3 | False | False | 预期内:hit 0.0,旧答案只覆盖 White↔Orange 层,缺 White↔Pink 层 |
+
+### 新发现:事件描述语言三片均 ~50/50 中英混合
+
+| 影片 | 事件数 | 中文描述 | 英文描述 |
+|---|---|---|---|
+| RD | 185 | 90 | 95 |
+| Hackers | 579 | 313 | 266 |
+| Rock | 1299 | 684 | 615 |
+
+抽取输出语言未钉死(MovieNet 标注仅含英文粗粒度 action_tag,描述由视觉
+LLM 生成)。中文 query 对英文描述事件召回偏弱,且送医簇恰好骑在语言分界
+上:场景 4(中文)检索命中,场景 8(英文)落空(rd_s3 hit 0.0;rd_t2 原
+gold 008_06-08 亦英文,两腿 hit 0.0)。注意非硬墙——rd_f2 的 gold 同为
+英文 008_02 却 hit 1.0,语言弱势与查询改写方差复合作用。**建议**:抽取
+prompt 钉死输出语言后重建,或对英文描述翻译归一后重嵌(可与 83 部扩量
+的重建合并做)。
+
+### 修正后全量重跑(scope=movie,同日)
+
+**受阻**:重跑中途触发 SiliconFlow **402 账户余额耗尽**(继 2026-10-19
+充值后再次耗尽),`run_qa` 中断、报告未写出(旧基线报告完好,锚定
+45fe6e2)。隔离验证(上节)已确认 rd_f2 的失败原因即 gold。待账户充值后
+执行 `kg eval qa`(命令与配置不变)即可补齐本节数字。
