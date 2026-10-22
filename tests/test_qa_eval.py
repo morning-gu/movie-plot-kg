@@ -159,6 +159,20 @@ def test_cli_eval_qa_movies_empty_intersection_errors(tmp_path, monkeypatch):
     assert "无匹配" in result.output
 
 
+def test_cli_eval_qa_movies_global_scope_no_clobber(tmp_path, monkeypatch):
+    # builder 审查裁决针对的正是这个组合:--scope global --movies 绝不能
+    # 静默覆盖 qa_report_full.md 基线工件(终审补钉:此前只钉了 scoped+movies)
+    from typer.testing import CliRunner
+    from movie_kg.cli import main
+    session, set_path = _cli_setup(tmp_path, monkeypatch)
+    result = CliRunner().invoke(main, ["eval", "qa", "--qa-set", str(set_path),
+                                       "--scope", "global",
+                                       "--movies", "tt0105236"])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "eval" / "qa_report_full_mtt0105236.md").exists()
+    assert not (tmp_path / "eval" / "qa_report_full.md").exists()
+
+
 def _make_set(tmp=None):
     import tempfile
     from pathlib import Path
