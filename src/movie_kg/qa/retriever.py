@@ -104,9 +104,11 @@ def bind_entities(session, targets: list[TargetEntity],
 
 
 def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 10) -> list[Evidence]:
-    hits = vector_recall(session, llm, plan.rewritten_query, top_k)
+    hits = vector_recall(session, llm, plan.rewritten_query, top_k,
+                         movie_id=plan.movie_id)
     evidence: list[Evidence] = list(hits)
-    bound = bind_entities(session, plan.target_entities, hits)
+    bound = bind_entities(session, plan.target_entities, hits,
+                          movie_id=plan.movie_id)
 
     def _resolve(v):
         # 参数值与 name_hint 不完全一致时(如缩写 "Mason"),按词级子集

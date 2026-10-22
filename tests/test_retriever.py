@@ -206,6 +206,20 @@ def test_retrieve_resolves_abbreviated_param_names():
     assert captured["params"]["a"] == "char_m1_mason"
 
 
+def test_retrieve_threads_movie_id_from_plan():
+    # plan.movie_id 穿到召回与绑定;scoped 全空时保持空(宁空不污染),
+    # 绝不回落全局 ANN(设计反目标)
+    plan = RetrievalPlan(intent="factual", rewritten_query="q",
+                         target_entities=[TargetEntity(
+                             type="Character", name_hint="张三")],
+                         graph_queries=[], movie_id="tt0105236")
+    session = MockSession(results=[[], [], [], [], []])   # 4 扫描 + 绑定全空
+    evidence = retrieve(session, ScriptedLLM(), plan)
+    assert evidence == []
+    assert not any("queryNodes" in q for q, _ in session.queries)
+    assert all(p.get("mid") == "tt0105236" for _, p in session.queries)
+
+
 def test_bind_entities_tolerates_null_name_candidates():
     # Event 实体无 name 属性(返回 None):词级匹配不得崩溃,自然不绑定
     session = MockSession(results=[

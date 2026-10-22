@@ -14,6 +14,13 @@ def test_plan_happy_path():
     assert plan.graph_queries[0].template_id == "causes_of"
 
 
+def test_plan_retrieval_passes_movie_id():
+    # scope 由调用方注入,LLM 不参与(设计:不经规划提示词)
+    plan = plan_retrieval(ScriptedLLM(PLAN), "q", movie_id="tt0105236")
+    assert plan.movie_id == "tt0105236"
+    assert plan_retrieval(ScriptedLLM(PLAN), "q").movie_id is None
+
+
 def test_plan_drops_unknown_template():
     raw = dict(PLAN, graph_queries=[
         {"template_id": "drop_all", "params": {}},

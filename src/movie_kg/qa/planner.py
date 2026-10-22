@@ -35,9 +35,13 @@ class RetrievalPlan(BaseModel):
     rewritten_query: str
     target_entities: list[TargetEntity]
     graph_queries: list[GraphQueryPlan]
+    # 按片隔离的影片 tt 号:由调用方(CLI/评测)注入,LLM 不参与;
+    # None = 全局检索(场景 A,行为与历史逐字节一致)
+    movie_id: str | None = None
 
 
-def plan_retrieval(llm, question: str) -> RetrievalPlan:
+def plan_retrieval(llm, question: str,
+                   movie_id: str | None = None) -> RetrievalPlan:
     cfg = getattr(llm, "cfg", None)
     model = cfg.text_model if cfg is not None else "text"
     system = render(load_prompt("qa_planning"), QUESTION=question)
@@ -51,4 +55,4 @@ def plan_retrieval(llm, question: str) -> RetrievalPlan:
     valid_queries = [g for g in raw.graph_queries if g.template_id in TEMPLATES][:2]
     return RetrievalPlan(intent=raw.intent, rewritten_query=raw.rewritten_query,
                          target_entities=targets,
-                         graph_queries=valid_queries)
+                         graph_queries=valid_queries, movie_id=movie_id)
