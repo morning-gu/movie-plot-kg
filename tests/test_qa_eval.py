@@ -63,7 +63,9 @@ def test_run_qa_default_top_k_is_10():
 
 
 def test_cli_eval_qa_top_k_flag(tmp_path, monkeypatch):
-    # CLI 旗标穿线 + 报告文件名带 top_k 后缀(非默认值时)
+    # CLI 旗标穿线 + 报告文件名带 top_k 后缀(非默认值时)。
+    # --scope global 为意图保持性显式参数:CLI 默认 scope 已改 movie(设计),
+    # 本测试钉的是全局路径的 top_k 穿线与旧文件名,断言一字未动
     import shutil
     from pathlib import Path
 
@@ -85,11 +87,76 @@ def test_cli_eval_qa_top_k_flag(tmp_path, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(main, [
         "eval", "qa", "--qa-set", str(set_path), "--mode", "full",
-        "--top-k", "30"])
+        "--top-k", "30", "--scope", "global"])
     assert result.exit_code == 0, result.output
     ks = [p["k"] for q, p in session.queries if "queryNodes" in q]
     assert ks and all(k == 30 for k in ks)
     assert (tmp_path / "eval" / "qa_report_full_k30.md").exists()
+
+
+def _cli_setup(tmp_path, monkeypatch):
+    # eval qa CLI 测试共用搭建(新测试私有;不动既有测试)
+    import shutil
+    from pathlib import Path
+
+    import movie_kg.cli as cli_mod
+    from tests.fakes import MockDriver
+    shutil.copytree(Path(__file__).resolve().parents[1] / "config",
+                    tmp_path / "config")
+    monkeypatch.setenv("LLM_API_KEY", "sk-test")
+    monkeypatch.setenv("NEO4J_PASSWORD", "pw-test")
+    monkeypatch.chdir(tmp_path)
+    set_path = _make_scoped_set(tmp=tmp_path)
+    monkeypatch.setattr(cli_mod, "_make_llm",
+                        lambda cfg: ScriptedLLM(PLAN, ANSWER, JUDGE_OK))
+    session = MockSession(results=[[], [], [], []])
+    monkeypatch.setattr(cli_mod, "_make_driver",
+                        lambda cfg: MockDriver(session))
+    return session, set_path
+
+
+def test_cli_eval_qa_default_scope_movie(tmp_path, monkeypatch):
+    # CLI 默认 scope=movie(产品面默认):片内扫描 + _scoped 报告名
+    from typer.testing import CliRunner
+    from movie_kg.cli import main
+    session, set_path = _cli_setup(tmp_path, monkeypatch)
+    result = CliRunner().invoke(main, ["eval", "qa", "--qa-set", str(set_path)])
+    assert result.exit_code == 0, result.output
+    assert not any("queryNodes" in q for q, _ in session.queries)
+    assert (tmp_path / "eval" / "qa_report_full_scoped.md").exists()
+
+
+def test_cli_eval_qa_scope_global_keeps_legacy_name(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+    from movie_kg.cli import main
+    session, set_path = _cli_setup(tmp_path, monkeypatch)
+    result = CliRunner().invoke(main, ["eval", "qa", "--qa-set", str(set_path),
+                                       "--scope", "global"])
+    assert result.exit_code == 0, result.output
+    assert any("queryNodes" in q for q, _ in session.queries)
+    assert (tmp_path / "eval" / "qa_report_full.md").exists()
+
+
+def test_cli_eval_qa_movies_filter_suffix_and_no_clobber(tmp_path, monkeypatch):
+    # 过滤运行绝不覆盖未过滤报告:文件名追加 _m{ids}(builder 审查裁决)
+    from typer.testing import CliRunner
+    from movie_kg.cli import main
+    session, set_path = _cli_setup(tmp_path, monkeypatch)
+    result = CliRunner().invoke(main, ["eval", "qa", "--qa-set", str(set_path),
+                                       "--movies", "tt0105236"])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "eval" / "qa_report_full_scoped_mtt0105236.md").exists()
+    assert not (tmp_path / "eval" / "qa_report_full_scoped.md").exists()
+
+
+def test_cli_eval_qa_movies_empty_intersection_errors(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+    from movie_kg.cli import main
+    session, set_path = _cli_setup(tmp_path, monkeypatch)
+    result = CliRunner().invoke(main, ["eval", "qa", "--qa-set", str(set_path),
+                                       "--movies", "tt9999999"])
+    assert result.exit_code != 0
+    assert "无匹配" in result.output
 
 
 def _make_set(tmp=None):

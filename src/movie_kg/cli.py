@@ -1,3 +1,5 @@
+import re
+
 import typer
 
 from movie_kg.config import load_models_config, load_neo4j_config
@@ -91,18 +93,38 @@ def build(movie: str = typer.Option(..., "--movie"),  # typer 0.27 无默认参�
 
 
 @app.command()
-def ask(question: str):
+def ask(question: str,
+        movie: str = typer.Option(
+            None, "--movie", help="限定影片 tt 号(如 tt0117500);缺省全局检索")):
     """单轮问答: 规划 -> 检索 -> 回答(固定 2 次 LLM 调用)。"""
     from movie_kg.qa.answerer import answer
     from movie_kg.qa.planner import plan_retrieval
     from movie_kg.qa.retriever import retrieve
 
+    if movie is not None and not re.fullmatch(r"tt\d+", movie):
+        typer.echo(f"影片号格式应为 tt 数字: {movie!r}")
+        raise typer.Exit(1)
     llm = _make_llm(load_models_config())
-    plan = plan_retrieval(llm, question)
     driver = _make_driver(load_neo4j_config())
-    with driver.session() as session:
-        evidence = retrieve(session, llm, plan)
-    driver.close()
+    try:
+        with driver.session() as session:
+            if movie is not None:
+                # 存在性校验:格式合法但库中无此片 → 列出可用影片后退出
+                rows = list(session.run(
+                    "MATCH (m:Movie {id: $mid}) RETURN m.title AS title",
+                    mid=movie))
+                if not rows:
+                    avail = list(session.run(
+                        "MATCH (m:Movie) RETURN m.id AS id, m.title AS title "
+                        "ORDER BY m.id"))
+                    typer.echo(f"未知影片 {movie}。库内可用影片:")
+                    for r in avail:
+                        typer.echo(f"  {r['id']}  {r['title']}")
+                    raise typer.Exit(1)
+            plan = plan_retrieval(llm, question, movie_id=movie)
+            evidence = retrieve(session, llm, plan)
+    finally:
+        driver.close()
     result = answer(llm, question, evidence)
     typer.echo(result.answer)
     typer.echo(f"引用: {', '.join(result.cited_ids) if result.cited_ids else '(无)'}")
@@ -166,23 +188,46 @@ def eval_qa(qa_set: str = typer.Option("eval/qa_set.yaml", "--qa-set"),
             mode: str = typer.Option("full", "--mode",
                                      help="full | vector-only(消融)"),
             top_k: int = typer.Option(10, "--top-k",
-                                      help="每个向量索引的召回数(检索扩容;默认 10 为扩容实验定值)")):
-    """问答端评估: 跑 QA 集 + LLM judge + 汇总(消融用 --mode vector-only)。"""
+                                      help="每个向量索引的召回数(检索扩容;默认 10 为扩容实验定值)"),
+            scope: str = typer.Option("movie", "--scope",
+                                      help="movie=每题隔离到所属片(默认)| global=旧行为(消融)"),
+            movies: str = typer.Option(None, "--movies",
+                                       help="逗号分隔 tt 号,只跑这些片的题目")):
+    """问答端评估: 跑 QA 集 + LLM judge + 汇总(消融用 --mode vector-only / --scope global)。"""
     from pathlib import Path
 
-    from movie_kg.eval.qa_eval import (judge_answers, load_qa_set, run_qa,
-                                       summarize, write_qa_report)
+    from movie_kg.eval.qa_eval import (judge_answers, load_qa_set, movie_of_item,
+                                       run_qa, summarize, write_qa_report)
 
     items = load_qa_set(qa_set)
+    wanted = None
+    if movies:
+        wanted = [m.strip() for m in movies.split(",") if m.strip()]
+        bad = [m for m in wanted if not re.fullmatch(r"tt\d+", m)]
+        if bad:
+            typer.echo(f"影片号格式应为 tt 数字: {', '.join(bad)}")
+            raise typer.Exit(1)
+        items = [i for i in items if movie_of_item(i) in wanted]
+        if not items:
+            typer.echo(f"无匹配题目:影片 {', '.join(wanted)} 在 QA 集中无对应项")
+            raise typer.Exit(1)
     llm = _make_llm(load_models_config())
     driver = _make_driver(load_neo4j_config())
     with driver.session() as session:
-        results = run_qa(session, llm, items, mode=mode, top_k=top_k)
+        results = run_qa(session, llm, items, mode=mode, top_k=top_k,
+                         scope=scope)
     driver.close()
     judged = judge_answers(llm, items, results)
     summary = summarize(judged)
-    # 非默认 top_k 时文件名带后缀,扩容实验的多次运行不互相覆盖
-    suffix = f"_k{top_k}" if top_k != 10 else ""
+    # 后缀拼接顺序:{mode}{_scoped}{_m{ids}}{_k{N}}。
+    # builder 审查裁决:过滤运行绝不覆盖未过滤报告(qa_report_full.md 是基线工件)
+    suffix = ""
+    if scope == "movie":
+        suffix += "_scoped"
+    if wanted:
+        suffix += "_m" + "-".join(wanted)
+    if top_k != 10:
+        suffix += f"_k{top_k}"
     report_path = f"eval/qa_report_{mode}{suffix}.md"
     Path(report_path).parent.mkdir(exist_ok=True)   # 干净 cwd 下运行须自建
     write_qa_report(report_path, judged, summary, mode=mode)
