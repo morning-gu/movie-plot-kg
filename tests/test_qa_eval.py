@@ -1,5 +1,8 @@
+import logging
+
 from movie_kg.eval.qa_eval import (
-    judge_answers, load_qa_set, run_qa, summarize, write_qa_report)
+    QAItem, judge_answers, load_qa_set, movie_of_item, run_qa, summarize,
+    write_qa_report)
 from tests.fakes import MockSession, ScriptedLLM
 
 PLAN = {"intent": "factual", "rewritten_query": "张三发怒",
@@ -102,6 +105,84 @@ def _make_set(tmp=None):
     intent: factual
 """, encoding="utf-8")
     return p
+
+
+def _make_scoped_set(tmp=None):
+    # gold 带 tt 前缀:movie_of_item 可推导出影片
+    import tempfile
+    from pathlib import Path
+    d = Path(tmp) if tmp else Path(tempfile.mkdtemp())
+    p = d / "qa.yaml"
+    p.write_text("""items:
+  - id: q001
+    question: Mr. White 为什么坚持送医院?
+    gold_answer: 因为同伴重伤。
+    gold_entity_ids: [evt_tt0105236_008_02]
+    intent: causal
+""", encoding="utf-8")
+    return p
+
+
+def test_movie_of_item_derives_tt():
+    item = load_qa_set(_make_scoped_set())[0]
+    assert movie_of_item(item) == "tt0105236"
+    assert movie_of_item(QAItem(id="x", question="q", gold_answer="a",
+                                gold_entity_ids=[], intent="factual")) is None
+
+
+def test_run_qa_default_scope_is_global():
+    # 库层默认 global(builder 审查裁决):裸调用直接覆盖全局路径,
+    # 而非借"推导不出回落"的意外路径间接覆盖
+    items = load_qa_set(_make_set())
+    session = MockSession(results=[[], [], [], []])
+    run_qa(session, ScriptedLLM(PLAN, ANSWER), items, mode="full")
+    assert any("queryNodes" in q for q, _ in session.queries)
+    assert all("cosine" not in q for q, _ in session.queries)
+
+
+def test_run_qa_scoped_derives_movie_per_item():
+    items = load_qa_set(_make_scoped_set())
+    session = MockSession(results=[[], [], [], []])
+    results = run_qa(session, ScriptedLLM(PLAN, ANSWER), items,
+                     mode="full", scope="movie")
+    assert results[0].movie_id == "tt0105236"
+    assert not any("queryNodes" in q for q, _ in session.queries)
+    assert all(p.get("mid") == "tt0105236"
+               for q, p in session.queries if "cosine" in q)
+
+
+def test_run_qa_scoped_falls_back_when_movie_underivable(caplog):
+    # gold 无 tt 前缀/为空:该题回落全局并计警告(防御路径,当前 60 题全有 gold)
+    items = load_qa_set(_make_set())          # gold = evt_m1_001_01
+    session = MockSession(results=[[], [], [], []])
+    with caplog.at_level(logging.WARNING):
+        results = run_qa(session, ScriptedLLM(PLAN, ANSWER), items,
+                         mode="full", scope="movie")
+    assert results[0].movie_id is None
+    assert any("queryNodes" in q for q, _ in session.queries)
+    assert caplog.text.strip()                # 必须留痕,不静默
+
+
+def test_run_qa_rejects_bad_scope():
+    import pytest
+    with pytest.raises(ValueError, match="scope"):
+        run_qa(MockSession(), ScriptedLLM(), load_qa_set(_make_set()),
+               mode="full", scope="mov")
+
+
+def test_summarize_and_report_per_movie(tmp_path):
+    items = load_qa_set(_make_scoped_set())
+    session = MockSession(results=[[], [], [], []])
+    results = run_qa(session, ScriptedLLM(PLAN, ANSWER), items,
+                     mode="full", scope="movie")
+    judged = judge_answers(ScriptedLLM(JUDGE_OK), items, results)
+    s = summarize(judged)
+    assert s["per_movie"]["tt0105236"]["n"] == 1
+    assert s["per_movie"]["tt0105236"]["accuracy"] == 1.0
+    out = tmp_path / "r.md"
+    write_qa_report(out, judged, s)
+    text = out.read_text(encoding="utf-8")
+    assert "按片" in text and "tt0105236" in text
 
 
 def test_hit_rate_computed():
