@@ -54,23 +54,37 @@ def vector_recall(session, llm, query: str, top_k: int = 10,
 
 
 def bind_entities(session, targets: list[TargetEntity],
-                  vector_hits: list[Evidence]) -> dict[str, str]:
+                  vector_hits: list[Evidence],
+                  movie_id: str | None = None) -> dict[str, str]:
     """name_hint -> 节点 ID:精确(name/aliases)→ 词级包含 → 向量同类命中(名字须有词交集)。
 
     盲取首个同类向量命中会把 "John Mason" 绑到语义相近的 Goodspeed 上(试点实证),
-    产出自环/错向证据;错绑比不绑更糟,各级都要求名字证据。"""
+    产出自环/错向证据;错绑比不绑更糟,各级都要求名字证据。
+    movie_id 有值时前两级按片收窄(修跨片同名错绑:"未识别:群演"3 片全有);
+    第三级吃的 vector_hits 在 scoped 模式下已是片内结果,无需再滤。"""
     bound: dict[str, str] = {}
     for t in targets:
-        recs = list(session.run(
-            f"MATCH (n:{t.type}) WHERE n.name = $h OR $h IN n.aliases "
-            "RETURN n.id AS id LIMIT 1", h=t.name_hint))
+        if movie_id is None:
+            recs = list(session.run(
+                f"MATCH (n:{t.type}) WHERE n.name = $h OR $h IN n.aliases "
+                "RETURN n.id AS id LIMIT 1", h=t.name_hint))
+        else:
+            recs = list(session.run(
+                f"MATCH (n:{t.type}) WHERE n.movie_id = $mid "
+                "AND (n.name = $h OR $h IN n.aliases) "
+                "RETURN n.id AS id LIMIT 1", h=t.name_hint, mid=movie_id))
         found = recs[0]["id"] if recs else None
         if found is None:
             # 词级包含:hint 的全部词都出现在候选名中(次序无关,
             # "John Mason" -> "John Patrick Mason");唯一命中才绑
             words = {w for w in t.name_hint.lower().replace(".", " ").split() if w}
-            cands = session.run(
-                f"MATCH (n:{t.type}) RETURN n.id AS id, n.name AS name")
+            if movie_id is None:
+                cands = session.run(
+                    f"MATCH (n:{t.type}) RETURN n.id AS id, n.name AS name")
+            else:
+                cands = session.run(
+                    f"MATCH (n:{t.type}) WHERE n.movie_id = $mid "
+                    "RETURN n.id AS id, n.name AS name", mid=movie_id)
             # Event 节点无 name 属性(None),空名一律跳过
             hits = [c for c in cands if words and c["name"] and
                     words <= {w for w in c["name"].lower().replace(".", " ").split() if w}]

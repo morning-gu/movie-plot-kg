@@ -215,3 +215,26 @@ def test_bind_entities_tolerates_null_name_candidates():
                           [TargetEntity(type="Event", name_hint="决裂")],
                           vector_hits=[])
     assert bound == {}
+
+
+def test_bind_entities_scoped_tiers_carry_movie_id():
+    # 精确层与词级扫描层都带 movie_id 条件(修现存跨片同名错绑:
+    # "未识别:群演"3 片全有、"Agent" 在 Hackers+Rock)
+    session = MockSession(results=[[], []])   # 精确无 + 词级无 → 不绑
+    bound = bind_entities(session,
+                          [TargetEntity(type="Character", name_hint="张三")],
+                          vector_hits=[], movie_id="tt0105236")
+    assert bound == {}
+    t1, t2 = session.queries[0], session.queries[1]
+    assert "n.movie_id = $mid" in t1[0] and t1[1]["mid"] == "tt0105236"
+    assert "n.movie_id = $mid" in t2[0] and t2[1]["mid"] == "tt0105236"
+
+
+def test_bind_entities_global_queries_unchanged():
+    # 全局模式逐字节不变:查询串与参数都不得出现 movie_id/mid
+    session = MockSession(results=[[], []])
+    bind_entities(session,
+                  [TargetEntity(type="Character", name_hint="张三")],
+                  vector_hits=[])
+    for q, p in session.queries:
+        assert "movie_id" not in q and "mid" not in p
