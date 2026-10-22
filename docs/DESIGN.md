@@ -764,7 +764,8 @@ pytest>=8.0            # dev
 | v0.3.0 | 2026-10-13 | 输入简化与标注增富:SRT 不再作为输入(台词完整转写内嵌元数据 dialogues),输入 3 类减为 2 类;元数据新增 description、shots(镜头)与结构化 keyframes(frame_id/ts/frame_type/description),keyframes 由纯时间戳数组升级,props 转为抽取先验;时间戳统一为影片绝对时间(修正 keyframes 相对/绝对不一致的隐性缺陷);shot_id/frame_id 由输入保证全局唯一;A1 全面 grounding(台词含情绪/动作、场景描述/道具/镜头时间轴进先验,关键帧图文成对交错);A1 输出与 Event 节点新增 evidence_frame_ids 证据帧引用(无效引用剔除并告警);Scene 节点新增 description(取代未实现的生成式 summary);输入校验升级(dialogue/keyframe/shot 窗口、shot 重叠、跨场景 ID 查重、片段时长 ±2s) |
 | v0.4.0 | 2026-10-14 | 视频输入移除 + MovieNet 免片源接入:输入 1 由场景视频片段(重编码切割、±2s 时长校验)改为场景关键帧目录(`frames/{frame_id}.jpg`);帧采样改为帧选择(超限均匀截断,删除均匀补帧与绝对→相对偏移换算),移除 PyAV 依赖;元数据 schema 新增顶层 keyframes(无镜头归属的帧,flat_keyframes 双源拼接,v0.3.0 标注兼容);输入校验以"帧文件存在且非空"替代视频校验;新增 MovieNet 离线转换器 `kg movienet fetch/convert`(§3.4:fps 由 story 帧率对标定,SRT 台词经剧本模糊对齐归属说话人、两级未匹配丢弃并计数,关键帧 ts 为 story 段插值近似锚定,convert_report 质量报告);首批试点 3 部(Hackers / The Rock / Reservoir Dogs) |
 | v0.4.1 | 2026-10-19 | 台词对齐调优(试点评估驱动,阈值保持 0.6):剧本行预归一化 + 长度预筛(单片对齐 >10min → 秒级);base 无胜者时覆盖兜底(去重 token ≥4、召回 ≥0.85、最长公共连续段 ≥ cue 一半,救回被切分/独白包含的逐字 cue);兄弟候选(上一命中行参与竞争,严格更优才胜出,一行多 cue 复用);短 cue(<3 去重 token)门槛抬至 0.6;`_norm` token 级 l→i/lt→it 归一(Hackers 字幕 OCR);说话人解析字典并入 meta.cast 全集(视觉交集 10 人 → cast 全集)并增剥 mr/mrs/ms/dr 前缀重试;新增 `kg movienet align-audit` 新旧对照审计(翻转统计 + 分层抽样);试点台词保留率 34%/44%/18% 的主要损失(剧本对齐 61%/37%/72% 未匹配)由此分阶段改善 |
+| v0.4.2 | 2026-10-22 | 按片问答(movie-scoped QA):`ask --movie`/`eval qa --scope movie`(默认)按 movie_id 把向量召回切换为片内精确余弦扫描(`vector.similarity.cosine` + movie_id B-tree 索引,O(单片规模),不走全局 ANN)、三级实体绑定按片收窄(修跨片同名错绑);scope 由调用方经 `RetrievalPlan.movie_id` 注入(LLM/提示词不参与);eval 逐题从 gold tt 前缀推导所属片并新增按片汇总表,`--movies` 过滤运行以 `_m` 后缀绝不覆盖基线报告;全局模式逐字节不变(按剧情搜片场景保留);scoped vs global 对照实验量化跨片污染影响(报告 `eval/SCOPED_QA_REPORT.md`) |
 
 ---
 
-*文档版本: v0.4.1 | 最后更新: 2026-10-19*
+*文档版本: v0.4.2 | 最后更新: 2026-10-22*
