@@ -1,5 +1,6 @@
 from movie_kg.qa.planner import GraphQueryPlan, RetrievalPlan, TargetEntity
-from movie_kg.qa.retriever import bind_entities, retrieve, vector_recall
+from movie_kg.qa.retriever import (Evidence, bind_entities, retrieve,
+                                   temporal_window, vector_recall)
 from tests.fakes import MockSession, ScriptedLLM
 
 VEC_HITS = [
@@ -252,3 +253,110 @@ def test_bind_entities_global_queries_unchanged():
                   vector_hits=[])
     for q, p in session.queries:
         assert "movie_id" not in q and "mid" not in p
+
+
+# ============ temporal_window(ID 序时间窗,spec v2.1)============
+
+def _ev(nid, score=0.9, label="Event"):
+    return Evidence(source="vector", node_id=nid, text=f"t:{nid}", score=score,
+                    extra={"label": label})
+
+
+def _wrow(nid, scn, locid, loc, topic="t"):
+    return {"id": nid, "topic": topic, "description": "d", "event_type": "action",
+            "scn": scn, "ord": nid[-2:], "locid": locid, "loc": loc}
+
+
+VOTE = [  # 查询 A 的脚本化结果:4 票餐厅(非空,locid 与 _wrow 一致)+ 2 票空名(不计)
+    {"id": "evt_tt0105236_002_03", "lid": "loc_aaa", "lname": "餐厅"},
+    {"id": "evt_tt0105236_002_05", "lid": "loc_aaa", "lname": "餐厅"},
+    {"id": "evt_tt0105236_003_02", "lid": "loc_aaa", "lname": "餐厅"},
+    {"id": "evt_tt0105236_003_07", "lid": "loc_aaa", "lname": "餐厅"},
+    {"id": "evt_tt0105236_020_01", "lid": "loc_tt0105236_d41d8cd9", "lname": ""},
+    {"id": "evt_tt0105236_021_01", "lid": None, "lname": None},
+]
+
+
+def test_temporal_window_vote_anchor_and_stop():
+    hits = [_ev("evt_tt0105236_002_03", 0.9), _ev("evt_tt0105236_002_05", 0.8),
+            _ev("evt_tt0105236_003_02", 0.7), _ev("evt_tt0105236_003_07", 0.6),
+            _ev("evt_tt0105236_020_01", 0.5), _ev("evt_tt0105236_021_01", 0.4),
+            _ev("char_tt0105236_x", 0.95, label="Character")]  # 非 Event 不计
+    win = [  # 锚点=胜组最高分 002_03;残余 002_04/05;场景3 同地点不算新;
+        # 004 新地点①收;005 新地点②停在其前(镜像真实 rd_t1:场景2-3 共享地点)
+        _wrow("evt_tt0105236_002_04", 2, "loc_aaa", "餐厅"),
+        _wrow("evt_tt0105236_002_05", 2, "loc_aaa", "餐厅"),
+        _wrow("evt_tt0105236_003_01", 3, "loc_aaa", "餐厅"),
+        _wrow("evt_tt0105236_003_02", 3, "loc_aaa", "餐厅"),
+        _wrow("evt_tt0105236_004_01", 4, "loc_bbb", "仓库"),
+        _wrow("evt_tt0105236_004_02", 4, "loc_bbb", "仓库"),
+        _wrow("evt_tt0105236_005_01", 5, "loc_ccc", "闪回"),
+        _wrow("evt_tt0105236_005_02", 5, "loc_ccc", "闪回"),
+    ]
+    session = MockSession(results=[VOTE, win])
+    rows = temporal_window(session, hits)
+    assert [r.node_id for r in rows] == [
+        "evt_tt0105236_002_04", "evt_tt0105236_002_05",
+        "evt_tt0105236_003_01", "evt_tt0105236_003_02",
+        "evt_tt0105236_004_01", "evt_tt0105236_004_02"]
+    assert all(r.source == "temporal_window" for r in rows)
+    assert rows[0].text.startswith("【时间序 1·场景2】")
+    assert rows[5].text.startswith("【时间序 6·场景4】")
+    wq, wp = session.queries[1]          # 窗口查询参数:锚点位置 + 本片 + 上限
+    assert wp == {"mid": "tt0105236", "scn": 2, "ord": 3, "lim": 60}
+
+
+def test_temporal_window_budget_cap():
+    # 锚点 002_01;残余 1(002_02)+ 后续同地点 29 行(永不触发停止)→
+    # 后续按 WINDOW_BUDGET=24 截断 → 合计 25 行
+    vote = [{"id": "evt_tt0105236_002_01", "lid": "loc_aaa", "lname": "餐厅"}]
+    win = [_wrow("evt_tt0105236_002_02", 2, "loc_aaa", "餐厅")] + \
+          [_wrow(f"evt_tt0105236_003_{i:02d}", 3, "loc_aaa", "餐厅")
+           for i in range(1, 30)]
+    session = MockSession(results=[vote, win])
+    rows = temporal_window(session, [_ev("evt_tt0105236_002_01")])
+    assert len(rows) == 25
+    assert rows[24].node_id == "evt_tt0105236_003_24"
+
+
+def test_temporal_window_all_empty_locations_falls_back_to_top_hit():
+    vote = [{"id": "evt_tt0105236_002_03", "lid": "loc_d", "lname": ""},
+            {"id": "evt_tt0105236_020_01", "lid": None, "lname": None}]
+    win = [_wrow("evt_tt0105236_002_05", 2, "loc_x", "仓库")]
+    session = MockSession(results=[vote, win])
+    rows = temporal_window(session, [_ev("evt_tt0105236_002_03", 0.9),
+                                     _ev("evt_tt0105236_020_01", 0.4)])
+    assert [r.node_id for r in rows] == ["evt_tt0105236_002_05"]
+
+
+def test_temporal_window_tie_breaks_by_top_scored_hit():
+    # 平票 1:1 → 最高分命中(002_01,0.9)所在组胜,锚点即它
+    vote = [{"id": "evt_tt0105236_002_01", "lid": "loc_a", "lname": "餐厅"},
+            {"id": "evt_tt0105236_020_01", "lid": "loc_b", "lname": "仓库"}]
+    win = [_wrow("evt_tt0105236_002_02", 2, "loc_a", "餐厅")]
+    session = MockSession(results=[vote, win])
+    temporal_window(session, [_ev("evt_tt0105236_002_01", 0.9),
+                              _ev("evt_tt0105236_020_01", 0.4)])
+    assert session.queries[1][1]["scn"] == 2     # 锚点在场景 2,非 20
+
+
+def test_temporal_window_movie_from_anchor_id():
+    # 全局模式锚点是别片事件 → 窗口按锚点本片开(Review Focus 2)
+    vote = [{"id": "evt_tt0117500_008_04", "lid": "loc_r", "lname": "墓地"}]
+    win = [_wrow("evt_tt0117500_009_01", 9, "loc_r2", "字幕")]
+    session = MockSession(results=[vote, win])
+    rows = temporal_window(session, [_ev("evt_tt0117500_008_04")])
+    assert session.queries[1][1]["mid"] == "tt0117500"
+    assert [r.node_id for r in rows] == ["evt_tt0117500_009_01"]
+
+
+def test_temporal_window_empty_rows_returns_empty():
+    vote = [{"id": "evt_tt0105236_002_03", "lid": "loc_a", "lname": "餐厅"}]
+    session = MockSession(results=[vote, []])    # 锚点在全片末尾
+    assert temporal_window(session, [_ev("evt_tt0105236_002_03")]) == []
+
+
+def test_temporal_window_no_event_hits_returns_empty():
+    session = MockSession(results=[])
+    assert temporal_window(session, []) == []
+    assert session.queries == []                  # 无 Event 命中不发任何查询

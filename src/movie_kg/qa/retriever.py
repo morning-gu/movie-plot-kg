@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 from pydantic import BaseModel
@@ -8,9 +9,14 @@ from movie_kg.qa.planner import RetrievalPlan, TargetEntity
 INDEXES = [("event_vec", "Event"), ("character_vec", "Character"),
            ("virtualtime_vec", "VirtualTime"), ("location_vec", "Location")]
 
+# temporal 窗口(spec v2.1):后续预算/停止信号/取回上限
+WINDOW_BUDGET = 24
+WINDOW_STOP_LOCATIONS = 2
+WINDOW_WALK_LIMIT = 60
+
 
 class Evidence(BaseModel):
-    source: Literal["vector", "graph"]
+    source: Literal["vector", "graph", "temporal_window"]
     node_id: str
     text: str
     score: float | None = None
@@ -101,6 +107,77 @@ def bind_entities(session, targets: list[TargetEntity],
         if found is not None:
             bound[t.name_hint] = found
     return bound
+
+
+def temporal_window(session, hits: list[Evidence]) -> list[Evidence]:
+    """ID 序时间窗(spec v2.1):锚点=胜组最高分命中,锚点残余+后续按片内全序。
+
+    计票按 LOCATED_AT 多数,空名地点不计(Rock 有 301 事件的空名超级节点);
+    地点仅作软停止信号;不走 PRECEDES 链(HK/Rock 各断 3 段)、不用 Scene
+    节点(跨片污染)——事件 ID 内嵌(场景号,序号)即无断口全序,子事件
+    免疫;窗口按锚点事件的 movie 前缀过滤,全局模式也不跨片。"""
+    event_hits = [h for h in hits if h.extra.get("label") == "Event"]
+    if not event_hits:
+        return []
+    loc_of = {r["id"]: (r.get("lid"), r.get("lname")) for r in session.run(
+        "MATCH (e:Event) WHERE e.id IN $ids "
+        "OPTIONAL MATCH (e)-[:LOCATED_AT]->(l:Location) "
+        "RETURN e.id AS id, l.id AS lid, l.name AS lname",
+        ids=[h.node_id for h in event_hits])}
+    counts: dict[str, int] = {}
+    for h in event_hits:
+        lid, lname = loc_of.get(h.node_id, (None, None))
+        if lid is not None and (lname or "").strip():
+            counts[lid] = counts.get(lid, 0) + 1
+    by_score = sorted(event_hits,
+                      key=lambda h: h.score if h.score is not None else 0,
+                      reverse=True)
+    if counts:
+        top = max(counts.values())
+        tied = {lid for lid, n in counts.items() if n == top}
+        winner = next(loc_of[h.node_id][0] for h in by_score
+                      if loc_of.get(h.node_id, (None, None))[0] in tied)
+        anchor = next(h for h in by_score
+                      if loc_of.get(h.node_id, (None, None))[0] == winner)
+    else:
+        anchor = by_score[0]          # 全空名 → 退化 top-1(spec)
+    m = re.match(r"evt_(tt\d+)_", anchor.node_id)
+    if not m:
+        return []
+    parts = anchor.node_id.split("_")
+    a_scn, a_ord = int(parts[2]), int(parts[3])
+    a_lid = loc_of.get(anchor.node_id, (None, None))[0]
+    rows = list(session.run(
+        "MATCH (e:Event {movie_id: $mid}) "
+        "WITH e, split(e.id, '_') AS p "
+        "WITH e, toInteger(p[2]) AS scn, toInteger(p[3]) AS ord "
+        "WHERE scn > $scn OR (scn = $scn AND ord > $ord) "
+        "OPTIONAL MATCH (e)-[:LOCATED_AT]->(l:Location) "
+        "RETURN e.id AS id, e.topic AS topic, e.description AS description, "
+        "e.event_type AS event_type, scn, ord, l.id AS locid, l.name AS loc "
+        "ORDER BY scn, ord LIMIT $lim",
+        mid=m.group(1), scn=a_scn, ord=a_ord, lim=WINDOW_WALK_LIMIT))
+    out: list[Evidence] = []
+    new_locs: list[str] = []          # 有序去重:非空异组地点
+    n_sub = 0
+    for r in rows:
+        if r["scn"] > a_scn:
+            locid, locname = r.get("locid"), r.get("loc")
+            if (locid and (locname or "").strip() and locid != a_lid
+                    and locid not in new_locs):
+                new_locs.append(locid)
+                if len(new_locs) >= WINDOW_STOP_LOCATIONS:
+                    break             # 第 2 个新地点:该行起全弃(设计原文)
+            if n_sub >= WINDOW_BUDGET:
+                break
+            n_sub += 1
+        out.append(Evidence(
+            source="temporal_window", node_id=r["id"], score=None,
+            text=(f"【时间序 {len(out) + 1}·场景{r['scn']}】"
+                  f"[{r.get('event_type', '')}] {r.get('topic', '')}:"
+                  f"{r.get('description', '')}"),
+            extra={"label": "Event"}))
+    return out
 
 
 def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 10) -> list[Evidence]:
