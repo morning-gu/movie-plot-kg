@@ -3,7 +3,7 @@ items:
   # --- factual ---
   - id: rd_f1
     question: Mr. Brown 对 Madonna 的 Like a Virgin 这首歌的解读是什么?
-    gold_answer: Mr. Brown 认为 Like a Virgin 是关于一个女孩遇到一个给她灵感的男人的歌。
+    gold_answer: Mr. Brown 认为《Like a Virgin》整首歌是一个关于大号阴茎(big dicks)的隐喻:一个阅人无数的女人遇到一个天赋异禀的男人,做爱时痛得像初次,这痛让她想起当处女的感觉,所以歌名才叫 Like a Virgin。
     gold_entity_ids: [evt_tt0105236_001_01, char_tt0105236_f93b1425]
     intent: factual
   - id: rd_f2
@@ -13,7 +13,7 @@ items:
     intent: factual
   - id: rd_f3
     question: Mr. White 向 Mr. Orange 泄露了什么个人信息?
-    gold_answer: Mr. White 告诉了 Mr. Orange 自己的名字(姓氏)和出身地。
+    gold_answer: Mr. White 告诉了 Mr. Orange 自己的名字(first name,Larry)和出身地。
     gold_entity_ids: [evt_tt0105236_008_03]
     intent: factual
   - id: rd_f4
@@ -29,7 +29,7 @@ items:
     intent: causal
   - id: rd_c2
     question: 餐厅里关于小费的争论是怎么结束的?
-    gold_answer: Mr. Pink 与 Mr. Orange 就小费争论后,Mr. Pink 最终支付了小费以结束争执。
+    gold_answer: 争论由 Joe Cabot 收场:他回到餐桌发现 Mr. Pink 没给小费,以「我付了你们的早饭」施压要他掏钱;Mr. Pink 妥协掏出一美元,但声明只是看在 Joe 请客的份上,平时绝不会给。
     gold_entity_ids: [evt_tt0105236_002_07]
     intent: causal
   - id: rd_c3
@@ -38,8 +38,8 @@ items:
     gold_entity_ids: [evt_tt0105236_008_02]
     intent: causal
   - id: rd_c4
-    question: Mr. Orange 为什么承认曾想过杀死 Mr. Blonde?
-    gold_answer: 因为团伙怀疑有内鬼,Mr. White 以此说明 Mr. Blonde 的疯狂行径连同伴都无法容忍。
+    question: Mr. Orange 为什么开枪打死 Mr. Blonde?
+    gold_answer: 因为 Mr. Blonde 完全失控:他割了被绑警察的脸、切下耳朵、浇上汽油要活活烧死他,还打算等众人回来时把他们全部杀掉、独吞钻石;Mr. Orange 苏醒后为救警察和同伴开枪打死了他。
     gold_entity_ids: [evt_tt0105236_020_07, evt_tt0105236_037_02]
     intent: causal
   # --- relational ---
@@ -66,7 +66,7 @@ items:
   # --- temporal ---
   - id: rd_t1
     question: 餐厅讨论结束后紧接着发生了什么?
-    gold_answer: Mr. White 与 Joe Cabot 离开餐厅后,Mr. White 在车内受伤,随后开始评估 Mr. Orange 的伤势。
+    gold_answer: 餐厅散场(片头字幕)后,紧接着是逃跑车内:Mr. Orange 腹部中枪、满身是血,躺在后座哭喊「我要死了」;Mr. White 一边开车一边安抚他,承诺带他回集合点、Joe 会给他找医生,随后把他抱进仓库安置。
     gold_entity_ids: [evt_tt0105236_002_08, evt_tt0105236_002_09]
     intent: temporal
   - id: rd_t2
@@ -141,7 +141,7 @@ items:
     intent: causal
   - id: hk_c3
     question: Dade 为什么向 Kate 和众人坦白自己曾把磁盘交给 Plague?
-    gold_answer: 因为分析磁盘时真相逼近,Dade 承认自己是 Zero Cool,曾是唯一想要 Kate 磁盘副本的人,把磁盘交给了 Plague。
+    gold_answer: 因为分析磁盘时真相逼近,Dade 承认自己是 Zero Cool,并坦白 Kate 曾把磁盘交给他,而他把磁盘(副本)给了 Plague。
     gold_entity_ids: [evt_tt0113243_120_06]
     intent: causal
   - id: hk_c4
@@ -173,7 +173,7 @@ items:
   # --- temporal ---
   - id: hk_t1
     question: Dade 一家搬家之后最先发生了什么?
-    gold_answer: Dade 转入新学校,在办理入学时询问校长办公室,随后结识当地黑客团体。
+    gold_answer: 搬家当晚 Dade 就入侵了本地电视网络插播信号,与神秘黑客 Acid Burn 首次交手并亮出「Crash Override」的名号;次日他转入新学校,在办理入学时询问校长办公室的位置,随后结识了当地黑客团体。
     gold_entity_ids: [evt_tt0113243_040_01]
     intent: temporal
   - id: hk_t2
@@ -188,7 +188,7 @@ items:
     intent: temporal
   - id: hk_t4
     question: 大中央车站的紧张对峙之后发生了什么?
-    gold_answer: Secret Service 赶到现场,Kate 大喊让 Dade 逃跑,场面失控。
+    gold_answer: 黑客们赶在被捕前杀死了 Da Vinci 病毒、由 Joey 完成了蠕虫下载;撤离时被赶到的特勤处喝令站住(Freeze)抓获。随后 Razor & Blade 与 Cereal 通过电视直播揭露了 Plague 的阴谋,Plague 被人赃并获逮捕,黑客们借此洗清了自己。
     gold_entity_ids: [evt_tt0113243_128_03, evt_tt0113243_128_07]
     intent: temporal
   # --- synthesis ---
@@ -217,11 +217,11 @@ items:
   # --- factual ---
   - id: rk_f1
     question: General Hummel 去世的妻子墓前做了什么告别举动?
-    gold_answer: 他在雨中祭拜亡妻墓,最后把荣誉勋章放在了墓碑上。
+    gold_answer: 他在墓前与亡妻深情告别,最后把荣誉勋章放在了墓碑上离开。
     gold_entity_ids: [evt_tt0117500_008_04, char_tt0117500_91e246c0]
     intent: factual
   - id: rk_f2
-    question: Hummel 的部队从海军武器库偷取了什么武器?
+    question: Hummel 的部队从武器库偷取了什么武器?
     gold_answer: 装有 VX 毒气的火箭弹,用于占领恶魔岛后的威胁行动。
     gold_entity_ids: [evt_tt0117500_032_01]
     intent: factual
@@ -243,7 +243,7 @@ items:
     intent: causal
   - id: rk_c2
     question: SEAL 突击队为什么会全军覆没?
-    gold_answer: 他们潜入恶魔岛后被 Hummel 的探测设备发现,Hummel 劝降无效后 Frye 和 Darrow 率先开火,导致除 Mason 和 Goodspeed 外全部阵亡。
+    gold_answer: 他们潜入恶魔岛后被 Hummel 部下的探测器发现并包围;Hummel 通过广播勒令他们交出偷走的火箭制导芯片并投降,对峙中局势失控爆发全面枪战,SEAL 突击队全军覆没,只有藏起来的 Mason 和 Goodspeed 幸存。
     gold_entity_ids: [evt_tt0117500_224_02, evt_tt0117500_224_03]
     intent: causal
   - id: rk_c3
@@ -253,7 +253,7 @@ items:
     intent: causal
   - id: rk_c4
     question: 第一枚火箭为什么没有击中体育场?
-    gold_answer: Hummel 秘密修改了火箭坐标,使其坠入海洋而非烛台公园,避免大规模伤亡。
+    gold_answer: Hummel 不肯向奥克兰球赛的观众投放毒气,在火箭飞行途中悄悄修改了坐标:火箭中途转向外海、坠落并在水下引爆,避免了大规模伤亡;部下们事后才发现坐标被改动。
     gold_entity_ids: [evt_tt0117500_352_01, evt_tt0117500_336_01]
     intent: causal
   # --- relational ---
@@ -280,12 +280,12 @@ items:
   # --- temporal ---
   - id: rk_t1
     question: Hummel 探访妻子墓地之后紧接着发生了什么?
-    gold_answer: 他摘下结婚戒指,随后带领叛变海军陆战队突袭海军武器库夺取 VX 火箭。
-    gold_entity_ids: [evt_tt0117500_016_01, evt_tt0117500_032_01]
+    gold_answer: 告别之后当夜,他就率领叛变的海军陆战队突袭武器库,夺取了装填 VX 毒气的火箭弹。
+    gold_entity_ids: [evt_tt0117500_032_01]
     intent: temporal
   - id: rk_t2
     question: Mason 从酒店逃脱之后当局做了什么?
-    gold_answer: Mason 驾驶跑车在旧金山街头制造混乱甩开追捕,Goodspeed 通过无线电通报信号六在酒店出现,追捕进入关键阶段。
+    gold_answer: Mason 抢了一辆军用悍马(Humvee)在旧金山街头横冲直撞甩开追捕,当局全程围追;逃脱当时 Goodspeed 已通过无线电通报「信号六」——Mason 在酒店电梯现身,追捕进入关键阶段。
     gold_entity_ids: [evt_tt0117500_136_01]
     intent: temporal
   - id: rk_t3
