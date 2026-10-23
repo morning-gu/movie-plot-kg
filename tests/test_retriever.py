@@ -360,3 +360,48 @@ def test_temporal_window_no_event_hits_returns_empty():
     session = MockSession(results=[])
     assert temporal_window(session, []) == []
     assert session.queries == []                  # 无 Event 命中不发任何查询
+
+
+# ============ retrieve() temporal 集成(spec:intent 硬门 + 窗口行覆盖)============
+
+def test_retrieve_temporal_plan_adds_window_and_supersedes():
+    plan = RetrievalPlan(intent="temporal", rewritten_query="q",
+                         target_entities=[], graph_queries=[])
+    vec = [  # 事件索引一次返回 3 命中:2 票餐厅 + 1 票仓库(输票)
+        {"node": {"id": "evt_tt0105236_003_02", "topic": "讨论", "description": "d",
+                  "event_type": "dialogue"}, "score": 0.9},
+        {"node": {"id": "evt_tt0105236_003_07", "topic": "告别", "description": "d",
+                  "event_type": "dialogue"}, "score": 0.8},
+        {"node": {"id": "evt_tt0105236_004_01", "topic": "对峙", "description": "d",
+                  "event_type": "conflict"}, "score": 0.7},
+    ]
+    vote = [
+        {"id": "evt_tt0105236_003_02", "lid": "loc_aaa", "lname": "餐厅"},
+        {"id": "evt_tt0105236_003_07", "lid": "loc_aaa", "lname": "餐厅"},
+        {"id": "evt_tt0105236_004_01", "lid": "loc_bbb", "lname": "仓库"},
+    ]
+    win = [  # 锚点=胜组最高分 003_02;残余 003_08/09;004_01 新地点①收
+        # (004_01 同时是向量命中 → 覆盖语义);005 新地点②停
+        _wrow("evt_tt0105236_003_08", 3, "loc_aaa", "餐厅"),
+        _wrow("evt_tt0105236_003_09", 3, "loc_aaa", "餐厅"),
+        _wrow("evt_tt0105236_004_01", 4, "loc_bbb", "仓库"),
+        _wrow("evt_tt0105236_005_01", 5, "loc_ccc", "闪回"),
+    ]
+    session = MockSession(results=[vec, [], [], [], vote, win])
+    evidence = retrieve(session, ScriptedLLM(), plan)
+    assert any(q.startswith("MATCH (e:Event) WHERE e.id IN $ids")
+               for q, _ in session.queries)
+    marked = [e for e in evidence if e.node_id == "evt_tt0105236_004_01"]
+    assert len(marked) == 1                     # 覆盖:只此一行
+    assert marked[0].source == "temporal_window"
+    assert marked[0].text.startswith("【时间序 3·场景4】")
+
+
+def test_retrieve_non_temporal_never_issues_window_queries():
+    plan = RetrievalPlan(intent="factual", rewritten_query="q",
+                         target_entities=[], graph_queries=[])
+    session = MockSession(results=[VEC_HITS, [], [], []])
+    retrieve(session, ScriptedLLM(), plan)
+    assert not any("LOCATED_AT" in q for q, _ in session.queries)
+    # 逐字节钉:查询数与既有非 temporal 路径一致(4 召回,无绑定/模板/窗口)
+    assert len(session.queries) == 4

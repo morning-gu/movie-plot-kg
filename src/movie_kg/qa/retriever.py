@@ -228,6 +228,14 @@ def retrieve(session, llm, plan: RetrievalPlan, top_k: int = 10) -> list[Evidenc
                             evidence.append(Evidence(
                                 source="graph", node_id=d["id"], text=_node_text(d),
                                 extra={"template": gq.template_id}))
+    # temporal 窗口(spec v2.1):intent 硬门,非 temporal 路径逐字节不变;
+    # 窗口行覆盖同 node_id 旧行(时间序标记不被去重吃掉)后追加尾部
+    if plan.intent == "temporal":
+        window_rows = temporal_window(session, hits)
+        if window_rows:
+            win_ids = {w.node_id for w in window_rows}
+            evidence = [e for e in evidence if e.node_id not in win_ids] + window_rows
+
     seen: set[str] = set()
     deduped: list[Evidence] = []
     for e in evidence:
